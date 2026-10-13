@@ -169,6 +169,34 @@ class ChecarBlueprint(unittest.TestCase):
                 bp["flow"][1]["mapper"].update(campo)
                 self.assertEqual(cb.checar(bp), [], nome)
 
+    def test_credencial_fixa_dentro_da_formula(self):
+        """Avaliador ciclo 2 (AT-005): texto fixo DENTRO de {{…}} (entre aspas ou argumento sem aspas) é credencial
+        escrita; referências, funções e palavras do Make continuam não sendo."""
+        segredo = "abcd1234" + "efgh5678"
+        for nome, campo in {
+                "Basic base64 com aspas": {"headers": [{"name": "Authorization",
+                                                        "value": 'Basic {{base64("contabil:MinhaSenha2026")}}'}]},
+                "Basic base64 sem aspas": {"headers": [{"name": "Authorization",
+                                                        "value": "Basic {{base64(contabil:MinhaSenha2026)}}"}]},
+                "Bearer literal entre aspas": {"headers": [{"name": "Authorization",
+                                                            "value": 'Bearer {{"' + segredo + '"}}'}]},
+                "api_key literal entre aspas": {"data": {"api_key": '{{"' + segredo + '"}}'}},
+                "api_key no ifempty": {"data": {"api_key": '{{ifempty(1.chave; "' + segredo + '")}}'}},
+                "key na query por fórmula": {"url": 'https://api.exemplo.com/v1?key={{"' + segredo + '"}}'}}.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {
+                "Bearer mapeado": {"headers": [{"name": "Authorization", "value": "Bearer {{4.token}}"}]},
+                "Basic de campos mapeados": {"headers": [{"name": "Authorization",
+                                                          "value": 'Basic {{base64(1.usuario + ":" + 1.senha)}}'}]},
+                "ifempty com emptystring": {"data": {"api_key": "{{ifempty(1.chave; emptystring)}}"}},
+                "variável do fluxo": {"data": {"token": "{{var.input.token}}"}},
+                "campo com espaço": {"data": {"senha": "{{1.`Senha do portal`}}"}},
+                "get com índice": {"data": {"apikey": "{{get(1.chaves; 1)}}"}},
+                "key na query mapeada": {"url": "https://api.exemplo.com/v1?key={{1.chave}}"}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

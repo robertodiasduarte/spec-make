@@ -55,25 +55,55 @@ def nome_de_credencial(nome: object) -> bool:
 
 
 def _na_url(texto: str) -> bool:
-    """Credencial na URL: parâmetro de query com nome de credencial (ou "key") e valor fixo, ou usuário:senha."""
-    for m in NA_URL.finditer(texto):
-        if nome_de_credencial(m.group(1)) or _normalizado(m.group(1)) == "key":
+    """Credencial na URL: parâmetro de query com nome de credencial (ou "key") e valor fixo, ou usuário:senha. Confere
+    o texto como está e com cada expressão {{…}} trocada pelo texto fixo dela (?key={{"abc123…"}})."""
+    for t in dict.fromkeys((texto, _resolvido(texto))):
+        for m in NA_URL.finditer(t):
+            if nome_de_credencial(m.group(1)) or _normalizado(m.group(1)) == "key":
+                return True
+        if any(_sem_mapeamento(m.group(1)) for m in USUARIO_SENHA.finditer(t)):
             return True
-    return any(_sem_mapeamento(m.group(1)) for m in USUARIO_SENHA.finditer(texto))
+    return False
 
 
-MAPEAMENTO = re.compile(r"\{\{.*?\}\}", re.S)
+EXPRESSAO = re.compile(r"\{\{(.*?)\}\}", re.S)
+ASPAS = re.compile(r'"((?:[^"\\]|\\.)*)"')
+# Referência a dado de outro módulo ou variável: 1.chave, 3.data[].token, var.input.cnpj, 1.`Nome do campo`.
+REFERENCIA = re.compile(r"\b[A-Za-z0-9_]+(?:\.(?:`[^`]*`|[A-Za-z0-9_\[\]]+))+")
+FUNCAO = re.compile(r"\b[A-Za-z_]\w*\s*\(")
+PALAVRAS_DO_MAKE = {"emptystring", "emptyarray", "null", "true", "false", "now", "timestamp", "pi", "space", "nbsp",
+                    "tab", "newline", "carriagereturn", "random", "uuid"}
+
+
+def _fixo_da_expressao(expr: str) -> str:
+    """O texto fixo de dentro de uma expressão do Make: o que está entre aspas ({{"abc123"}}) e o argumento escrito
+    sem aspas ({{base64(usuario:senha)}}). Referências (1.chave), nomes de função, separadores e palavras do Make
+    (emptystring) não contam. Achado 1 do avaliador, ciclo 2: o que estava dentro de {{…}} era descartado inteiro."""
+    fixos = ASPAS.findall(expr)
+    resto = FUNCAO.sub(" ", REFERENCIA.sub(" ", ASPAS.sub(" ", expr)))
+    for p in re.split(r"[\s();,+*/<>=!&|]+", resto):
+        if p and p.lower() not in PALAVRAS_DO_MAKE and not (p.isdigit() and len(p) < 6):
+            fixos.append(p)
+    return "".join(fixos)
+
+
+def _resolvido(valor: str) -> str:
+    """O valor com cada expressão {{…}} trocada pelo texto fixo dela: "Bearer {{4.token}}" → "Bearer ";
+    'Bearer {{"abc123def"}}' → "Bearer abc123def"."""
+    return EXPRESSAO.sub(lambda m: _fixo_da_expressao(m.group(1)), valor)
 
 
 def _sem_mapeamento(valor: str) -> str:
-    """O texto que sobra quando se tiram os mapeamentos do Make ({{3.chave}}) e o prefixo de esquema (Bearer/Basic)."""
-    resto = MAPEAMENTO.sub("", valor).strip()
+    """O texto fixo que sobra quando se tiram os mapeamentos do Make ({{3.chave}}), mantendo o texto fixo de dentro
+    das expressões ({{"abc123"}}, {{base64(usuario:senha)}}), e o prefixo de esquema (Bearer/Basic)."""
+    resto = _resolvido(valor).strip()
     return re.sub(r"^(Bearer|Basic|Token)\b\s*", "", resto, flags=re.I).strip()
 
 
 def _literal(valor: object) -> bool:
     """Valor escrito à mão: sobram 6+ caracteres fixos depois de tirar os mapeamentos. "{{3.chave}}" e
-    "Bearer {{4.token}}" não são literais; "segredo-fixo{{emptystring}}" é (achado A2 da review)."""
+    "Bearer {{4.token}}" não são literais; "segredo-fixo{{emptystring}}" é (achado A2 da review), e também
+    '{{ifempty(1.chave; "abc123def")}}' e '{{"abc123def"}}' (avaliador, ciclo 2)."""
     return isinstance(valor, str) and len(_sem_mapeamento(valor)) >= 6
 
 
@@ -135,7 +165,7 @@ def credenciais_literais(no: object) -> list[str]:
         elif isinstance(x, str):
             # Token conhecido e chave na URL valem até DENTRO de uma expressão {{…}} (R1@opus, rodada 2): só o
             # teste de "texto fixo" (prefixo de esquema) desconta os mapeamentos.
-            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or _na_url(x):
+            if (PREFIXO.match(_resolvido(x).strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or _na_url(x):
                 achados.append(caminho)
             lido = _como_json(x)
             if lido is not None:

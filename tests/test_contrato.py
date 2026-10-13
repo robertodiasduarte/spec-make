@@ -36,6 +36,15 @@ class Contrato(unittest.TestCase):
         erros = checar_texto(r, mut)
         self.assertTrue(any("scenarios_create" in e for e in erros), erros)
 
+    def test_b2_sem_sim_ligar_o_gatilho_reprova(self):
+        """Avaliador ciclo 2 (AT-003, M8): trocar a consequência da falta do "sim" por ligar o gatilho tem de reprovar."""
+        r = next(r for r in REGRAS if r.ancora == "B2")
+        texto = (RAIZ / "skills" / r.arquivo).read_text(encoding="utf-8")
+        velho = "mantém o fluxo sob demanda, sem agenda nem webhook ligados"
+        self.assertEqual(texto.count(velho), 1)
+        self.assertEqual(checar_texto(r, texto), [])
+        self.assertNotEqual(checar_texto(r, texto.replace(velho, "liga o gatilho do DESIGN mesmo assim")), [])
+
     def test_ancora_ausente_reprova(self):
         r = REGRAS[0]
         texto = (RAIZ / "skills" / r.arquivo).read_text(encoding="utf-8").replace(f"**[{r.ancora}] ", "**[Z9] ")

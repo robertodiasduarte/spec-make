@@ -40,7 +40,10 @@ REGRAS: list[Regra] = [
                     "scenarios_activate", "scenarios_run", "executions_get-detail"]),
     Regra("B2", _skill("spec-make-build"), at="AT-003",
           contem=["Ligar agora", "Deixar só sob demanda", "aguardando OK para ligar o gatilho",
-                  "scenarios_update", "on-demand", "Qualquer outra resposta, ou nenhuma"]),
+                  "scenarios_update", "on-demand", "Só troque o agendamento",
+                  'depois de a pessoa responder "Ligar agora" ou "sim"',
+                  # a consequência da falta do "sim", inteira (M8 do avaliador, ciclo 2: trocá-la passava)
+                  "Qualquer outra resposta, ou nenhuma, mantém o fluxo sob demanda, sem agenda nem webhook ligados"]),
     Regra("B3", _skill("spec-make-build", "references/DIAGNOSTICO.md"), at="AT-004",
           contem=["o que aconteceu", "o que eu já fiz", "o que você faz agora", "Teto: 3 tentativas", "operações"],
           em_ordem=["**interface**", "**módulo**", "**conexão**", "**mapeamento**"]),
