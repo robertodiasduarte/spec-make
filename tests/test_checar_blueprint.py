@@ -317,6 +317,23 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_rodada_8(self):
+        """R1-R3@opus e A1 (rodada 8): marcador como pedaço da palavra, plural, cookie como última palavra; número em
+        campo de duração ou limite não é credencial."""
+        v = "abc123" + "def456"
+        for nome in ("secretkey", "tokenacesso", "senhacertificado", "passwordhash", "credentials", "client_credentials",
+                     "secrets", "dbpwd", "auth_cookie"):
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {nome: v}}))), nome)
+        bp = _com_http({"headers": [{"name": "X-Session-Cookie", "value": v}]})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)), "X-Session-Cookie")
+        for nome, campo in {"token_expires_in": {"token_expires_in": 2592000}, "token_limit": {"token_limit": 128000},
+                            "password_max_age": {"password_max_age": 7776000},
+                            "secretariaFazenda": {"secretariaFazenda": "Secretaria da Fazenda"},
+                            "maxtokens": {"maxtokens": "100000"}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

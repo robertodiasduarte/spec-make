@@ -70,22 +70,33 @@ def _normalizado(nome: str) -> str:
     return re.sub(r"[-_.\s]", "", nome.lower())
 
 
-# Palavra que TERMINA num destes também é credencial ("mytoken", "appsecret"); "senha" fica de fora ("resenha").
-TERMINA_EM = ("secret", "password", "passwd", "token", "apikey", "appkey", "accesskey", "privatekey", "authkey",
-              "subscriptionkey")
+# Palavra comum que CONTÉM um marcador sem ser credencial (avaliador, ciclo 5): fica de fora da busca por pedaço. Por
+# começo ou fim da palavra: "secretariaFazenda", "resenhas", "max_tokens"/"maxtokens".
+PALAVRA_COMUM = ("secretari", "secretary", "resenha", "tokens", "tokeniz")
+# Campo de duração ou limite: número ali é medida, não credencial ("token_expires_in": 2592000 — R2@opus, rodada 8).
+MEDIDA = {"expires", "expire", "expiry", "expiration", "ttl", "limit", "limite", "max", "min", "age", "timeout",
+          "length", "size", "count", "seconds", "minutes", "hours", "days", "lifetime", "validity", "validade"}
+
+
+def _palavra_comum(p: str) -> bool:
+    return any(p.startswith(c) or p.endswith(c) for c in PALAVRA_COMUM)
 
 
 def nome_de_credencial(nome: object) -> bool:
-    """Nome de campo, cabeçalho ou parâmetro que guarda credencial, comparado por PALAVRA (e por 2 ou 3 palavras
-    juntas: "app_key" → appkey, "Ocp-Apim-Subscription-Key" → subscriptionkey), nunca por pedaço: "secretaria",
-    "resenha" e "max_tokens" não são credencial (avaliador, ciclo 5). "key" sozinho não conta (data store)."""
+    """Nome de campo, cabeçalho ou parâmetro que guarda credencial. O marcador vale como PEDAÇO de cada palavra
+    ("secretkey", "tokenacesso", "credentials" — R1@opus e A1, rodada 8) e de 2 ou 3 palavras juntas ("app_key" →
+    appkey, "Ocp-Apim-Subscription-Key" → subscriptionkey), menos nas palavras comuns de PALAVRA_COMUM ("secretaria",
+    "resenha", "max_tokens" — avaliador, ciclo 5). Última palavra "cookie" também é credencial ("auth_cookie",
+    "X-Session-Cookie"; "X-Cookie-Consent" não — R3@opus, rodada 8). "key" sozinho não conta (data store)."""
     if not isinstance(nome, str):
         return False
     w = _palavras(re.sub(r"[-_.\s]+", " ", nome))
-    if w == ["key"]:
+    if w == ["key"] or not w:
         return False
-    juntas = set(w) | {a + b for a, b in zip(w, w[1:])} | {a + b + c for a, b, c in zip(w, w[1:], w[2:])}
-    return any(m in juntas for m in MARCADORES) or any(p.endswith(m) for p in w for m in TERMINA_EM)
+    if w[-1] == "cookie":
+        return True
+    pedacos = w + [a + b for a, b in zip(w, w[1:])] + [a + b + c for a, b, c in zip(w, w[1:], w[2:])]
+    return any(m in p for p in pedacos if not _palavra_comum(p) for m in MARCADORES)
 
 
 def nome_de_credencial_em_par(nome: object) -> bool:
@@ -199,7 +210,10 @@ def credenciais_literais(no: object) -> list[str]:
         # próprio blueprint (o "key" do módulo de data store) fica de fora.
         credencial = nome_de_credencial_em_par(nome) if par else nome_de_credencial(nome)
         isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
-        if credencial and isinstance(nome, str) and _normalizado(nome) == "cookie" and isinstance(valor, str):
+        if isinstance(valor, (int, float)) and isinstance(nome, str) and MEDIDA & set(_palavras(re.sub(r"[-_.]+", " ", nome))):
+            return False
+        if credencial and isinstance(nome, str) and _palavras(re.sub(r"[-_.]+", " ", nome))[-1:] == ["cookie"] \
+                and isinstance(valor, str):
             # Cookie: nome=valor; nome2=valor2 — o nome do cookie é fixo por natureza; o que conta é o valor de cada par.
             # Parte SEM "=" conta inteira (R2@codex, rodada 7: "Cookie: <literal>" escapava). Lido depois de resolver as
             # fórmulas, para o texto fixo de dentro de {{…}} contar.
