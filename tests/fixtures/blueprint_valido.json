@@ -1,0 +1,117 @@
+{
+  "name": "Exemplo spec-make — Consulta CNPJ",
+  "flow": [
+    {
+      "id": 1,
+      "module": "scenario-service:StartSubscenario",
+      "version": 2,
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0,
+          "name": "Entrada"
+        },
+        "interface": [
+          {
+            "name": "cnpj",
+            "type": "text",
+            "label": "CNPJ",
+            "required": true,
+            "help": "CNPJ com ou sem pontuação"
+          }
+        ]
+      }
+    },
+    {
+      "id": 2,
+      "module": "brasil-api:buscarCNPJ",
+      "version": 1,
+      "parameters": {},
+      "mapper": {
+        "cnpj": "{{replace(1.cnpj; \"/\\D/g\"; emptystring)}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0,
+          "name": "Consultar CNPJ (Brasil API)"
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "scenario-service:ReturnData",
+      "version": 2,
+      "parameters": {},
+      "mapper": {
+        "cnpj": "{{2.cnpj}}",
+        "razao_social": "{{2.razao_social}}",
+        "situacao_cadastral": "{{2.descricao_situacao_cadastral}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0,
+          "name": "Resultado"
+        },
+        "expect": [
+          {
+            "name": "cnpj",
+            "type": "text"
+          },
+          {
+            "name": "razao_social",
+            "type": "text"
+          },
+          {
+            "name": "situacao_cadastral",
+            "type": "text"
+          }
+        ]
+      }
+    }
+  ],
+  "interface": {
+    "input": [
+      {
+        "name": "cnpj",
+        "type": "text",
+        "label": "CNPJ",
+        "required": true,
+        "help": "CNPJ com ou sem pontuação"
+      }
+    ],
+    "output": [
+      {
+        "name": "cnpj",
+        "type": "text"
+      },
+      {
+        "name": "razao_social",
+        "type": "text"
+      },
+      {
+        "name": "situacao_cadastral",
+        "type": "text"
+      }
+    ]
+  },
+  "metadata": {
+    "version": 1,
+    "instant": false,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": true,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

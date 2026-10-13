@@ -1,0 +1,51 @@
+{
+  "name": "spec-make-build",
+  "version": "1.0.0",
+  "kind": "skill",
+  "perfil": "C",
+  "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
+  "nucleo": [
+    "SKILL.md",
+    "references/PROTOCOLO.md",
+    "references/DIAGNOSTICO.md",
+    "references/MCP_MAKE.md",
+    "references/COPY.md",
+    "references/RUNTIME_COMPATIBILITY.md",
+    "assets/RECIBO_TEMPLATE.md",
+    "assets/FICHA_DO_FLUXO_TEMPLATE.md",
+    "scripts/checar_blueprint.py",
+    "manifest.json",
+    "evals/cases.json"
+  ],
+  "caminhos_implementados": [
+    "Ordem [B1] pelo MCP",
+    "Aviso [B5] antes de gravar e de rodar",
+    "Teste de aceite com segunda rodada",
+    "Diagnóstico [B3] com teto de 3",
+    "Pergunta única do gatilho [B2]",
+    "Só altera o que criou [B4]",
+    "Modo papel [M1]"
+  ],
+  "coverage": {
+    "consulta_normativa": "nao aplicavel",
+    "calculo_profissional": "nao aplicavel"
+  },
+  "runtime": {
+    "mcp": "servidor MCP oficial do Make (opcional: sem ele, modo papel)",
+    "python": "3.9+ (opcional)",
+    "third_party_dependencies": []
+  },
+  "executados": [],
+  "pending": [
+    "Executar os casos de evals/cases.json em mais de um agente (Claude e ChatGPT)",
+    "Medir o conector do Make no ChatGPT e o plano Free do Make"
+  ],
+  "o_que_ainda_nao_prova": [
+    "Comportamento idêntico em todos os agentes e modelos",
+    "Que o conector do Make no ChatGPT expõe as ferramentas de gravação",
+    "Funcionamento no plano Free do Make"
+  ],
+  "author": "Roberto Dias Duarte",
+  "license": "MIT",
+  "methodology": "Metodologia de Roberto Dias Duarte"
+}

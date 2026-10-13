@@ -1,0 +1,55 @@
+{
+  "skill": "spec-make-define",
+  "version": "1.0.0",
+  "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
+  "cases": [
+    {
+      "id": "define-cnpj",
+      "type": "positive",
+      "regras": [
+        "D1",
+        "E1"
+      ],
+      "input": "BRAINSTORM do cadastro por CNPJ que grava num data store.",
+      "expected": [
+        "Critérios com frase e EARS, ao menos 1 If/Then",
+        "Teste de aceite com amostra, resultado esperado em valores e segunda execução com a mesma contagem",
+        "Fecha com 'Use a skill spec-make-design'"
+      ]
+    },
+    {
+      "id": "gate-uma-execucao",
+      "type": "negative_control",
+      "regras": [
+        "D1"
+      ],
+      "input": "A pessoa propõe como teste rodar o fluxo de cadastro uma vez e ver a linha aparecer.",
+      "expected": [
+        "Recusa como incompleto: fluxo que grava exige a segunda execução da mesma amostra com a mesma contagem"
+      ]
+    },
+    {
+      "id": "gate-blueprint-validado",
+      "type": "negative_control",
+      "regras": [
+        "D1"
+      ],
+      "input": "A pessoa propõe como teste: 'o Make validou o blueprint'.",
+      "expected": [
+        "Recusa e pede amostra e resultado esperado",
+        "Cita que validação não é execução"
+      ]
+    },
+    {
+      "id": "sem-mcp",
+      "type": "negative_control",
+      "regras": [
+        "M1"
+      ],
+      "input": "BRAINSTORM sem o plano anotado, numa conversa sem o MCP do Make.",
+      "expected": [
+        "Orçamento marcado 'a confirmar na conta'"
+      ]
+    }
+  ]
+}

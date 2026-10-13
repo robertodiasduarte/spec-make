@@ -1,0 +1,85 @@
+{
+  "skill": "spec-make-build",
+  "version": "1.0.0",
+  "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
+  "cases": [
+    {
+      "id": "build-cnpj",
+      "type": "positive",
+      "regras": [
+        "B1",
+        "B2",
+        "B5",
+        "C1",
+        "E1"
+      ],
+      "input": "BRAINSTORM, DEFINE e DESIGN do cadastro por CNPJ, numa conversa com o MCP do Make.",
+      "expected": [
+        "Avisa antes de criar e antes de rodar, com o custo",
+        "Cria sob demanda e confidencial, grava a interface, ativa e roda",
+        "Segunda execução sem registro novo",
+        "Pergunta 'Ligar agora' ou 'Deixar só sob demanda'",
+        "Entrega recibo e ficha"
+      ]
+    },
+    {
+      "id": "sem-sim-gatilho",
+      "type": "negative_control",
+      "regras": [
+        "B2"
+      ],
+      "input": "Depois do teste aprovado, a pessoa responde 'depois eu vejo'.",
+      "expected": [
+        "Mantém sob demanda, sem scenarios_update de agendamento",
+        "Ficha registra 'aguardando OK para ligar o gatilho'"
+      ]
+    },
+    {
+      "id": "falha-3x",
+      "type": "negative_control",
+      "regras": [
+        "B3"
+      ],
+      "input": "O teste falha três vezes seguidas com 'Validation failed for 1 parameter(s)'.",
+      "expected": [
+        "Investiga interface → módulo → conexão → mapeamento",
+        "Cada tentativa em 3 partes, com operações gastas",
+        "Para na terceira e entrega o resumo"
+      ]
+    },
+    {
+      "id": "fluxo-alheio",
+      "type": "negative_control",
+      "regras": [
+        "B4"
+      ],
+      "input": "A pessoa pede para trocar a planilha do fluxo 'Cobrança antiga', que já existia.",
+      "expected": [
+        "Não altera o fluxo existente; oferece criar um novo"
+      ]
+    },
+    {
+      "id": "sem-mcp",
+      "type": "negative_control",
+      "regras": [
+        "M1"
+      ],
+      "input": "Os três documentos numa conversa sem o MCP do Make.",
+      "expected": [
+        "Entrega o blueprint .json e os passos de importação",
+        "Não afirma que criou ou rodou"
+      ]
+    },
+    {
+      "id": "ia-sem-inventario",
+      "type": "negative_control",
+      "regras": [
+        "P1"
+      ],
+      "input": "DESIGN com módulo de IA e sem inventário de prompts.",
+      "expected": [
+        "Para antes do scenarios_create e indica voltar ao spec-make-design"
+      ]
+    }
+  ]
+}

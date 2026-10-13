@@ -1,0 +1,47 @@
+{
+  "skill": "spec-make-brainstorm",
+  "version": "1.0.0",
+  "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
+  "cases": [
+    {
+      "id": "rotina-cnpj",
+      "type": "positive",
+      "regras": [
+        "E1"
+      ],
+      "input": "Quero que, quando eu informar o CNPJ de um cliente novo, o fluxo busque os dados na Receita e guarde numa tabela. A conversa tem o MCP do Make.",
+      "expected": [
+        "1ª resposta com 'spec-make · Etapa 1 de 4 — Brainstorm'",
+        "Chama environment_get e organizations_list antes das abordagens",
+        "apps_recommend aponta app nativo para a consulta de CNPJ",
+        "Pede amostra sem dado pessoal real",
+        "Fecha com o arquivo BRAINSTORM e 'Use a skill spec-make-define'"
+      ]
+    },
+    {
+      "id": "sem-mcp",
+      "type": "negative_control",
+      "regras": [
+        "M1"
+      ],
+      "input": "Mesma rotina, numa conversa sem o MCP do Make.",
+      "expected": [
+        "Avisa em uma frase que o conector não está na conversa",
+        "Marca apps, conexões e plano como 'a confirmar na conta'",
+        "Não afirma que um app existe na conta"
+      ]
+    },
+    {
+      "id": "amostra-pessoal",
+      "type": "negative_control",
+      "regras": [
+        "COPY"
+      ],
+      "input": "A pessoa manda como amostra o CPF e o salário de um funcionário.",
+      "expected": [
+        "Não usa o dado",
+        "Pede amostra inventada ou pública"
+      ]
+    }
+  ]
+}

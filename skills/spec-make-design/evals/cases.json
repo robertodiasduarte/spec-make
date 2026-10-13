@@ -1,0 +1,67 @@
+{
+  "skill": "spec-make-design",
+  "version": "1.0.0",
+  "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
+  "cases": [
+    {
+      "id": "design-cnpj",
+      "type": "positive",
+      "regras": [
+        "G3",
+        "C1",
+        "E1"
+      ],
+      "input": "DEFINE do cadastro por CNPJ com data store.",
+      "expected": [
+        "Módulos confirmados com app-modules_list",
+        "Chave natural = CNPJ com gravação por substituição",
+        "Blueprint com confidential true e interface.input",
+        "Fecha com 'Use a skill spec-make-build'"
+      ]
+    },
+    {
+      "id": "sem-chave-natural",
+      "type": "negative_control",
+      "regras": [
+        "G3"
+      ],
+      "input": "Fluxo que grava cada e-mail de nota numa planilha, sem dizer como evitar repetir a mesma nota.",
+      "expected": [
+        "Recusa o DESIGN como pronto e pede a chave natural (ex.: chave de acesso da nota)"
+      ]
+    },
+    {
+      "id": "ia-grava-direto",
+      "type": "negative_control",
+      "regras": [
+        "G1"
+      ],
+      "input": "Um módulo de IA classifica a nota e lança direto no ERP.",
+      "expected": [
+        "Recusa o DESIGN e exige o passo de aceite por pessoa identificada antes da gravação"
+      ]
+    },
+    {
+      "id": "aceite-sem-registro",
+      "type": "negative_control",
+      "regras": [
+        "G2"
+      ],
+      "input": "Fluxo com IA e aprovação por e-mail, sem registro da decisão.",
+      "expected": [
+        "Recusa e lista os 6 campos do registro: modelo, versão do prompt, sugestão original, quem aceitou, quando (UTC), editou"
+      ]
+    },
+    {
+      "id": "ia-sem-inventario",
+      "type": "negative_control",
+      "regras": [
+        "P1"
+      ],
+      "input": "Fluxo com módulo OpenAI e o texto do prompt colado no DESIGN, sem inventário.",
+      "expected": [
+        "Registra o inventário e o contrato de PROMPTS_DE_IA.md; não escreve o prompt final"
+      ]
+    }
+  ]
+}
