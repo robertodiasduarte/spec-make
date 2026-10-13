@@ -119,11 +119,12 @@ def _pedacos(w: list[str]) -> list[str]:
 
 # Palavra que descreve a senha em vez de guardá-la ("password_type", "secret_encoding", "secret_name", "token_url"):
 # junto de uma palavra de FORTES, o nome volta ao limite de 6 (SPEC_MAKE s2). Por PALAVRA inteira, nunca por pedaço.
-# "hash" e "reset" ficam de fora: "password_hash" e "senha_reset" guardam um segredo.
+# "hash", "reset", "arquivo" e "file" ficam de fora: "password_hash", "senha_reset" e "senha_arquivo" (a do certificado
+# A1, .pfx) guardam um segredo (R1@opus, rodada 1 do s2).
 CONFIGURACAO = {"type", "tipo", "encoding", "codificacao", "policy", "politica", "hint", "dica", "required",
                 "obrigatorio", "obrigatoria", "enabled", "habilitado", "field", "campo", "format", "formato", "mode",
                 "modo", "strength", "forca", "rule", "rules", "regra", "regras", "label", "rotulo", "placeholder",
-                "length", "tamanho", "name", "nome", "id", "ref", "arn", "path", "file", "arquivo"}
+                "length", "tamanho", "name", "nome", "id", "ref", "arn", "path"}
 DESCRITIVA = CONFIGURACAO | MEDIDA | set(ENDERECO)
 
 
@@ -136,9 +137,13 @@ def _minimo(nome: object) -> int:
     """Caracteres fixos a partir dos quais o valor é credencial: 1 quando ALGUMA palavra do nome é de senha/segredo/
     Authorization, em qualquer posição ("senha_certificado", "X-Senha-Certificado", "pwd_certificado", "secret_key",
     "password_hash" — avaliador, ciclo 7) e NENHUMA descreve a senha ("password_type", "secret_encoding", "token_url":
-    6, como os nomes comuns — A2, rodada 9). Palavra comum ("secretaria", "resenha") não conta como forte."""
+    6, como os nomes comuns — A2, rodada 9). Palavra forte no FIM conta sempre, como na v1.0.0 ("pfx_file_password",
+    "nome_senha"): a regra nova só amplia a anterior (R1@opus, rodada 1 do s2). Palavra comum ("secretaria",
+    "resenha") não conta como forte."""
     if isinstance(nome, str):
         w = [p for p in _palavras(re.sub(r"[-_.\s]+", " ", nome)) if not _palavra_comum(p)]
+        if w and _forte(w[-1]):
+            return 1
         if any(_forte(p) for p in w) and not DESCRITIVA & set(w):
             return 1
     return 6

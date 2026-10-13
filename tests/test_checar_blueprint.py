@@ -411,6 +411,14 @@ class ChecarBlueprint(unittest.TestCase):
                 self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(
                     {sup: [{"name": "senha_api", "value": 1234}]}))))
 
+    def test_s2_senha_do_arquivo_do_certificado_reprova(self):
+        """R1@opus (rodada 1 do s2): "arquivo"/"file" não descrevem a senha — a do certificado A1 (.pfx) reprova em qualquer
+        ordem; e a palavra forte no FIM conta sempre, como na v1.0.0 (a regra nova só amplia a anterior)."""
+        for nome in ("senha_arquivo", "senha_do_arquivo", "arquivo_senha", "senha_arquivo_certificado", "pfx_file_password",
+                     "senha_pfx", "label_password", "campo_senha"):
+            with self.subTest(nome=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {nome: "1234"}}))))
+
     def test_s2_fronteira_do_minimo(self):
         """Fronteira exata dos dois limites: nome forte reprova com 1 caractere; nome comum aprova 5 e reprova 6."""
         self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {"senha_api": "x"}}))))
