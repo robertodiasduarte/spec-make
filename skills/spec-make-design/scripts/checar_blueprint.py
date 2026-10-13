@@ -32,8 +32,10 @@ ENTRADA = "scenario-service:StartSubscenario"
 # Credencial em formato conhecido, em qualquer string do blueprint (caminho de URL, cabeçalho genérico, corpo em texto):
 # OpenAI, JWT, chave privada, AWS, Stripe, Slack (token e webhook), GitHub, GitLab, Google, bot do Telegram, webhook do
 # Discord (avaliador, ciclo 4).
+# Âncora de início: nada de letra, dígito ou "_" antes do formato — "helpdesk-chamados" e "network_test_homologacao" não
+# são credencial (R1@opus, rodada 7).
 TOKEN = re.compile(
-    r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}"
+    r"(?<![A-Za-z0-9_])(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}"
     r"|[sr]k_(?:live|test)_[A-Za-z0-9]{10,}|xox[abposr]-[A-Za-z0-9-]{10,}|hooks\.slack\.com/services/[A-Za-z0-9/]{20,}"
     r"|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|glpat-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}"
     r"|bot\d{6,}:[A-Za-z0-9_-]{30,}|discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]{20,})")
@@ -42,13 +44,14 @@ TOKEN = re.compile(
 # fora: é a chave do registro no data store do Make, não credencial (na URL, "?key=" continua sendo).
 MARCADORES = ("secret", "password", "passwd", "passphrase", "authpass", "senha", "token", "apikey", "appkey",
               "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret", "pwd", "authkey",
-              "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash", "credential", "credencial", "cookie",
+              "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash", "credential", "credencial",
               "accesscode", "sessionid")
 # Em cabeçalho, parâmetro de query e corpo HTTP em texto, o NOME EXATO "key", "chave" ou "pass" também é credencial
 # (avaliador, ciclo 3; "X-Auth-Key", "chave-api" e "pwd" já caem nos MARCADORES), e "auth"/"X-Auth" (ciclo 4). Por nome exato, não por palavra:
 # "sort_key", "partitionKey" e "X-Pass-Through" não são credencial (R4@opus, rodada 6). Fora desses pares (chave de objeto
-# do blueprint) não: "key" é a chave do registro no data store.
-NOMES_DE_PAR = ("key", "chave", "pass", "auth", "xauth")
+# do blueprint) não: "key" é a chave do registro no data store. "cookie" também por nome exato: "X-Cookie-Consent" e
+# "accept_cookies" não são credencial (R2@opus, rodada 7).
+NOMES_DE_PAR = ("key", "chave", "pass", "auth", "xauth", "cookie")
 # Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
 # passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
@@ -182,8 +185,11 @@ def credenciais_literais(no: object) -> list[str]:
         credencial = nome_de_credencial_em_par(nome) if par else nome_de_credencial(nome)
         isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
         if credencial and isinstance(nome, str) and _normalizado(nome) == "cookie" and isinstance(valor, str):
-            # Cookie: nome=valor; nome2=valor2 — o nome do cookie é fixo por natureza; o que conta é o valor de cada par
-            return any(_literal(parte.partition("=")[2]) for parte in valor.split(";"))
+            # Cookie: nome=valor; nome2=valor2 — o nome do cookie é fixo por natureza; o que conta é o valor de cada par.
+            # Parte SEM "=" conta inteira (R2@codex, rodada 7: "Cookie: <literal>" escapava). Lido depois de resolver as
+            # fórmulas, para o texto fixo de dentro de {{…}} contar.
+            partes = _resolvido(valor).split(";")
+            return any(_literal(p.partition("=")[2] if "=" in p else p) for p in partes)
         return credencial and _literal(valor) and not isento
 
     def andar(x: object, caminho: str, corpo: bool = False) -> None:

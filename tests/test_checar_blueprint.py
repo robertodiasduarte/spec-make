@@ -274,6 +274,23 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_rodada_7(self):
+        """R2@codex, R1/R2@opus (rodada 7): Cookie com literal sem "=" ou em fórmula reprova; formato conhecido no meio de
+        identificador e "cookie" dentro de outro nome não são credencial."""
+        v = "abcdef" + "123456" + "XYZ"
+        for nome, campo in {"Cookie sem =": {"headers": [{"name": "Cookie", "value": v}]},
+                            "Cookie em fórmula": {"headers": [{"name": "Cookie",
+                                                               "value": '{{"sid=' + v + '"}}'}]}}.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"rk_test_ no meio": {"headers": [{"name": "X-Ambiente", "value": "network_test_homologacao"}]},
+                            "sk- no meio": {"url": "https://api.exemplo.com.br/v1/helpdesk-chamados-abertos"},
+                            "X-Cookie-Consent": {"headers": [{"name": "X-Cookie-Consent", "value": "aceito-todos"}]},
+                            "accept_cookies": {"url": "https://api.exemplo.com/v1?accept_cookies=sempre-aceitar"},
+                            "shareCookies": {"shareCookies": False}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
