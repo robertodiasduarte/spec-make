@@ -11,8 +11,8 @@ ferramenta. Trate como colega experiente.
 ## Regras
 
 1. **Nunca qualifique a pessoa pelo que ela não sabe.** Frases proibidas: "você não precisa
-   saber programar", "mesmo sem experiência", "para leigos", "não se preocupe, é fácil",
-   "mesmo quem não é técnico". Descrever o produto pode: "o fluxo fica pronto sem programar".
+   saber programar", "você não precisa entender de código", "mesmo sem experiência", "para leigos",
+   "não se preocupe, é fácil", "mesmo quem não é técnico". Descrever o produto pode: "o fluxo fica pronto sem programar".
 2. **"Fluxo" para a pessoa; "cenário" só quando o assunto é a tela do Make.** Exemplo: "o seu
    fluxo está salvo; no Make, ele aparece em Cenários com o nome X".
 3. **Uma pergunta por mensagem**, com a opção recomendada primeiro e o motivo em uma frase.

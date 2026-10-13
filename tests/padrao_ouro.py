@@ -25,15 +25,18 @@ AUTORIA = "Esta skill foi construída com a metodologia de Roberto Dias Duarte."
 # Faixas de emoji e pictogramas (o padrão ouro proíbe emoji no corpo da skill).
 EMOJI = re.compile("[\U0001F300-\U0001FAFF\U00002600-\U000027BF\U0001F000-\U0001F2FF\U00002B00-\U00002BFF]")
 
-# Frases que qualificam a pessoa pelo que ela não sabe (COPY.md lista e por isso fica de fora da varredura).
-PROIBIDAS = [
-    r"n[aã]o precisa saber programar",
-    r"n[aã]o precisa entender de c[oó]digo",
-    r"mesmo sem experi[eê]ncia",
-    r"para leigos",
-    r"n[aã]o se preocupe, [eé] f[aá]cil",
-    r"mesmo quem n[aã]o [eé] t[eé]cnico",
-]
+# Frases que qualificam a pessoa pelo que ela não sabe: lidas do compartilhado/COPY.md (fonte única), que por isso fica
+# de fora da varredura.
+def _proibidas() -> list[str]:
+    texto = (RAIZ / "compartilhado" / "COPY.md").read_text(encoding="utf-8")
+    m = re.search(r"Frases proibidas:(.*?)Descrever o produto", texto, re.S)
+    frases = re.findall(r'"([^"]+)"', m.group(1)) if m else []
+    assert len(frases) >= 5, "COPY.md sem a lista de frases proibidas"
+    # a frase pode estar quebrada em linhas no Markdown: compara palavra a palavra, com qualquer espaço entre elas
+    return [r"\s+".join(re.escape(w) for w in f.split()) for f in frases]
+
+
+PROIBIDAS = _proibidas()
 
 
 def frontmatter(texto: str) -> dict[str, str]:
