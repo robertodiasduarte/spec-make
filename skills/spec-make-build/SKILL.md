@@ -79,7 +79,8 @@ mesmo vale para IA que grava sem o aceite humano [G1] ou sem o registro do aceit
 
 **[M1] Sem o conector do Make.** Se a conversa não tiver o MCP do Make com as ferramentas de gravação, avise em uma
 frase, entregue o blueprint como arquivo `.json` e os passos para importar no Make (Cenários → Criar → menu "…" →
-Importar blueprint), e o roteiro do teste de aceite para a pessoa rodar. Não afirme que criou, rodou ou ligou nada.
+Importar blueprint), o roteiro do teste de aceite para a pessoa rodar, e marque como "a confirmar na conta" as
+conexões a autorizar, o plano e as operações. Não afirme que criou, rodou ou ligou nada.
 
 **[E1] Etapa 4 de 4.** A primeira resposta traz a linha "spec-make · Etapa 4 de 4 — Build". O fecho entrega o recibo
 e o arquivo `FICHA_DO_FLUXO_<FLUXO>.md`, pede para salvá-lo e diz: "Pronto: o fluxo está na sua conta. A ficha diz o

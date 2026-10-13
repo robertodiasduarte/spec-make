@@ -11,7 +11,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 EXIGIDOS = {
     "spec-make-brainstorm": {"sem-mcp"},
     "spec-make-define": {"gate-uma-execucao", "gate-blueprint-validado", "sem-mcp"},
-    "spec-make-design": {"sem-chave-natural", "ia-grava-direto", "aceite-sem-registro", "ia-sem-inventario"},
+    "spec-make-design": {"sem-chave-natural", "ia-grava-direto", "aceite-sem-registro", "ia-sem-inventario", "sem-mcp"},
     "spec-make-build": {"sem-sim-gatilho", "falha-3x", "fluxo-alheio", "sem-mcp", "ia-sem-inventario"},
 }
 ANCORAS = {r.ancora for r in REGRAS} | {"COPY"}

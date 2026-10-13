@@ -13,12 +13,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0   # o version gate compara com o commit anterior
 
       - name: Content safety gate
         run: bash scripts/publish-check.sh
 
+      # Skill alterada sem subir metadata.version reprova: o zip diria uma versão que não muda quando o conteúdo muda.
       - name: Version gate
-        run: python3 scripts/check-versions.py
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: python3 scripts/check-versions.py --base "$BASE"
 
       - name: Copias de compartilhado/ em dia
         run: python3 scripts/sync-compartilhados.py --check

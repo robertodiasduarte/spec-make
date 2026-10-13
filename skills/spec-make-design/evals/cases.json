@@ -62,6 +62,19 @@
       "expected": [
         "Registra o inventário e o contrato de PROMPTS_DE_IA.md; não escreve o prompt final"
       ]
+    },
+    {
+      "id": "sem-mcp",
+      "type": "negative_control",
+      "regras": [
+        "M1"
+      ],
+      "input": "DEFINE do cadastro por CNPJ numa conversa sem o MCP do Make.",
+      "expected": [
+        "Avisa em uma frase que o conector não está na conversa",
+        "Marca cada módulo como 'a confirmar na conta'",
+        "Não declara o blueprint validado"
+      ]
     }
   ]
 }

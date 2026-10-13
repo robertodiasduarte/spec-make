@@ -65,7 +65,7 @@ REGRAS: list[Regra] = [
 ]
 for _nome, _n, _rot, _prox in ETAPAS:
     REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=["a confirmar na conta"] if _nome != "spec-make-build"
-                        else ["Não afirme que criou, rodou ou ligou nada", "Importar blueprint"]))
+                        else ["a confirmar na conta", "Não afirme que criou, rodou ou ligou nada", "Importar blueprint"]))
     REGRAS.append(Regra("E1", _skill(_nome), at="UX MUST 4",
                         contem=[f"spec-make · Etapa {_n} de 4 — {_rot}", _prox]))
 

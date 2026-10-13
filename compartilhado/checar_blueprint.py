@@ -34,9 +34,19 @@ PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}", re.I)
 NA_URL = re.compile(r"[?&](api[_-]?key|apikey|access[_-]?token|token|key|secret)=(?!\{\{)[^&\s\"]{6,}", re.I)
 
 
+MAPEAMENTO = re.compile(r"\{\{.*?\}\}", re.S)
+
+
+def _sem_mapeamento(valor: str) -> str:
+    """O texto que sobra quando se tiram os mapeamentos do Make ({{3.chave}}) e o prefixo de esquema (Bearer/Basic)."""
+    resto = MAPEAMENTO.sub("", valor).strip()
+    return re.sub(r"^(Bearer|Basic|Token)\b\s*", "", resto, flags=re.I).strip()
+
+
 def _literal(valor: object) -> bool:
-    """Valor escrito à mão: texto com 6+ caracteres e sem mapeamento do Make ({{3.chave}}, "Bearer {{4.token}}")."""
-    return isinstance(valor, str) and len(valor.strip()) >= 6 and "{{" not in valor
+    """Valor escrito à mão: sobram 6+ caracteres fixos depois de tirar os mapeamentos. "{{3.chave}}" e
+    "Bearer {{4.token}}" não são literais; "segredo-fixo{{emptystring}}" é (achado A2 da review)."""
+    return isinstance(valor, str) and len(_sem_mapeamento(valor)) >= 6
 
 
 def credenciais_literais(no: object) -> list[str]:
@@ -57,7 +67,8 @@ def credenciais_literais(no: object) -> list[str]:
             for i, v in enumerate(x):
                 andar(v, f"{caminho}[{i}]")
         elif isinstance(x, str):
-            if PREFIXO.match(x.strip()) and "{{" not in x or TOKEN.search(x) or NA_URL.search(x):
+            fixo = MAPEAMENTO.sub("", x)
+            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(fixo) or NA_URL.search(fixo):
                 achados.append(caminho)
 
     andar(no, "$")

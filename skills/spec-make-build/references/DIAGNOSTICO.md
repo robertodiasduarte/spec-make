@@ -8,7 +8,8 @@ confidencial. Por isso, investigue nesta ordem, uma hipótese por vez:
    Corrija com `scenarios_set-interface` e rode de novo.
 2. **módulo** — `app-module_get` do módulo citado no erro (ou de cada um, na ordem): campo obrigatório faltando, nome
    de campo errado, versão diferente da do blueprint. Corrija com `scenarios_update` (o blueprint inteiro, partindo do
-   que `scenarios_get` devolver).
+   que `scenarios_get` devolver, **sem** as chaves `interface` e `scheduling` que ele traz junto: o validador recusa a
+   `interface` dentro do blueprint — MCP_MAKE.md, fato 2; a interface continua gravada à parte).
 3. **conexão** — `connections_list`: conexão expirada, de outra equipe ou sem a permissão do módulo. Peça nova
    autorização com `credential-requests_create`.
 4. **mapeamento** — o valor que um módulo passa ao seguinte: campo vazio, tipo errado (texto onde se espera número),
@@ -20,8 +21,9 @@ A cada tentativa, fale com a pessoa em três partes:
 - **o que eu já fiz** — a hipótese conferida, a correção, a tentativa (n de 3) e as operações gastas até aqui;
 - **o que você faz agora** — uma ação: "nada, vou rodar de novo" ou "autorize a conexão neste link".
 
-**Teto: 3 tentativas** de correção para o mesmo teste. Na terceira falha, pare: não rode de novo, deixe o fluxo sob
-demanda como está, entregue o resumo (as três hipóteses, o que o Make respondeu, as operações gastas) e a frase pronta
+**Teto: 3 tentativas** de correção para o mesmo teste: o teste roda no máximo 4 vezes (a 1ª execução e uma depois
+de cada correção). Se a execução depois da 3ª correção ainda falhar, pare: não corrija nem rode de novo, deixe o fluxo
+sob demanda como está, entregue o resumo (as hipóteses, o que o Make respondeu, as operações gastas) e a frase pronta
 para pedir ajuda: "Meu fluxo {nome} falhou no teste com {erro}; já conferi interface, módulo, conexão e mapeamento."
 
 Correções só no fluxo que esta conversa criou ([B4]).

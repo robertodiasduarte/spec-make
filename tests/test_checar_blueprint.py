@@ -55,6 +55,15 @@ class ChecarBlueprint(unittest.TestCase):
                                               {"name": "Accept", "value": "application/json"}]
         self.assertEqual(cb.checar(bp), [])
 
+    def test_chave_fixa_com_mapeamento_grudado(self):
+        """A2 da review: {{…}} grudado numa chave fixa não a torna dinâmica."""
+        for valor in ["segredo-fixo{{emptystring}}", "Bearer abcdef0123456789{{emptystring}}"]:
+            with self.subTest(valor=valor):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"]["headers"] = [{"name": "Authorization", "value": valor}]
+                bp["flow"][1]["mapper"]["apikey"] = valor
+                self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

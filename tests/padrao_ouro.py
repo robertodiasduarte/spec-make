@@ -19,6 +19,8 @@ SECOES = [
     "## Validações e checklist de qualidade",
     "## Tratamento de exceções",
     "## Examples",
+    "## Inventário do bundle",
+    "## Metodologia e autoria",
 ]
 AUTORIA = "Esta skill foi construída com a metodologia de Roberto Dias Duarte."
 
@@ -87,7 +89,7 @@ def checar_skill(pasta: Path) -> list[str]:
         else:
             posicoes.append(idx[0])
     if len(posicoes) == len(SECOES) and posicoes != sorted(posicoes):
-        p.append(f"{nome}: as 8 seções estão fora da ordem do padrão ouro")
+        p.append(f"{nome}: as seções estão fora da ordem do padrão ouro (8 + Inventário + Metodologia e autoria)")
     if not any(l.startswith("# ") for l in linhas[: posicoes[0] if posicoes else len(linhas)]):
         p.append(f"{nome}: título (# ) ausente antes do Quick start")
     m = re.search(r"^## Metodologia e autoria\n+(.+)$", texto, re.M)
