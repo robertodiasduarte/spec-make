@@ -35,7 +35,9 @@
     "python": "3.9+ (opcional)",
     "third_party_dependencies": []
   },
-  "executados": [],
+  "executados": [
+    "Dogfood em 13/10/2026: as 4 skills seguidas por um agente no Claude com o conector do Make (plano Core) — cenário sob demanda com consulta de CNPJ e data store com chave natural; 2 execuções da mesma amostra, 1 registro, 4 operações; cenário e data store apagados"
+  ],
   "pending": [
     "Executar os casos de evals/cases.json em mais de um agente (Claude e ChatGPT)",
     "Medir o conector do Make no ChatGPT e o plano Free do Make"
