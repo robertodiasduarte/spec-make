@@ -1,4 +1,5 @@
-"""AT-005: o verificador reprova blueprint sem confidential, sem interface.input no topo ou com credencial; aprova o válido."""
+"""AT-005: o verificador reprova blueprint sem confidential, com a chave interface (o Make recusa), com o módulo de
+entrada sem campos ou com credencial; aprova o válido."""
 from __future__ import annotations
 
 import importlib.util
@@ -31,7 +32,8 @@ class ChecarBlueprint(unittest.TestCase):
 
     def test_negativos(self):
         for nome, trecho in [("blueprint_sem_confidencial.json", "confidential"),
-                             ("blueprint_sem_interface.json", "interface.input"),
+                             ("blueprint_interface_no_blueprint.json", "interface"),
+                             ("blueprint_entrada_sem_campos.json", "metadata.interface"),
                              ("blueprint_com_credencial.json", "credencial"),
                              ("blueprint_header_bearer.json", "credencial"),
                              ("blueprint_chave_na_url.json", "credencial")]:
@@ -54,7 +56,7 @@ class ChecarBlueprint(unittest.TestCase):
         self.assertEqual(cb.checar(bp), [])
 
     def test_modulo_dentro_de_rota_conta(self):
-        bp = _ler("blueprint_sem_interface.json")
+        bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
         bp["flow"].insert(0, {"id": 99, "module": "builtin:BasicRouter", "version": 1, "routes": [{"flow": [entrada]}]})
         self.assertTrue(any("interface" in p for p in cb.checar(bp)))

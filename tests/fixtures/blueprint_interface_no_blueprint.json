@@ -88,5 +88,13 @@
     "designer": {
       "orphans": []
     }
+  },
+  "interface": {
+    "input": [
+      {
+        "name": "cnpj",
+        "type": "text"
+      }
+    ]
   }
 }

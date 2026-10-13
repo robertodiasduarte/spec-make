@@ -35,10 +35,13 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    `validate_module_configuration` aprovaram um blueprint que falhou na primeira execução
    (`BundleValidationError: Validation failed for 1 parameter(s)`). O que fecha o teste é a
    execução, nunca a validação.
-2. **Interface no topo.** Um fluxo sob demanda que recebe dados (módulo
-   `scenario-service:StartSubscenario`) precisa da interface de entrada em
-   `blueprint.interface.input`, ou gravada depois com `scenarios_set-interface`. Declarar a
-   entrada só dentro do módulo 1 não basta, e os validadores não avisam.
+2. **Interface gravada à parte.** Um fluxo sob demanda que recebe dados (módulo
+   `scenario-service:StartSubscenario`) precisa da interface do cenário gravada com
+   `scenarios_set-interface` depois de criar. Declarar a entrada só dentro do módulo 1 não basta
+   (o teste falha com "Validation failed for 1 parameter(s)"), e os validadores não avisam.
+   Não ponha a chave `interface` no blueprint: `validate_blueprint_schema` a recusa ("must NOT
+   have additional properties"), embora `scenarios_get` a devolva dentro do blueprint de um
+   cenário existente — copiar um cenário existente leva a esse erro.
 3. **Só roda se estiver ativo.** `scenarios_run` recusa fluxo inativo. Criar com agendamento
    `on-demand` e ativar é inofensivo: o fluxo só roda quando alguém pede. O que precisa do OK do
    pessoa é trocar o agendamento ou ligar o gatilho real.
@@ -52,7 +55,14 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    seria uma chamada HTTP genérica. Prefira o nativo e diga à pessoa qual escolheu.
 7. **App não instalado.** `scenarios_create` pode pedir confirmação quando o fluxo usa um app
    ainda não instalado na conta. Diga à pessoa o que vai ser instalado antes de confirmar.
-8. **Custo do teste.** No teste medido, cada execução gastou 1 operação (só o módulo do app
+8. **Apps embutidos não aparecem na recomendação.** `apps_recommend` lista apps de terceiros e
+   deixa de fora os embutidos do Make — data store (`datastore`), HTTP (`http`), roteador e
+   iterador (`builtin`). Para guardar dado dentro do Make, por exemplo, ela sugeriu CRMs; o
+   certo era `app-modules_list(appName: "datastore", appVersion: 1)`.
+9. **Módulo que depende de outro recurso.** O `datastore:AddRecord` só mostra os campos depois
+   que o data store existe (o esquema vem da estrutura dele). Valide esse módulo na etapa 4,
+   depois de criar o data store.
+10. **Custo do teste.** No teste medido, cada execução gastou 1 operação (só o módulo do app
    conta; entrada e saída do fluxo sob demanda não contam). Informe sempre o custo antes de rodar.
 
 ## Conexões e credenciais

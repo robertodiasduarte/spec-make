@@ -12,7 +12,9 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
    módulos do DESIGN), mandar o link, esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat.
 3. `validate_module_configuration` (por módulo) e `validate_blueprint_schema` — o blueprint final, já com as conexões.
    Rode também `scripts/checar_blueprint.py` se o ambiente executar código.
-4. `data-stores_create` — só se o DESIGN tiver data store novo (com `data-structures_create` antes, se pedir).
+4. `data-stores_create` — só se o DESIGN tiver data store novo (com `data-structures_create` antes). Em seguida,
+   valide o módulo que grava nele (`validate_module_configuration` com o id do data store): os campos só aparecem
+   depois que ele existe (MCP_MAKE.md, fato 9).
 5. `scenarios_create` — com `scheduling: { "type": "on-demand" }`, `confidential: true` e o nome do DESIGN. Se
    pedir confirmação de app não instalado, diga qual app e confirme. Anote o id.
 6. `scenarios_set-interface` — se o fluxo recebe dados; confira com `scenarios_interface` que `input` não está vazio.

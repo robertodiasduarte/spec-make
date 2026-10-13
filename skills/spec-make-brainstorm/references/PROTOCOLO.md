@@ -43,6 +43,9 @@ Para cada passo do fluxo:
 1. `apps_recommend` com a intenção em uma frase ("buscar dados de empresa pelo CNPJ").
 2. Considere apenas resultados claramente ligados ao passo; mostre no máximo 3, pelo rótulo do módulo.
 3. Prefira app nativo. Use HTTP genérico só quando não houver nativo, e diga isso.
+3a. Guardar dado no próprio Make, chamar uma API sem app, dividir o fluxo em caminhos ou repetir para cada item da
+    lista: são apps embutidos que a recomendação não mostra — consulte direto `app-modules_list` com `datastore`,
+    `http` ou `builtin` (ver MCP_MAKE.md, fato 8).
 4. App premium num plano que não permite: avise e ofereça alternativa.
 
 Depois, `connections_list` na equipe. Monte a tabela: passo · app escolhido · já conectado? · o que falta autorizar.

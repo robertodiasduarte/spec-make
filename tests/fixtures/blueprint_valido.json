@@ -71,31 +71,6 @@
       }
     }
   ],
-  "interface": {
-    "input": [
-      {
-        "name": "cnpj",
-        "type": "text",
-        "label": "CNPJ",
-        "required": true,
-        "help": "CNPJ com ou sem pontuação"
-      }
-    ],
-    "output": [
-      {
-        "name": "cnpj",
-        "type": "text"
-      },
-      {
-        "name": "razao_social",
-        "type": "text"
-      },
-      {
-        "name": "situacao_cadastral",
-        "type": "text"
-      }
-    ]
-  },
   "metadata": {
     "version": 1,
     "instant": false,

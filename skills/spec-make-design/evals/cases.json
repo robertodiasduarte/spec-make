@@ -15,7 +15,7 @@
       "expected": [
         "Módulos confirmados com app-modules_list",
         "Chave natural = CNPJ com gravação por substituição",
-        "Blueprint com confidential true e interface.input",
+        "Blueprint com confidential true, campos no módulo de entrada e o bloco Interface no DESIGN (fora do blueprint)",
         "Fecha com 'Use a skill spec-make-build'"
       ]
     },

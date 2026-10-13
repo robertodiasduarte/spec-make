@@ -45,11 +45,15 @@ pessoa, faça só a pergunta de negócio, uma por mensagem.
 Parta de `assets/blueprint-minimo.json`. Regras:
 
 - `metadata.scenario.confidential: true` ([C1]).
-- Fluxo sob demanda que recebe dados: `interface.input` no topo, com os mesmos campos da entrada do módulo 1, e
-  `interface.output` se o fluxo devolve resultado.
+- Fluxo sob demanda que recebe dados: os campos de entrada ficam em `metadata.interface` do módulo 1, e o DESIGN
+  traz um bloco "Interface" separado (entrada e saída) que a etapa 4 grava com `scenarios_set-interface`. **Não**
+  ponha a chave `interface` no blueprint: o validador do Make a recusa. Exemplo do bloco:
+  `{"input": [{"name": "cnpj", "type": "text", "label": "CNPJ", "required": true}], "output": [{"name": "razao_social", "type": "text"}]}`.
+  Confira o bloco com `validate_scenario_interface`.
 - Nenhuma chave ou senha escrita: conexões são referenciadas pelo id que o Make atribui (`__IMTCONN__`), criadas na
   etapa 4.
-- Agendamento: `on-demand` no blueprint. O agendamento definitivo só é ligado na etapa 4, com o "sim" da pessoa.
+- Agendamento: não vai no blueprint; a etapa 4 cria o fluxo `on-demand` (argumento do `scenarios_create`) e só liga o
+  agendamento definitivo com o "sim" da pessoa.
 
 Validações, nesta ordem: `validate_module_configuration` por módulo (use `normalizedValues` quando vier) →
 `validate_blueprint_schema` → `validate_scenario_interface`. Depois, `checar_blueprint.py`.

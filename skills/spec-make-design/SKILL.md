@@ -92,7 +92,7 @@ BRAINSTORM, o DEFINE e este DESIGN e diga: Use a skill spec-make-build."
 - [ ] Diretiva de erro escolhida e justificada por módulo
 - [ ] [G1], [G2] e [G3] atendidas ou declaradas "não se aplica" com o motivo
 - [ ] Inventário [P1] quando há módulo de IA
-- [ ] `confidential: true` e, se o fluxo recebe dados sob demanda, `interface.input` no topo
+- [ ] `confidential: true`; fluxo sob demanda com entrada: campos no módulo 1, bloco "Interface" no DESIGN e nenhuma chave `interface` no blueprint
 - [ ] Três validações do MCP sem erro e `checar_blueprint.py` OK
 - [ ] Operações por execução dentro do orçamento do DEFINE
 - [ ] Fecho com a frase da próxima etapa
@@ -111,7 +111,7 @@ BRAINSTORM, o DEFINE e este DESIGN e diga: Use a skill spec-make-build."
 
 **Caso positivo (sintético).** DEFINE do cadastro por CNPJ. Módulos confirmados: entrada sob demanda, `brasil-api`
 Buscar CNPJ, data store "Adicionar ou substituir registro" com a chave = CNPJ ([G3]). Erro na Brasil API: tenta de novo
-(Break) 3 vezes. Sem IA ([G1], [G2], [P1] não se aplicam). Blueprint com `confidential: true` e `interface.input`.
+(Break) 3 vezes. Sem IA ([G1], [G2], [P1] não se aplicam). Blueprint com `confidential: true`; a interface (campo `cnpj`) vai no DESIGN, para a etapa 4 gravar.
 
 **Contraexemplo.** "A IA classifica a nota e lança direto no ERP." A skill recusa por [G1] e propõe: a IA grava a
 sugestão numa planilha, a pessoa marca "aprovado", outro passo lança e registra o aceite ([G2]).

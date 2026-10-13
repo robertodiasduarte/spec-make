@@ -9,7 +9,8 @@ não é um JSON legível. Não acessa a rede nem a conta do Make: confere só o 
 
 O que confere (as três coisas que os validadores do MCP do Make não pegam):
   1. metadata.scenario.confidential é true;
-  2. fluxo sob demanda com entrada (scenario-service:StartSubscenario) tem interface.input no topo;
+  2. fluxo sob demanda com entrada (scenario-service:StartSubscenario) declara os campos no módulo 1 e NÃO
+     traz a chave `interface` no blueprint (o validador do Make a recusa; ela é gravada com scenarios_set-interface);
   3. não há credencial escrita no blueprint: chave, token, senha, cabeçalho Authorization, chave na URL.
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
@@ -89,12 +90,16 @@ def checar(bp: dict) -> list[str]:
         )
 
     modulos = _modulos(bp.get("flow") or [])
-    if any(m.get("module") == ENTRADA for m in modulos):
-        entrada = ((bp.get("interface") or {}).get("input")) or []
-        if not entrada:
+    if "interface" in bp:
+        problemas.append(
+            "o blueprint traz a chave interface: o validador do Make a recusa; grave a interface com "
+            "scenarios_set-interface depois de criar o fluxo"
+        )
+    for m in modulos:
+        if m.get("module") == ENTRADA and not ((m.get("metadata") or {}).get("interface")):
             problemas.append(
-                "o fluxo recebe dados (StartSubscenario) mas não tem interface.input no topo do blueprint: "
-                "sem isso o teste falha com 'Validation failed for 1 parameter(s)'"
+                "o módulo de entrada (StartSubscenario) não declara os campos em metadata.interface: sem eles a "
+                "interface do fluxo fica vazia e o teste falha com 'Validation failed for 1 parameter(s)'"
             )
 
     onde = credenciais_literais(bp)

@@ -30,6 +30,14 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 
 {Inventário e contrato de PROMPTS_DE_IA.md · ou "não se aplica: o fluxo não tem módulo de IA"}
 
+## Interface do fluxo
+
+{Só para fluxo sob demanda que recebe dados. Gravada na etapa 4 com scenarios_set-interface; fora do blueprint.}
+
+```json
+{"input": [{"name": "…", "type": "text", "label": "…", "required": true}], "output": [{"name": "…", "type": "text"}]}
+```
+
 ## Custo
 
 {operações por execução} por execução · {execuções por mês} · {total}/mês de {limite}.
