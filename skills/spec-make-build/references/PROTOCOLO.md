@@ -31,7 +31,7 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 | Modo do DEFINE | Como rodar |
 |---|---|
 | Sob demanda com a amostra | `scenarios_run` com `data` = campos da amostra |
-| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data` e só aponte o gatilho para a origem real depois do teste aprovado, junto com a pergunta [B2] |
+| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data`. A origem real só entra depois do teste aprovado **e** da resposta "Ligar agora" na pergunta [B2], com o ponto de partida "a partir de agora" (nunca "todos": isso reprocessaria o histórico); qualquer outra resposta mantém o gatilho na origem de teste |
 
 ## Depois do teste
 

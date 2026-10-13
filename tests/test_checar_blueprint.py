@@ -64,6 +64,16 @@ class ChecarBlueprint(unittest.TestCase):
                 bp["flow"][1]["mapper"]["apikey"] = valor
                 self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
 
+    def test_credencial_dentro_da_expressao(self):
+        """R1@opus (rodada 2): token conhecido ou chave na URL escritos DENTRO de {{…}} continuam credencial."""
+        for valor in ["Bearer {{ifempty(1.token; sk-" + "proj" + "A" * 20 + ")}}",
+                      "{{trim(eyJ" + "hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" + ".xxx)}}",
+                      "{{ifempty(1.url; https://x.exemplo/?token=abcdefgh)}}"]:
+            with self.subTest(valor=valor[:30]):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"]["campo"] = valor
+                self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

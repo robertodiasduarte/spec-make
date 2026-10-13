@@ -40,11 +40,12 @@
       "regras": [
         "B3"
       ],
-      "input": "O teste falha três vezes seguidas com 'Validation failed for 1 parameter(s)'.",
+      "input": "O teste falha na 1ª execução e de novo depois de cada uma das 3 correções, sempre com 'Validation failed for 1 parameter(s)'.",
       "expected": [
         "Investiga interface → módulo → conexão → mapeamento",
         "Cada tentativa em 3 partes, com operações gastas",
-        "Para na terceira e entrega o resumo"
+        "Faz no máximo 3 correções (no máximo 4 execuções)",
+        "Depois da execução que falha após a 3ª correção, para e entrega o resumo e a frase para pedir ajuda"
       ]
     },
     {

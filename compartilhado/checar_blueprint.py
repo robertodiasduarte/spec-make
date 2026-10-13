@@ -67,8 +67,9 @@ def credenciais_literais(no: object) -> list[str]:
             for i, v in enumerate(x):
                 andar(v, f"{caminho}[{i}]")
         elif isinstance(x, str):
-            fixo = MAPEAMENTO.sub("", x)
-            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(fixo) or NA_URL.search(fixo):
+            # Token conhecido e chave na URL valem até DENTRO de uma expressão {{…}} (R1@opus, rodada 2): só o
+            # teste de "texto fixo" (prefixo de esquema) desconta os mapeamentos.
+            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or NA_URL.search(x):
                 achados.append(caminho)
 
     andar(no, "$")
