@@ -1,7 +1,7 @@
 ---
 name: spec-make-design
 license: MIT
-description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um fluxo do Make num desenho técnico ancorado na conta da pessoa — só módulos que existem nela (consultados pelo MCP do Make), a diretiva de erro de cada módulo, a chave que impede registro duplicado, o aceite humano antes de a IA gravar e o blueprint já validado e conferido. Use quando a pessoa anexar o BRAINSTORM e o DEFINE de um fluxo do Make e pedir o desenho ou o blueprint. Entrega DESIGN_<FLUXO>.md com o blueprint. Não cria nada na conta (spec-make-build) e não escreve os prompts de agentes de IA do fluxo (sdd-prompt-builder). Período de consulta e de cálculo: não se aplicam."
+description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um fluxo do Make num desenho técnico ancorado na conta da pessoa — só módulos que existem nela (consultados pelo MCP do Make), a diretiva de erro de cada módulo, a chave que impede registro duplicado, o aceite humano antes de a IA gravar e o blueprint já validado e conferido. Use quando a pessoa anexar o BRAINSTORM e o DEFINE de um fluxo do Make e pedir o desenho ou o blueprint. Entrega DESIGN_NOME-DO-FLUXO.md com o blueprint. Não cria nada na conta (spec-make-build) e não escreve os prompts de agentes de IA do fluxo (sdd-prompt-builder). Período de consulta e de cálculo: não se aplicam."
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte

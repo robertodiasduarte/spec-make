@@ -31,6 +31,7 @@ class PadraoOuro(unittest.TestCase):
                 ("ordem", lambda t: t.replace("## Examples", "## ExamplesX", 1).replace(
                     "## Quick start", "## Examples\n\n## Quick start", 1), checar_skill),
                 ("autoria", lambda t: t.replace("Esta skill foi construída", "Skill feita", 1), checar_skill),
+                ("description com <>", lambda t: t.replace("Conduz a etapa", "Conduz <a> etapa", 1), checar_skill),
                 ("proibida", lambda t: t + "\nVocê não precisa saber programar.\n", checar_copy),
             ]:
                 with self.subTest(mutante=nome):

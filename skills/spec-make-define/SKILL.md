@@ -1,7 +1,7 @@
 ---
 name: spec-make-define
 license: MIT
-description: "Conduz a etapa 2 de 4 do spec-make: transforma o BRAINSTORM de um fluxo do Make em requisitos verificáveis, escritos como 'Quando X, o fluxo faz Y' com a gramática EARS por baixo, mais um teste de aceite que é uma execução de verdade (amostra, resultado esperado e segunda rodada sem duplicar) e o orçamento de operações contra o plano. Use quando a pessoa anexar um BRAINSTORM_<FLUXO>.md ou pedir para fechar os requisitos de um fluxo do Make. Entrega DEFINE_<FLUXO>.md. Não desenha módulos (spec-make-design) e não cria nada na conta (spec-make-build). Período de consulta e de cálculo: não se aplicam."
+description: "Conduz a etapa 2 de 4 do spec-make: transforma o BRAINSTORM de um fluxo do Make em requisitos verificáveis, escritos como 'Quando X, o fluxo faz Y' com a gramática EARS por baixo, mais um teste de aceite que é uma execução de verdade (amostra, resultado esperado e segunda rodada sem duplicar) e o orçamento de operações contra o plano. Use quando a pessoa anexar um BRAINSTORM_NOME-DO-FLUXO.md ou pedir para fechar os requisitos de um fluxo do Make. Entrega DEFINE_NOME-DO-FLUXO.md. Não desenha módulos (spec-make-design) e não cria nada na conta (spec-make-build). Período de consulta e de cálculo: não se aplicam."
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte

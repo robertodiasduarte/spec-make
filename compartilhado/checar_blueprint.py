@@ -35,7 +35,9 @@ ENTRADA = "scenario-service:StartSubscenario"
 # Âncora de início: nada de letra, dígito ou "_" antes do formato — "helpdesk-chamados" e "network_test_homologacao" não
 # são credencial (R1@opus, rodada 7).
 TOKEN = re.compile(
-    r"(?<![A-Za-z0-9_])(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}"
+    r"(?:(?<![A-Za-z0-9_])|(?<=%[0-9A-Fa-f][0-9A-Fa-f]))"
+    r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|(?:AKIA|ASIA)[0-9A-Z]{16}"
+    r"|whsec_[A-Za-z0-9]{20,}|xapp-[0-9A-Za-z-]{10,}|\d{8,10}:AA[A-Za-z0-9_-]{30,}"
     r"|[sr]k_(?:live|test)_[A-Za-z0-9]{10,}|xox[abposr]-[A-Za-z0-9-]{10,}|hooks\.slack\.com/services/[A-Za-z0-9/]{20,}"
     r"|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|glpat-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}"
     r"|bot\d{6,}:[A-Za-z0-9_-]{30,}|discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]{20,})")
@@ -57,7 +59,7 @@ NOMES_DE_PAR = ("key", "chave", "pass", "auth", "xauth", "cookie")
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
 # O valor inteiro é "esquema + 1 credencial": "Token expirado: renove a conexão" é frase, não credencial (ciclo 5).
 PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}\s*$", re.I)
-NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]{6,})")
+NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]+)")
 # usuário:senha antes do host: https://usuario:senha@api.exemplo.com
 USUARIO_SENHA = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@\"]+:([^/\s@\"]+)@")
 # corpo de formulário escrito como texto: nome=valor&nome=valor
@@ -72,7 +74,10 @@ def _normalizado(nome: str) -> str:
 
 # Palavra comum que CONTÉM um marcador sem ser credencial (avaliador, ciclo 5): fica de fora da busca por pedaço. Por
 # começo ou fim da palavra: "secretariaFazenda", "resenhas", "max_tokens"/"maxtokens".
-PALAVRA_COMUM = ("secretari", "secretary", "resenha", "tokens", "tokeniz")
+PALAVRA_COMUM = ("secretari", "secretary", "resenha", "maxtoken", "tokeniz")
+# Nome de senha, segredo ou Authorization: qualquer valor fixo não vazio é credencial ("senha": 1234 — ciclo 6). Nos
+# outros nomes, menos de 6 caracteres fixos não conta (evita reprovar "true", "json", "v1"): limite declarado no manifest.
+FORTES = ("senha", "password", "passwd", "pwd", "secret", "passphrase", "authorization")
 # Campo de duração ou limite: número ali é medida, não credencial ("token_expires_in": 2592000 — R2@opus, rodada 8).
 MEDIDA = {"expires", "expire", "expiry", "expiration", "ttl", "limit", "limite", "max", "min", "age", "timeout",
           "length", "size", "count", "seconds", "minutes", "hours", "days", "lifetime", "validity", "validade"}
@@ -95,8 +100,25 @@ def nome_de_credencial(nome: object) -> bool:
         return False
     if w[-1] == "cookie":
         return True
-    pedacos = w + [a + b for a, b in zip(w, w[1:])] + [a + b + c for a, b, c in zip(w, w[1:], w[2:])]
-    return any(m in p for p in pedacos if not _palavra_comum(p) for m in MARCADORES)
+    # junto de palavra de medida ("max_tokens", "token_limit"), "token" é unidade, não credencial; sozinho ou no plural
+    # ("api_tokens", "X-Tokens"), é credencial (ciclo 6)
+    marcadores = [m for m in MARCADORES if not (m == "token" and MEDIDA & set(w))]
+    return any(m in p for p in _pedacos(w) for m in marcadores)
+
+
+def _pedacos(w: list[str]) -> list[str]:
+    """Cada palavra e as junções de 2 e 3 palavras, menos as palavras comuns de PALAVRA_COMUM."""
+    todos = w + [a + b for a, b in zip(w, w[1:])] + [a + b + c for a, b, c in zip(w, w[1:], w[2:])]
+    return [p for p in todos if not _palavra_comum(p)]
+
+
+def _minimo(nome: object) -> int:
+    """Caracteres fixos a partir dos quais o valor é credencial: 1 em nome de senha/segredo/Authorization, 6 nos outros."""
+    if isinstance(nome, str):
+        w = _palavras(re.sub(r"[-_.\s]+", " ", nome))
+        if any(f in p for p in _pedacos(w) for f in FORTES):
+            return 1
+    return 6
 
 
 def nome_de_credencial_em_par(nome: object) -> bool:
@@ -111,7 +133,7 @@ def _na_url(texto: str) -> bool:
     o texto como está e com cada expressão {{…}} trocada pelo texto fixo dela (?key={{"abc123…"}})."""
     for t in dict.fromkeys((texto, _resolvido(texto))):
         for m in NA_URL.finditer(t):
-            if nome_de_credencial_em_par(m.group(1)):
+            if nome_de_credencial_em_par(m.group(1)) and len(m.group(2)) >= _minimo(m.group(1)):
                 return True
         if any(_sem_mapeamento(m.group(1)) for m in USUARIO_SENHA.finditer(t)):
             return True
@@ -158,14 +180,23 @@ def _sem_mapeamento(valor: str) -> str:
     return re.sub(r"^(Bearer|Basic|Token)\b\s*", "", resto, flags=re.I).strip()
 
 
-def _literal(valor: object) -> bool:
+def _literal(valor: object, minimo: int = 6) -> bool:
     """Valor escrito à mão: sobram 6+ caracteres fixos depois de tirar os mapeamentos. "{{3.chave}}" e
     "Bearer {{4.token}}" não são literais; "segredo-fixo{{emptystring}}" é (achado A2 da review), e também
     '{{ifempty(1.chave; "abc123def")}}' e '{{"abc123def"}}' (avaliador, ciclo 2)."""
     if isinstance(valor, (int, float)) and not isinstance(valor, bool):
         # número também é valor escrito à mão: "senha": 98765432 (avaliador, ciclo 5)
-        return len(str(valor).lstrip("-")) >= 6
-    return isinstance(valor, str) and len(_sem_mapeamento(valor)) >= 6
+        return len(str(valor).lstrip("-")) >= minimo
+    if isinstance(valor, list):
+        # valor em lista: "api_keys": ["abc123…"] (ciclo 6)
+        return any(_literal(x, minimo) for x in valor if not isinstance(x, (bool, dict, list)))
+    if not isinstance(valor, str):
+        return False
+    fixo = _sem_mapeamento(valor)
+    if minimo < 6:
+        # nome forte: conta letra ou dígito, não a pontuação de uma fórmula (base64(1.usuario + ":" + 1.senha))
+        return sum(c.isalnum() for c in fixo) >= minimo
+    return len(fixo) >= minimo
 
 
 def _como_json(texto: str) -> object | None:
@@ -219,7 +250,7 @@ def credenciais_literais(no: object) -> list[str]:
             # fórmulas, para o texto fixo de dentro de {{…}} contar.
             partes = _resolvido(valor).split(";")
             return any(_literal(p.partition("=")[2] if "=" in p else p) for p in partes)
-        return credencial and _literal(valor) and not isento
+        return credencial and _literal(valor, _minimo(nome)) and not isento
 
     def andar(x: object, caminho: str, corpo: bool = False) -> None:
         if isinstance(x, dict):

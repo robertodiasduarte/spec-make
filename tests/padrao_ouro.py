@@ -74,6 +74,11 @@ def checar_skill(pasta: Path) -> list[str]:
     desc = fm.get("description", "")
     if not desc or len(desc) > 1024:
         p.append(f"{nome}: description ausente ou acima de 1024 caracteres ({len(desc)})")
+    # mesma regra do lint_bundle.py do skill-builder-by-rdd: "<" e ">" no description reprovam (avaliador, ciclo 6)
+    if "<" in desc or ">" in desc:
+        p.append(f"{nome}: description com '<' ou '>' (o lint do skill-builder recusa)")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", fm.get("name", "")) or len(fm.get("name", "")) > 64:
+        p.append(f"{nome}: name fora do padrão (minúsculas, dígitos e hífen; até 64)")
 
     linhas = texto.splitlines()
     if len(linhas) >= 500:

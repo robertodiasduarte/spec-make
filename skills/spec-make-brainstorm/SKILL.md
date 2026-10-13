@@ -1,7 +1,7 @@
 ---
 name: spec-make-brainstorm
 license: MIT
-description: "Conduz a etapa 1 de 4 do spec-make: transforma uma rotina do escritório contábil num documento de ideia para um fluxo no Make, conferindo na conta da pessoa, pelo MCP do Make, se existe app nativo para cada passo, quais conexões ela já tem e quanto o plano permite. Use quando alguém quiser automatizar uma rotina no Make e ainda não tiver o BRAINSTORM do fluxo, ou disser 'quero criar um fluxo no Make'. Entrega BRAINSTORM_<FLUXO>.md. Não escreve requisitos formais (etapa spec-make-define), não desenha o blueprint (spec-make-design) e não cria nada na conta (spec-make-build). Período de consulta e de cálculo: não se aplicam (não há regra tributária nem cálculo profissional)."
+description: "Conduz a etapa 1 de 4 do spec-make: transforma uma rotina do escritório contábil num documento de ideia para um fluxo no Make, conferindo na conta da pessoa, pelo MCP do Make, se existe app nativo para cada passo, quais conexões ela já tem e quanto o plano permite. Use quando alguém quiser automatizar uma rotina no Make e ainda não tiver o BRAINSTORM do fluxo, ou disser 'quero criar um fluxo no Make'. Entrega BRAINSTORM_NOME-DO-FLUXO.md. Não escreve requisitos formais (etapa spec-make-define), não desenha o blueprint (spec-make-design) e não cria nada na conta (spec-make-build). Período de consulta e de cálculo: não se aplicam (não há regra tributária nem cálculo profissional)."
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte

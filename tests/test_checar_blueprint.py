@@ -334,6 +334,35 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_avaliador_ciclo_6(self):
+        """Avaliador ciclo 6 (AT-005): valor curto em nome de senha/segredo/Authorization, plural de token, valor em
+        lista e 4 variantes de formato reprovam; "token" junto de medida e pontuação de fórmula não."""
+        v = "abc123" + "def456"
+        tg = "1234" + "567890:" + "AA" + "x" * 33
+        casos = {"senha 1234": {"data": {"senha": 1234}}, "senha ab123": {"data": {"senha": "ab123"}},
+                 "password fórmula curta": {"data": {"password": "{{1.x}}ab123"}},
+                 "Authorization curto": {"headers": [{"name": "Authorization", "value": "ab123"}]},
+                 "Authorization Basic curto": {"headers": [{"name": "Authorization", "value": "Basic ab123"}]},
+                 "?senha=1234": {"url": "https://api.x.com/v1?senha=1234"},
+                 "form senha=1234": {"data": "usuario=joao&senha=1234"},
+                 "api_tokens": {"data": {"api_tokens": v}}, "accessTokens": {"data": {"accessTokens": v}},
+                 "X-Tokens": {"headers": [{"name": "X-Tokens", "value": v}]},
+                 "api_keys em lista": {"data": {"api_keys": [v]}}, "passwords em lista": {"data": {"passwords": [v]}},
+                 "Telegram cru": {"data": "token " + tg}, "AWS ASIA": {"data": "id ASIA" + "ABCDEFGHIJKLMNOP"},
+                 "Stripe whsec": {"data": "whsec_" + "a1B2" * 6}, "Slack xapp": {"data": "xapp-" + "1-A0B1C2D3E4F5"},
+                 "sk-proj após %22": {"url": "https://api.x.com/v1?q=%22sk-" + "proj-" + "a" * 20 + "%22"}}
+        for nome, campo in casos.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"max_tokens texto": {"max_tokens": "128000"}, "token_limit texto": {"token_limit": "alto"},
+                            "senha vazia": {"data": {"senha": ""}},
+                            "Basic de campos mapeados": {"headers": [{"name": "Authorization",
+                                                                      "value": 'Basic {{base64(1.u + ":" + 1.s)}}'}]},
+                            "password_required booleano": {"password_required": True},
+                            "lista mapeada": {"data": {"api_keys": ["{{1.chave}}"]}}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
