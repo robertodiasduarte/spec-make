@@ -77,9 +77,10 @@ def _normalizado(nome: str) -> str:
 PALAVRA_COMUM = ("secretari", "secretary", "resenha", "maxtoken", "tokeniz")
 # Nome de senha, segredo ou Authorization: qualquer valor fixo não vazio é credencial ("senha": 1234 — ciclo 6). Nos
 # outros nomes, menos de 6 caracteres fixos não conta (evita reprovar "true", "json", "v1"): limite declarado no manifest.
-FORTES = ("senha", "password", "passwd", "pwd", "secret", "passphrase", "authorization")
+FORTES = ("senha", "password", "passwd", "pwd", "pass", "secret", "passphrase", "authorization")
 # Campo de duração ou limite: número ali é medida, não credencial ("token_expires_in": 2592000 — R2@opus, rodada 8).
 MEDIDA = {"expires", "expire", "expiry", "expiration", "ttl", "limit", "limite", "max", "min", "age", "timeout",
+          "budget", "qtd", "quantidade", "total", "num", "count", "usage", "uso", "contagem",
           "length", "size", "count", "seconds", "minutes", "hours", "days", "lifetime", "validity", "validade"}
 
 
@@ -113,10 +114,12 @@ def _pedacos(w: list[str]) -> list[str]:
 
 
 def _minimo(nome: object) -> int:
-    """Caracteres fixos a partir dos quais o valor é credencial: 1 em nome de senha/segredo/Authorization, 6 nos outros."""
+    """Caracteres fixos a partir dos quais o valor é credencial: 1 quando a ÚLTIMA palavra do nome é de senha/segredo/
+    Authorization ("senha", "api_password", "client_secret", "dbpwd", "pass", "passwords"), 6 nos outros —
+    "password_type" e "secret_encoding" são configuração (A2, rodada 9)."""
     if isinstance(nome, str):
         w = _palavras(re.sub(r"[-_.\s]+", " ", nome))
-        if any(f in p for p in _pedacos(w) for f in FORTES):
+        if w and not _palavra_comum(w[-1]) and any(w[-1].rstrip("s").endswith(f) or w[-1] == f for f in FORTES):
             return 1
     return 6
 
@@ -193,8 +196,9 @@ def _literal(valor: object, minimo: int = 6) -> bool:
     if not isinstance(valor, str):
         return False
     fixo = _sem_mapeamento(valor)
-    if minimo < 6:
-        # nome forte: conta letra ou dígito, não a pontuação de uma fórmula (base64(1.usuario + ":" + 1.senha))
+    if minimo < 6 and "{{" in valor:
+        # nome forte com fórmula: conta letra ou dígito, não a pontuação dela (base64(1.usuario + ":" + 1.senha)); sem
+        # fórmula, o valor inteiro conta, inclusive senha só de símbolos (R1, rodada 9)
         return sum(c.isalnum() for c in fixo) >= minimo
     return len(fixo) >= minimo
 
@@ -249,7 +253,9 @@ def credenciais_literais(no: object) -> list[str]:
             # Parte SEM "=" conta inteira (R2@codex, rodada 7: "Cookie: <literal>" escapava). Lido depois de resolver as
             # fórmulas, para o texto fixo de dentro de {{…}} contar.
             partes = _resolvido(valor).split(";")
-            return any(_literal(p.partition("=")[2] if "=" in p else p) for p in partes)
+            # o mínimo de cada parte segue o nome dela: "senha=1234" conta com mínimo 1 (A1, rodada 9)
+            return any(_literal(p.partition("=")[2], _minimo(p.partition("=")[0].strip())) if "=" in p else _literal(p)
+                       for p in partes)
         return credencial and _literal(valor, _minimo(nome)) and not isento
 
     def andar(x: object, caminho: str, corpo: bool = False) -> None:

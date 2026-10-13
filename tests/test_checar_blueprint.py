@@ -363,6 +363,21 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_rodada_9(self):
+        """Rodada 9: senha só de símbolos, ?pass= curto e senha curta dentro do Cookie reprovam; budget_tokens,
+        password_type e secret_encoding não."""
+        for nome, campo in {"senha só de símbolos": {"data": {"senha": "!@#$%&*?"}},
+                            "Authorization só de símbolos": {"headers": [{"name": "Authorization", "value": "!@#$%^&*"}]},
+                            "?pass=1234": {"url": "https://api.x.com/v1?user=joao&pass=1234"},
+                            "Cookie com senha curta": {"headers": [{"name": "Cookie", "value": "sessao=abc; senha=1234"}]}}.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"budget_tokens": {"budget_tokens": 100000}, "qtd_tokens": {"qtd_tokens": "200000"},
+                            "password_type": {"data": {"password_type": "md5"}},
+                            "secret_encoding": {"data": {"secret_encoding": "utf8"}}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
