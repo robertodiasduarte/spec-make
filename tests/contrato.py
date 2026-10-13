@@ -97,6 +97,34 @@ for _nome, _n, _rot, _prox in ETAPAS:
                         contem=[f"spec-make · Etapa {_n} de 4 — {_rot}", _prox]))
 
 
+# Regras que vivem nos arquivos de referência (fora das âncoras), com a polaridade inteira (avaliador, ciclo 4). Uma frase
+# ACRESCENTADA que desmente a regra é pega pelo snapshot de tests/regras.py.
+FRASES: dict[str, list[str]] = {
+    "spec-make-design/references/GOVERNANCA_DO_FLUXO.md": [
+        "**Sem a chave:** recuse o DESIGN como pronto e peça a chave.",
+        "**Sem o passo:** recuse o DESIGN e diga o que falta; a etapa 4 para antes de criar o fluxo.",
+        "**Sem o registro:** recuse o DESIGN como pronto."],
+    "spec-make-design/references/PROMPTS_DE_IA.md": [
+        "| nome |", "| módulo |", "| versão | v1 |", "| provedor e modelo |", "| entrada |", "| saída e consumidor |",
+        "| tipo |", "| completude |", "| se faltar dado |", "| autônomo ou com aceite | com aceite sempre que grava ([G1]) |",
+        "| teste mínimo | 1 entrada de exemplo (sem dado pessoal real) e a saída esperada |"],
+    "spec-make-define/references/VERIFY_GATE_EXECUCAO.md": [
+        "amostra: <descrição; sem dado pessoal real; origem: pública | inventada>",
+        '"O blueprint foi validado" como teste: recuse e peça amostra e resultado esperado.',
+        "Fluxo que grava sem a segunda execução: recuse como incompleto.",
+        "Amostra com dado pessoal real: troque por dado inventado ou público."],
+    "spec-make-build/references/PROTOCOLO.md": [
+        "a contagem não pode mudar e a 2ª execução tem de ter processado o item"],
+    "spec-make-build/references/DIAGNOSTICO.md": [
+        "Correções só no fluxo que esta conversa criou ([B4])."],
+}
+
+
+def checar_frases(arquivo: str, texto: str) -> list[str]:
+    t = _junto(texto)
+    return [f"{arquivo}: falta {f!r}" for f in FRASES.get(arquivo, []) if _junto(f) not in t]
+
+
 def bloco(texto: str, ancora: str) -> str | None:
     marca = f"**[{ancora}] "          # definição: "**[B2] Pergunta…"; a menção "**[B2]**" não conta
     i = texto.find(marca)

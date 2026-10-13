@@ -246,6 +246,34 @@ class ChecarBlueprint(unittest.TestCase):
         bp["flow"][0]["metadata"]["interface"].append({"name": "chave_nfe", "type": "text"})
         self.assertEqual(cb.checar(bp), [])
 
+    def test_avaliador_ciclo_4(self):
+        """Avaliador ciclo 4 (AT-005): formatos conhecidos em qualquer lugar e nomes que faltavam. Os tokens são montados
+        em pedaços: o texto do teste não pode parecer credencial para o publish-check."""
+        v = "abcdef" + "123456" + "XYZ"
+        formatos = {"Stripe": "sk_" + "live_" + "a1B2c3D4e5F6g7H8", "Slack": "xo" + "xb-" + "1234567890-abcdefABCDEF",
+                    "GitHub": "gh" + "p_" + "A" * 36, "Google": "AI" + "za" + "SyD" + "x1" * 16,
+                    "Telegram": "https://api.telegram.org/bot" + "123456789:" + "AAH" + "x" * 32 + "/sendMessage",
+                    "Slack webhook": "https://hooks.slack.com/" + "services/T0000AAAA/B0000BBBB/" + "c" * 24}
+        casos = {}
+        for nome, tok in formatos.items():
+            casos[nome + " em X-Custom"] = {"headers": [{"name": "X-Custom", "value": tok}]}
+            casos[nome + " no corpo texto"] = {"data": "mensagem: " + tok}
+        casos["Telegram no caminho"] = {"url": formatos["Telegram"]}
+        casos.update({"Cookie": {"headers": [{"name": "Cookie", "value": "sessionid=" + v}]},
+                      "X-Auth": {"headers": [{"name": "X-Auth", "value": v}]},
+                      "Credential": {"headers": [{"name": "Credential", "value": v}]},
+                      "?access_code=": {"url": "https://api.x.com/v1?access_code=" + v},
+                      "SetVariable credencial": {"variables": [{"name": "credencial", "value": v}]}})
+        for nome, campo in casos.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"X-Request-Id": {"headers": [{"name": "X-Request-Id", "value": v}]},
+                            "Cookie mapeado": {"headers": [{"name": "Cookie", "value": "sessionid={{1.sessao}}"}]},
+                            "Telegram mapeado": {"url": "https://api.telegram.org/bot{{1.token}}/sendMessage"},
+                            "texto com 'bot'": {"data": "o robô (bot) respondeu ao cliente"}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

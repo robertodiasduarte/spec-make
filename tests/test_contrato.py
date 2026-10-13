@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import unittest
 
-from contrato import RAIZ, REGRAS, checar, checar_texto, mutantes
+from contrato import FRASES, RAIZ, REGRAS, checar, checar_frases, checar_texto, mutantes
 
 
 class Contrato(unittest.TestCase):
@@ -82,6 +82,31 @@ class Contrato(unittest.TestCase):
                 mut = texto.replace(de, para)
                 erros = [e for r in REGRAS if r.arquivo == arq for e in checar_texto(r, mut)]
                 self.assertTrue(erros, "regra invertida passou")
+
+    def test_frases_dos_arquivos_de_referencia(self):
+        for arq in FRASES:
+            with self.subTest(arquivo=arq):
+                self.assertEqual(checar_frases(arq, (RAIZ / "skills" / arq).read_text(encoding="utf-8")), [])
+
+    def test_regra_invertida_nos_arquivos_de_referencia_reprova(self):
+        """Avaliador ciclo 4 (achado 2): as 8 inversões de 1 edição nos arquivos de referência."""
+        g, pr = "spec-make-design/references/GOVERNANCA_DO_FLUXO.md", "spec-make-design/references/PROMPTS_DE_IA.md"
+        v = "spec-make-define/references/VERIFY_GATE_EXECUCAO.md"
+        casos = [(g, "**Sem o passo:** recuse o DESIGN", "**Sem o passo:** aceite o DESIGN"),
+                 (g, "**Sem a chave:** recuse o DESIGN como pronto e peça a chave.", "**Sem a chave:** aceite o DESIGN como pronto."),
+                 (pr, "| versão | v1 |\n", ""),
+                 (v, '"O blueprint foi validado" como teste: recuse', '"O blueprint foi validado" como teste: aceite'),
+                 (v, "Fluxo que grava sem a segunda execução: recuse como incompleto.",
+                  "Fluxo que grava sem a segunda execução: aceite como completo."),
+                 (v, "sem dado pessoal real; origem", "pode usar dado real de cliente; origem"),
+                 ("spec-make-build/references/PROTOCOLO.md", "a contagem não pode mudar", "a contagem pode mudar"),
+                 ("spec-make-build/references/DIAGNOSTICO.md", "Correções só no fluxo que esta conversa criou ([B4]).",
+                  "Correções em qualquer fluxo da conta.")]
+        for arq, de, para in casos:
+            with self.subTest(arquivo=arq, de=de[:40]):
+                texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")
+                self.assertEqual(texto.count(de), 1, "trecho do mutante não achado no texto real")
+                self.assertTrue(checar_frases(arq, texto.replace(de, para)), "regra invertida passou")
 
     def test_ancora_ausente_reprova(self):
         r = REGRAS[0]

@@ -15,6 +15,9 @@ O que confere (as três coisas que os validadores do MCP do Make não pegam):
      na URL, inclusive dentro de corpo JSON ou de formulário escrito como texto e dentro de fórmula {{…}}. O nome
      exato "key" como chave de objeto (data store) não é credencial; em cabeçalho, query ou corpo em texto, é.
 
+Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN). Um segredo com
+nome neutro e formato desconhecido não é detectado: a defesa principal é a conexão do Make, nunca o texto do blueprint.
+
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
 """
 from __future__ import annotations
@@ -26,18 +29,26 @@ from pathlib import Path
 
 ENTRADA = "scenario-service:StartSubscenario"
 
-TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16})")
+# Credencial em formato conhecido, em qualquer string do blueprint (caminho de URL, cabeçalho genérico, corpo em texto):
+# OpenAI, JWT, chave privada, AWS, Stripe, Slack (token e webhook), GitHub, GitLab, Google, bot do Telegram, webhook do
+# Discord (avaliador, ciclo 4).
+TOKEN = re.compile(
+    r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16}"
+    r"|[sr]k_(?:live|test)_[A-Za-z0-9]{10,}|xox[abposr]-[A-Za-z0-9-]{10,}|hooks\.slack\.com/services/[A-Za-z0-9/]{20,}"
+    r"|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|glpat-[A-Za-z0-9_-]{20,}|AIza[0-9A-Za-z_-]{30,}"
+    r"|bot\d{6,}:[A-Za-z0-9_-]{30,}|discord(?:app)?\.com/api/webhooks/\d+/[A-Za-z0-9_-]{20,})")
 # Marcadores no NOME normalizado (minúsculas, sem "-", "_", "." nem espaço) de campo, cabeçalho ou parâmetro de query:
 # "app_key", "Ocp-Apim-Subscription-Key", "client_secret", "x-api-key" contêm um deles. O nome exato "key" fica de
 # fora: é a chave do registro no data store do Make, não credencial (na URL, "?key=" continua sendo).
 MARCADORES = ("secret", "password", "passwd", "passphrase", "authpass", "senha", "token", "apikey", "appkey",
               "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret", "pwd", "authkey",
-              "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash")
+              "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash", "credential", "credencial", "cookie",
+              "accesscode", "sessionid")
 # Em cabeçalho, parâmetro de query e corpo HTTP em texto, o NOME EXATO "key", "chave" ou "pass" também é credencial
-# (avaliador, ciclo 3; "X-Auth-Key", "chave-api" e "pwd" já caem nos MARCADORES). Por nome exato, não por palavra:
+# (avaliador, ciclo 3; "X-Auth-Key", "chave-api" e "pwd" já caem nos MARCADORES), e "auth"/"X-Auth" (ciclo 4). Por nome exato, não por palavra:
 # "sort_key", "partitionKey" e "X-Pass-Through" não são credencial (R4@opus, rodada 6). Fora desses pares (chave de objeto
 # do blueprint) não: "key" é a chave do registro no data store.
-NOMES_DE_PAR = ("key", "chave", "pass")
+NOMES_DE_PAR = ("key", "chave", "pass", "auth", "xauth")
 # Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
 # passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
@@ -170,6 +181,9 @@ def credenciais_literais(no: object) -> list[str]:
         # próprio blueprint (o "key" do módulo de data store) fica de fora.
         credencial = nome_de_credencial_em_par(nome) if par else nome_de_credencial(nome)
         isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
+        if credencial and isinstance(nome, str) and _normalizado(nome) == "cookie" and isinstance(valor, str):
+            # Cookie: nome=valor; nome2=valor2 — o nome do cookie é fixo por natureza; o que conta é o valor de cada par
+            return any(_literal(parte.partition("=")[2]) for parte in valor.split(";"))
         return credencial and _literal(valor) and not isento
 
     def andar(x: object, caminho: str, corpo: bool = False) -> None:

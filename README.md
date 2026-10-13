@@ -56,6 +56,9 @@ bash scripts/publish-check.sh && python3 -I scripts/check-versions.py
 bash scripts/package.sh                         # dist/*.zip + dist/SHA256SUMS.txt
 ```
 
+Mudou o texto de uma regra (qualquer `.md` das skills ou de `compartilhado/`)? O teste `test_regras` reprova até você
+revisar a mudança e rodar `python3 -I tests/regras.py --atualizar` no mesmo commit.
+
 ## Licença e autoria
 
 MIT. Construído com a metodologia de Roberto Dias Duarte.
