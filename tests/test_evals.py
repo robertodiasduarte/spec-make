@@ -65,6 +65,10 @@ class Evals(unittest.TestCase):
                 erros = problemas(ev)
                 self.assertTrue(any(e.startswith(f"{skill}/{cid}:") for e in erros), f"mutante passou: {erros}")
         self.assertEqual(problemas(real), [], "o mutante vazou para o real")
+        ev = copy.deepcopy(real)
+        caso = next(c for c in ev["spec-make-design"]["cases"] if c["id"] == "aceite-sem-registro")
+        ev["spec-make-design"]["cases"].insert(0, dict(caso, regras=["G3"]))   # 1º com âncora errada, 2º certo
+        self.assertIn("spec-make-design/aceite-sem-registro: id repetido em cases.json", problemas(ev))
 
     def test_ancora_da_mesma_skill_reprova_mutantes(self):
         """Contrato C2 #4: mutantes que SÓ a regra "âncora com regra na mesma skill" pega (oráculo e caso mudam juntos)."""

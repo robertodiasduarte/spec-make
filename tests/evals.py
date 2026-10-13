@@ -32,7 +32,12 @@ def problemas(ev_por_skill: dict[str, dict]) -> list[str]:
     também sobre os negativos do JSON (negativo fora do mapa é erro)."""
     erros: list[str] = []
     for skill, esperado in ESPERADO.items():
-        casos = {c.get("id"): c for c in (ev_por_skill.get(skill) or {}).get("cases", [])}
+        lista = (ev_por_skill.get(skill) or {}).get("cases", [])
+        ids = [c.get("id") for c in lista]
+        for cid in sorted({i for i in ids if ids.count(i) > 1}, key=str):
+            # o dicionário abaixo guardaria só o último: o 1º, com a âncora errada, sumiria (A1@codex, rodada 2 do s2)
+            erros.append(f"{skill}/{cid}: id repetido em cases.json")
+        casos = {c.get("id"): c for c in lista}
         for cid, ancoras in esperado.items():
             c = casos.get(cid)
             if c is None:
