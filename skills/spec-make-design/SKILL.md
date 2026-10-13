@@ -74,7 +74,8 @@ DESIGN como pronto e peça a chave.
 
 **[P1] Prompts de IA.** Se o fluxo tem módulo de IA (OpenAI, Claude, Gemini ou agente de IA do Make), registre o
 inventário de prompts com os campos de PROMPTS_DE_IA.md. O texto do prompt não é escrito aqui: a etapa 4 gera cada um
-com a skill `sdd-prompt-builder` a partir desse contrato.
+com a skill `sdd-prompt-builder` a partir desse contrato. Fluxo com módulo de IA e sem esse inventário: recuse o DESIGN
+como pronto e diga o que falta.
 
 **[C1] Confidencial.** Todo blueprint sai com `metadata.scenario.confidential: true`. O escritório trata dado de
 cliente; com a opção ligada, o Make não guarda os dados de cada passo no histórico.

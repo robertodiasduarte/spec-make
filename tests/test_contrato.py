@@ -66,6 +66,12 @@ class Contrato(unittest.TestCase):
             (ds, "Sem esse passo,\nrecuse o DESIGN como pronto", "Sem esse passo,\nnão recuse o DESIGN como pronto"),
             (df, "Recuse como incompleto o teste", "Não Recuse como incompleto o teste"),
             (b, "pare antes do `scenarios_create`, diga", "não pare antes do `scenarios_create`, diga"),
+            # rodada 6 (R2/R3@opus): G2, P1 do design e M1 das etapas de papel
+            (ds, "Sem esse registro, recuse o DESIGN", "Sem esse registro, não recuse o DESIGN"),
+            (ds, "sem esse inventário: recuse o DESIGN", "sem esse inventário: não recuse o DESIGN"),
+            (ds, "e não declare o blueprint validado", "e declare o blueprint validado"),
+            (df, 'ficam "a confirmar na conta" se', 'ficam "a confirmar na conta" mesmo se'),
+            ("spec-make-brainstorm/SKILL.md", "Não afirme\nque um app existe", "Afirme\nque um app existe"),
             (b, "Não afirme que criou, rodou ou ligou nada.",
              "Diga que criou e rodou. (Não afirme que criou, rodou ou ligou nada só se pedirem.)"),
         ]

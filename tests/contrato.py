@@ -64,7 +64,9 @@ REGRAS: list[Regra] = [
           contem=["O fluxo é criado com `metadata.scenario.confidential: true`. Se"]),
     Regra("C1", _skill("spec-make-design"), at="AT-005",
           contem=["Todo blueprint sai com `metadata.scenario.confidential: true`. O"]),
-    Regra("P1", _skill("spec-make-design"), at="AT-007", contem=["inventário de prompts", "sdd-prompt-builder"]),
+    Regra("P1", _skill("spec-make-design"), at="AT-007",
+          contem=["inventário de prompts", "sdd-prompt-builder",
+                  "Fluxo com módulo de IA e sem esse inventário: recuse o DESIGN como pronto e diga o que falta."]),
     Regra("P1", _skill("spec-make-build"), at="AT-007",
           contem=["sem inventário", "[G1]", "[G2]",
                   "sem inventário de prompts no DESIGN: pare antes do `scenarios_create`, diga o que falta"]),
@@ -73,7 +75,7 @@ REGRAS: list[Regra] = [
                   "Sem esse passo, recuse o DESIGN como pronto e diga o que falta."]),
     Regra("G2", _skill("spec-make-design"), at="AT-007",
           contem=["fora do histórico", "modelo", "versão do prompt", "sugestão original", "quem aceitou",
-                  "(UTC)", "se editou", "recuse o DESIGN"]),
+                  "(UTC)", "se editou", "Sem esse registro, recuse o DESIGN como pronto."]),
     Regra("G3", _skill("spec-make-design"), at="AT-011",
           contem=["chave natural", "já existe ⇒ não grava de novo",
                   "Sem a chave, recuse o DESIGN como pronto e peça a chave."]),
@@ -82,10 +84,15 @@ REGRAS: list[Regra] = [
                   "no destino. Recuse como incompleto o teste que só confere uma execução",
                   ', e recuse "blueprint validado" como teste de aceite']),
 ]
+# [M1] com a polaridade inteira em cada etapa (R3@opus, rodada 6)
+M1 = {"spec-make-brainstorm": ['como "a confirmar na conta". Não afirme que um app existe ou que uma conexão está pronta '
+                               'sem ter consultado.'],
+      "spec-make-define": ['ficam "a confirmar na conta" se o BRAINSTORM não os trouxer.'],
+      "spec-make-design": ['marque cada um como "a confirmar na conta" e não declare o blueprint validado.'],
+      "spec-make-build": ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
+                          "Importar blueprint"]}
 for _nome, _n, _rot, _prox in ETAPAS:
-    REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=["a confirmar na conta"] if _nome != "spec-make-build"
-                        else ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
-                              "Importar blueprint"]))
+    REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=M1[_nome]))
     REGRAS.append(Regra("E1", _skill(_nome), at="UX MUST 4",
                         contem=[f"spec-make · Etapa {_n} de 4 — {_rot}", _prox]))
 

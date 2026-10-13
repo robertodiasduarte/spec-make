@@ -217,7 +217,7 @@ class ChecarBlueprint(unittest.TestCase):
         def hdr(nome):
             return {"headers": [{"name": nome, "value": v}]}
         for nome, campo in {"X-Auth-Key": hdr("X-Auth-Key"), "chave-api": hdr("chave-api"), "pwd": hdr("pwd"),
-                            "chave": hdr("chave"), "X-Pass": hdr("X-Pass"),
+                            "chave": hdr("chave"), "pass": hdr("pass"),
                             "?pwd=": {"url": "https://api.x.com/v1?user=ana&pwd=" + v},
                             "?chave=": {"url": "https://api.x.com/v1?chave=" + v},
                             "form client_secret": {"data": "client_secret=" + v + "&grant_type=client_credentials"},
@@ -229,9 +229,22 @@ class ChecarBlueprint(unittest.TestCase):
                             "X-Tenant mapeado": {"headers": [{"name": "X-Auth-Key", "value": "{{1.chave}}"}]},
                             "form mapeado": {"data": "client_secret={{1.segredo}}&grant_type=client_credentials"},
                             "form sem credencial": {"data": "grant_type=client_credentials&scope=leitura"},
-                            "?chave= mapeada": {"url": "https://api.x.com/v1?chave={{1.chave_nfe}}"}}.items():
+                            "?chave= mapeada": {"url": "https://api.x.com/v1?chave={{1.chave_nfe}}"},
+                            # R4@opus/R2@kimi (rodada 6): nome que só termina em key ou começa por pass não é credencial
+                            "?sort_key=": {"url": "https://api.x.com/v1/notas?sort_key=emissao"},
+                            "?partitionKey=": {"url": "https://api.x.com/v1?partitionKey=clientes"},
+                            "X-Pass-Through": {"headers": [{"name": "X-Pass-Through", "value": "enabled"}]}}.items():
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
+    def test_entrada_que_pede_credencial(self):
+        """R1@opus (rodada 6): o campo de entrada com nome de credencial leva a chave pelo chat e pela execução."""
+        bp = _ler("blueprint_valido.json")
+        bp["flow"][0]["metadata"]["interface"].append({"name": "api_token", "type": "text"})
+        self.assertTrue(any("credencial" in p and "entrada" in p for p in cb.checar(bp)))
+        bp = _ler("blueprint_valido.json")
+        bp["flow"][0]["metadata"]["interface"].append({"name": "chave_nfe", "type": "text"})
+        self.assertEqual(cb.checar(bp), [])
 
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")

@@ -33,11 +33,11 @@ TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [
 MARCADORES = ("secret", "password", "passwd", "passphrase", "authpass", "senha", "token", "apikey", "appkey",
               "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret", "pwd", "authkey",
               "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash")
-# Em cabeçalho, parâmetro de query e corpo HTTP em texto, o nome é de credencial também quando tem uma destas PALAVRAS
-# ("X-Auth-Key", "chave-api", "pwd", "chave") — avaliador, ciclo 3. Fora desses pares (chave de objeto do blueprint) não:
-# "key" é a chave do registro no data store. "chave" inclui a chave de acesso da nota escrita à mão: valor de teste
-# que tem de vir mapeado da entrada, nunca fixo no blueprint.
-PALAVRAS_DE_PAR = ("key", "chave", "pwd", "pass")
+# Em cabeçalho, parâmetro de query e corpo HTTP em texto, o NOME EXATO "key", "chave" ou "pass" também é credencial
+# (avaliador, ciclo 3; "X-Auth-Key", "chave-api" e "pwd" já caem nos MARCADORES). Por nome exato, não por palavra:
+# "sort_key", "partitionKey" e "X-Pass-Through" não são credencial (R4@opus, rodada 6). Fora desses pares (chave de objeto
+# do blueprint) não: "key" é a chave do registro no data store.
+NOMES_DE_PAR = ("key", "chave", "pass")
 # Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
 # passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
@@ -67,8 +67,7 @@ def nome_de_credencial_em_par(nome: object) -> bool:
     """Nome de cabeçalho, parâmetro de query ou campo de corpo HTTP em texto que guarda credencial."""
     if not isinstance(nome, str):
         return False
-    palavras = _palavras(re.sub(r"[-_.\s]+", " ", nome))
-    return nome_de_credencial(nome) or any(w in PALAVRAS_DE_PAR for w in palavras) or _normalizado(nome).endswith("key")
+    return nome_de_credencial(nome) or _normalizado(nome) in NOMES_DE_PAR
 
 
 def _na_url(texto: str) -> bool:
@@ -234,6 +233,13 @@ def checar(bp: dict) -> list[str]:
             "scenarios_set-interface depois de criar o fluxo"
         )
     for m in modulos:
+        campos = (m.get("metadata") or {}).get("interface") if m.get("module") == ENTRADA else None
+        for c in campos if isinstance(campos, list) else []:
+            if isinstance(c, dict) and nome_de_credencial(c.get("name")):
+                problemas.append(
+                    f"o módulo de entrada pede o campo {c.get('name')!r}, que é credencial: ela viria pelo chat e pela "
+                    "entrada da execução; use a conexão do Make (R1@opus, rodada 6)"
+                )
         if m.get("module") == ENTRADA and not ((m.get("metadata") or {}).get("interface")):
             problemas.append(
                 "o módulo de entrada (StartSubscenario) não declara os campos em metadata.interface: sem eles a "
@@ -244,7 +250,8 @@ def checar(bp: dict) -> list[str]:
     if onde:
         problemas.append(
             "há credencial escrita no blueprint (chave, token, senha ou cabeçalho Authorization) em "
-            + ", ".join(onde[:3]) + ": use a conexão do Make, ou mapeie o valor da entrada do fluxo"
+            + ", ".join(onde[:3]) + ": use a conexão do Make (credential-requests_create); nunca peça a credencial no "
+            "chat nem a ponha na entrada do fluxo"
         )
 
     return problemas
