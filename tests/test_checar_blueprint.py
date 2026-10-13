@@ -22,6 +22,27 @@ def _ler(nome: str) -> dict:
     return json.loads((FIX / nome).read_text(encoding="utf-8"))
 
 
+SEGREDO = "abcd1234efgh5678ijkl"
+APP_KEY = "1234567" + "890123"  # 13 dígitos montados em pedaços (publish-check reprova 11+ seguidos)
+
+
+def _com_http(mapper: dict) -> dict:
+    """blueprint_valido.json com 1 módulo http:ActionSendData a mais, com a credencial no mapper (achado AT-005)."""
+    bp = _ler("blueprint_valido.json")
+    bp["flow"].insert(2, {"id": 4, "module": "http:ActionSendData", "version": 3, "parameters": {},
+                          "mapper": {"method": "post", "url": "https://api.exemplo.com/v1", **mapper},
+                          "metadata": {"designer": {"x": 450, "y": 0}}})
+    return bp
+
+
+def _com_datastore(chave: str) -> dict:
+    bp = _ler("blueprint_valido.json")
+    bp["flow"].insert(2, {"id": 5, "module": "datastore:AddRecord", "version": 1, "parameters": {"datastore": 12345},
+                          "mapper": {"key": chave, "data": {"cnpj": "{{2.cnpj}}"}, "overwrite": True},
+                          "metadata": {"designer": {"x": 450, "y": 0}}})
+    return bp
+
+
 class ChecarBlueprint(unittest.TestCase):
     def test_valido_passa(self):
         self.assertEqual(cb.checar(_ler("blueprint_valido.json")), [])
@@ -73,6 +94,38 @@ class ChecarBlueprint(unittest.TestCase):
                 bp = _ler("blueprint_valido.json")
                 bp["flow"][1]["mapper"]["campo"] = valor
                 self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
+    def test_credencial_em_corpo_objeto(self):
+        """Avaliador ciclo 1 (AT-005): app_key/app_secret no corpo (data como objeto)."""
+        corpo = {"call": "ListarClientes", "app_key": APP_KEY, "app_secret": SEGREDO}
+        self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"bodyType": "raw", "data": corpo}))))
+
+    def test_credencial_em_corpo_texto_json(self):
+        """O mesmo corpo escrito como texto JSON (bodyType raw)."""
+        corpo = json.dumps({"call": "ListarClientes", "app_key": APP_KEY, "app_secret": SEGREDO})
+        self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"bodyType": "raw", "data": corpo}))))
+
+    def test_access_key_na_url(self):
+        bp = _com_http({"url": "https://api.exemplo.com/v1?access_key=" + SEGREDO})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
+    def test_client_secret_na_url(self):
+        bp = _com_http({"url": "https://api.exemplo.com/v1?client_secret=" + SEGREDO})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
+    def test_usuario_e_senha_na_url(self):
+        bp = _com_http({"url": "https://usuario:" + SEGREDO + "@api.exemplo.com/v1"})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
+    def test_cabecalho_subscription_key(self):
+        bp = _com_http({"headers": [{"name": "Ocp-Apim-Subscription-Key", "value": SEGREDO}]})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)))
+
+    def test_key_do_data_store_nao_e_credencial(self):
+        """O nome exato "key" é a chave do registro no data store, mapeada ou fixa: não é credencial."""
+        for chave in ["{{2.cnpj}}", "clientes"]:
+            with self.subTest(chave=chave):
+                self.assertEqual(cb.checar(_com_datastore(chave)), [])
 
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")

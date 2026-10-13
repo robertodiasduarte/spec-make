@@ -11,7 +11,8 @@ O que confere (as três coisas que os validadores do MCP do Make não pegam):
   1. metadata.scenario.confidential é true;
   2. fluxo sob demanda com entrada (scenario-service:StartSubscenario) declara os campos no módulo 1 e NÃO
      traz a chave `interface` no blueprint (o validador do Make a recusa; ela é gravada com scenarios_set-interface);
-  3. não há credencial escrita no blueprint: chave, token, senha, cabeçalho Authorization, chave na URL.
+  3. não há credencial escrita no blueprint: chave, token, senha, cabeçalho Authorization, chave ou usuário:senha
+     na URL, inclusive dentro de corpo JSON escrito como texto. O nome exato "key" (data store) não é credencial.
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
 """
@@ -25,13 +26,37 @@ from pathlib import Path
 ENTRADA = "scenario-service:StartSubscenario"
 
 TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [A-Z ]*PRIVATE KEY|AKIA[0-9A-Z]{16})")
-CAMPO = re.compile(
-    r"^(authorization|proxy-authorization|x-api-key|x-auth-token|api[_-]?key|apikey|access[_-]?token|token|"
-    r"secret|client[_-]?secret|password|senha)$",
-    re.I,
-)
+# Marcadores no NOME normalizado (minúsculas, sem "-", "_", "." nem espaço) de campo, cabeçalho ou parâmetro de query:
+# "app_key", "Ocp-Apim-Subscription-Key", "client_secret", "x-api-key" contêm um deles. O nome exato "key" fica de
+# fora: é a chave do registro no data store do Make, não credencial (na URL, "?key=" continua sendo).
+MARCADORES = ("secret", "password", "senha", "token", "apikey", "appkey", "accesskey", "subscriptionkey",
+              "privatekey", "authorization", "clientsecret")
 PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}", re.I)
-NA_URL = re.compile(r"[?&](api[_-]?key|apikey|access[_-]?token|token|key|secret)=(?!\{\{)[^&\s\"]{6,}", re.I)
+NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]{6,})")
+# usuário:senha antes do host: https://usuario:senha@api.exemplo.com
+USUARIO_SENHA = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@\"]+:([^/\s@\"]+)@")
+# par "nome": "valor" num corpo JSON que não se deixa ler (ex.: {{1.n}} sem aspas no meio)
+PAR_JSON = re.compile(r'"([^"\\]{1,80})"\s*:\s*"((?:[^"\\]|\\.)*)"')
+
+
+def _normalizado(nome: str) -> str:
+    return re.sub(r"[-_.\s]", "", nome.lower())
+
+
+def nome_de_credencial(nome: object) -> bool:
+    """Nome de campo, cabeçalho ou parâmetro que guarda credencial. "key" sozinho não conta (data store)."""
+    if not isinstance(nome, str):
+        return False
+    n = _normalizado(nome)
+    return n != "key" and any(m in n for m in MARCADORES)
+
+
+def _na_url(texto: str) -> bool:
+    """Credencial na URL: parâmetro de query com nome de credencial (ou "key") e valor fixo, ou usuário:senha."""
+    for m in NA_URL.finditer(texto):
+        if nome_de_credencial(m.group(1)) or _normalizado(m.group(1)) == "key":
+            return True
+    return any(_sem_mapeamento(m.group(1)) for m in USUARIO_SENHA.finditer(texto))
 
 
 MAPEAMENTO = re.compile(r"\{\{.*?\}\}", re.S)
@@ -49,18 +74,39 @@ def _literal(valor: object) -> bool:
     return isinstance(valor, str) and len(_sem_mapeamento(valor)) >= 6
 
 
+def _como_json(texto: str) -> object | None:
+    """Corpo JSON escrito como texto (bodyType raw): o objeto lido, ou None quando o texto não começa com { ou [.
+    Se não se deixa ler (mapeamento sem aspas no meio), devolve os pares "nome": "valor" achados no texto."""
+    t = texto.strip()
+    if not t.startswith(("{", "[")) or t.startswith("{{"):
+        return None
+    try:
+        return json.loads(t)
+    except ValueError:
+        return {m.group(1): m.group(2) for m in PAR_JSON.finditer(t)} or None
+
+
+def _url_sem_credencial(valor: object) -> bool:
+    """Endereço sem usuário:senha nem chave na query ("token_url": "https://…/token") não é credencial."""
+    return isinstance(valor, str) and bool(re.match(r"^https?://\S+$", valor.strip())) and not _na_url(valor)
+
+
 def credenciais_literais(no: object) -> list[str]:
     """Onde há credencial escrita: chave de objeto com nome de credencial, par {name, value} de cabeçalho ou de
-    query, valor com prefixo Bearer/Basic/Token, token em formato conhecido ou chave na URL."""
+    query, valor com prefixo Bearer/Basic/Token, token em formato conhecido, chave na URL, usuário:senha na URL
+    ou qualquer um desses dentro de um corpo JSON escrito como texto."""
     achados: list[str] = []
+
+    def suspeito(nome: object, valor: object) -> bool:
+        return nome_de_credencial(nome) and _literal(valor) and not _url_sem_credencial(valor)
 
     def andar(x: object, caminho: str) -> None:
         if isinstance(x, dict):
             nome = x.get("name") if isinstance(x.get("name"), str) else x.get("key")
-            if isinstance(nome, str) and CAMPO.match(nome) and _literal(x.get("value")):
+            if suspeito(nome, x.get("value")):
                 achados.append(f"{caminho}.{nome}")
             for k, v in x.items():
-                if isinstance(k, str) and CAMPO.match(k) and _literal(v):
+                if suspeito(k, v):
                     achados.append(f"{caminho}.{k}")
                 andar(v, f"{caminho}.{k}")
         elif isinstance(x, list):
@@ -69,11 +115,14 @@ def credenciais_literais(no: object) -> list[str]:
         elif isinstance(x, str):
             # Token conhecido e chave na URL valem até DENTRO de uma expressão {{…}} (R1@opus, rodada 2): só o
             # teste de "texto fixo" (prefixo de esquema) desconta os mapeamentos.
-            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or NA_URL.search(x):
+            if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or _na_url(x):
                 achados.append(caminho)
+            corpo = _como_json(x)
+            if corpo is not None:
+                andar(corpo, f"{caminho}<json>")
 
     andar(no, "$")
-    return achados
+    return list(dict.fromkeys(achados))
 
 
 def _modulos(flow: list) -> list[dict]:

@@ -1,7 +1,8 @@
 """Contrato das skills por âncoras de regra (Decision 2 do DESIGN da plataforma).
 
 Cada regra vive num bloco que começa em `**[XN]` e vai até a próxima âncora `**[` ou o próximo título. A asserção
-olha só dentro do bloco: tokens que precisam aparecer (todos) e tokens que precisam aparecer NESTA ORDEM.
+olha só dentro do bloco: tokens que precisam aparecer (todos) e tokens que precisam aparecer NESTA ORDEM — tanto em
+sequência quanto pela primeira menção de cada um (nenhum token citado antes do anterior).
 test_contrato.py roda cada regra contra o texto real e contra um mutante, que tem de reprovar.
 """
 from __future__ import annotations
@@ -95,6 +96,12 @@ def checar_texto(regra: Regra, texto: str) -> list[str]:
             erros.append(f"[{regra.ancora}] {regra.arquivo}: {t!r} ausente ou fora da ordem")
             break
         pos = j
+    # Ordem estrita das PRIMEIRAS menções: um token citado antes do anterior ("3. `scenarios_create` e depois
+    # `validate_module_configuration`") manda fazer fora da ordem, mesmo que uma menção posterior esteja no lugar.
+    primeiras = [(t, b.find(t)) for t in regra.em_ordem if t in b]
+    for (ant, i_ant), (t, i) in zip(primeiras, primeiras[1:]):
+        if i < i_ant:
+            erros.append(f"[{regra.ancora}] {regra.arquivo}: {t!r} citado antes de {ant!r}")
     return erros
 
 
