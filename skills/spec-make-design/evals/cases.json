@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-design",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
