@@ -129,7 +129,8 @@ DESCRITIVA = CONFIGURACAO | MEDIDA | set(ENDERECO)
 
 
 def _forte(p: str) -> bool:
-    """"senha", "passwords", "dbpwd", "pass": a palavra é de senha, segredo ou Authorization."""
+    """"senha", "passwords", "dbpwd", "apisenha": a palavra é de senha, segredo ou Authorization. "pass" só conta como
+    palavra inteira: "dbpass" e "userpass" nem chegam aqui, porque "pass" não é marcador de nome (bypass, passagem)."""
     return any(p.rstrip("s").endswith(f) or p == f for f in FORTES)
 
 
