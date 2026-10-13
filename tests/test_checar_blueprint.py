@@ -197,6 +197,20 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_rodada_5(self):
+        """R1-R3@opus (rodada 5): referência só começa por número de módulo ou "var" e aceita acento; texto entre aspas
+        comparado numa condição não é o valor do campo."""
+        bp = _com_http({"headers": [{"name": "Authorization", "value": "Basic {{base64(joao:senha.2026)}}"}]})
+        self.assertTrue(any("credencial" in p for p in cb.checar(bp)), "senha com ponto escrita à mão")
+        for nome, campo in {
+                "if com comparação": {"data": {"api_key": '{{if(1.ambiente = "producao"; 2.chave_producao; '
+                                                          '2.chave_teste)}}'}},
+                "comparação na query": {"url": 'https://api.exemplo.com/v1?key={{if(1.amb != "producao"; 2.k1; '
+                                                '2.k2)}}'},
+                "campo com acento": {"data": {"token": "{{3.códigoAcesso}}"}}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

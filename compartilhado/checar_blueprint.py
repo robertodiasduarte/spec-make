@@ -68,8 +68,13 @@ def _na_url(texto: str) -> bool:
 
 EXPRESSAO = re.compile(r"\{\{(.*?)\}\}", re.S)
 ASPAS = re.compile(r'"((?:[^"\\]|\\.)*)"')
-# Referência a dado de outro módulo ou variável: 1.chave, 3.data[].token, var.input.cnpj, 1.`Nome do campo`.
-REFERENCIA = re.compile(r"\b[A-Za-z0-9_]+(?:\.(?:`[^`]*`|[A-Za-z0-9_\[\]]+))+")
+# Referência a dado de outro módulo ou variável: 1.chave, 3.data[].token, var.input.cnpj, 1.`Nome do campo`, 3.códigoAcesso.
+# Só começa pelo número do módulo ou por "var": "senha.2026" escrito à mão não é referência (R1@opus, rodada 5); \w
+# aceita acento (R3@opus, rodada 5).
+REFERENCIA = re.compile(r"\b(?:\d+|var)(?:\.(?:`[^`]*`|[\w\[\]]+))+")
+# Texto entre aspas que é operando de comparação ({{if(1.ambiente = "producao"; …)}}) não chega ao valor: não conta como
+# texto fixo (R2@opus, rodada 5).
+COMPARADO = re.compile(r'(?:(?:!=|<>|<=|>=|=|<|>)\s*"(?:[^"\\]|\\.)*")|(?:"(?:[^"\\]|\\.)*"\s*(?:!=|<>|<=|>=|=|<|>))')
 FUNCAO = re.compile(r"\b[A-Za-z_]\w*\s*\(")
 PALAVRAS_DO_MAKE = {"emptystring", "emptyarray", "null", "true", "false", "now", "timestamp", "pi", "space", "nbsp",
                     "tab", "newline", "carriagereturn", "random", "uuid"}
@@ -79,6 +84,7 @@ def _fixo_da_expressao(expr: str) -> str:
     """O texto fixo de dentro de uma expressão do Make: o que está entre aspas ({{"abc123"}}) e o argumento escrito
     sem aspas ({{base64(usuario:senha)}}). Referências (1.chave), nomes de função, separadores e palavras do Make
     (emptystring) não contam. Achado 1 do avaliador, ciclo 2: o que estava dentro de {{…}} era descartado inteiro."""
+    expr = COMPARADO.sub(" ", expr)
     fixos = ASPAS.findall(expr)
     resto = FUNCAO.sub(" ", REFERENCIA.sub(" ", ASPAS.sub(" ", expr)))
     for p in re.split(r"[\s();,+*/<>=!&|]+", resto):
