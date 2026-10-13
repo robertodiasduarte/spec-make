@@ -41,7 +41,7 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    entrada só dentro do módulo 1 não basta, e os validadores não avisam.
 3. **Só roda se estiver ativo.** `scenarios_run` recusa fluxo inativo. Criar com agendamento
    `on-demand` e ativar é inofensivo: o fluxo só roda quando alguém pede. O que precisa do OK do
-   aluno é trocar o agendamento ou ligar o gatilho real.
+   pessoa é trocar o agendamento ou ligar o gatilho real.
 4. **O detalhe da falha pode vir vazio.** `executions_get-detail` de uma falha de validação
    trouxe só a mensagem genérica, sem dizer o módulo nem o parâmetro. Por isso a skill de build
    tem um roteiro de diagnóstico próprio.
@@ -49,20 +49,20 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    execução traz só o resultado final. O spec-make liga essa opção sempre, porque o escritório
    trata dado de cliente; o diagnóstico não depende do passo a passo.
 6. **App nativo primeiro.** `apps_recommend` costuma achar um app nativo onde a primeira ideia
-   seria uma chamada HTTP genérica. Prefira o nativo e diga ao aluno qual escolheu.
+   seria uma chamada HTTP genérica. Prefira o nativo e diga à pessoa qual escolheu.
 7. **App não instalado.** `scenarios_create` pode pedir confirmação quando o fluxo usa um app
-   ainda não instalado na conta. Diga ao aluno o que vai ser instalado antes de confirmar.
+   ainda não instalado na conta. Diga à pessoa o que vai ser instalado antes de confirmar.
 8. **Custo do teste.** No teste medido, cada execução gastou 1 operação (só o módulo do app
    conta; entrada e saída do fluxo sob demanda não contam). Informe sempre o custo antes de rodar.
 
 ## Conexões e credenciais
 
 Nunca peça chave, senha ou token no chat. Para uma conexão que falta, use
-`credential-requests_create`: ela devolve um link em que o próprio aluno autoriza a conexão
-dentro do Make. Espere o aluno dizer que autorizou e confira com `connections_list`.
+`credential-requests_create`: ela devolve um link em que a própria pessoa autoriza a conexão
+dentro do Make. Espere a pessoa dizer que autorizou e confira com `connections_list`.
 
-## O que não fazer com a conta do aluno
+## O que não fazer com a conta da pessoa
 
 - Não altere nem apague fluxo, data store ou conexão que esta conversa não criou.
-- Não ligue agendamento nem gatilho sem o "sim" do aluno (regra [B2] da skill de build).
+- Não ligue agendamento nem gatilho sem o "sim" da pessoa (regra [B2] da skill de build).
 - Não rode execução sem dizer antes quantas operações ela gasta.
