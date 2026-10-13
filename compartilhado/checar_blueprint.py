@@ -15,7 +15,7 @@ O que confere (as três coisas que os validadores do MCP do Make não pegam):
      na URL, inclusive dentro de corpo JSON ou de formulário escrito como texto e dentro de fórmula {{…}}. O nome
      exato "key" como chave de objeto (data store) não é credencial; em cabeçalho, query ou corpo em texto, é.
 
-Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN). Um segredo com
+Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN), em texto ou número. Um segredo com
 nome neutro e formato desconhecido não é detectado: a defesa principal é a conexão do Make, nunca o texto do blueprint.
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
@@ -55,26 +55,37 @@ NOMES_DE_PAR = ("key", "chave", "pass", "auth", "xauth", "cookie")
 # Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
 # passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
-PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}", re.I)
+# O valor inteiro é "esquema + 1 credencial": "Token expirado: renove a conexão" é frase, não credencial (ciclo 5).
+PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}\s*$", re.I)
 NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]{6,})")
 # usuário:senha antes do host: https://usuario:senha@api.exemplo.com
 USUARIO_SENHA = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@\"]+:([^/\s@\"]+)@")
 # corpo de formulário escrito como texto: nome=valor&nome=valor
 FORM = re.compile(r"^[A-Za-z0-9_.\-\[\]]+=[^&]*(?:&[A-Za-z0-9_.\-\[\]]+=[^&]*)*$")
 # par "nome": "valor" num corpo JSON que não se deixa ler (ex.: {{1.n}} sem aspas no meio)
-PAR_JSON = re.compile(r'"([^"\\]{1,80})"\s*:\s*"((?:[^"\\]|\\.)*)"')
+PAR_JSON = re.compile(r'"([^"\\]{1,80})"\s*:\s*(?:"((?:[^"\\]|\\.)*)"|(-?\d[\d.]*))')
 
 
 def _normalizado(nome: str) -> str:
     return re.sub(r"[-_.\s]", "", nome.lower())
 
 
+# Palavra que TERMINA num destes também é credencial ("mytoken", "appsecret"); "senha" fica de fora ("resenha").
+TERMINA_EM = ("secret", "password", "passwd", "token", "apikey", "appkey", "accesskey", "privatekey", "authkey",
+              "subscriptionkey")
+
+
 def nome_de_credencial(nome: object) -> bool:
-    """Nome de campo, cabeçalho ou parâmetro que guarda credencial. "key" sozinho não conta (data store)."""
+    """Nome de campo, cabeçalho ou parâmetro que guarda credencial, comparado por PALAVRA (e por 2 ou 3 palavras
+    juntas: "app_key" → appkey, "Ocp-Apim-Subscription-Key" → subscriptionkey), nunca por pedaço: "secretaria",
+    "resenha" e "max_tokens" não são credencial (avaliador, ciclo 5). "key" sozinho não conta (data store)."""
     if not isinstance(nome, str):
         return False
-    n = _normalizado(nome)
-    return n != "key" and any(m in n for m in MARCADORES)
+    w = _palavras(re.sub(r"[-_.\s]+", " ", nome))
+    if w == ["key"]:
+        return False
+    juntas = set(w) | {a + b for a, b in zip(w, w[1:])} | {a + b + c for a, b, c in zip(w, w[1:], w[2:])}
+    return any(m in juntas for m in MARCADORES) or any(p.endswith(m) for p in w for m in TERMINA_EM)
 
 
 def nome_de_credencial_em_par(nome: object) -> bool:
@@ -140,6 +151,9 @@ def _literal(valor: object) -> bool:
     """Valor escrito à mão: sobram 6+ caracteres fixos depois de tirar os mapeamentos. "{{3.chave}}" e
     "Bearer {{4.token}}" não são literais; "segredo-fixo{{emptystring}}" é (achado A2 da review), e também
     '{{ifempty(1.chave; "abc123def")}}' e '{{"abc123def"}}' (avaliador, ciclo 2)."""
+    if isinstance(valor, (int, float)) and not isinstance(valor, bool):
+        # número também é valor escrito à mão: "senha": 98765432 (avaliador, ciclo 5)
+        return len(str(valor).lstrip("-")) >= 6
     return isinstance(valor, str) and len(_sem_mapeamento(valor)) >= 6
 
 
@@ -154,7 +168,8 @@ def _como_json(texto: str) -> object | None:
     try:
         return json.loads(t)
     except ValueError:
-        return [{"name": m.group(1), "value": m.group(2)} for m in PAR_JSON.finditer(t)] or None
+        return [{"name": m.group(1), "value": m.group(2) if m.group(3) is None else m.group(3)}
+                for m in PAR_JSON.finditer(t)] or None
 
 
 def _palavras(nome: str) -> list[str]:

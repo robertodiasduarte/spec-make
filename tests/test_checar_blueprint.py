@@ -291,6 +291,32 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_avaliador_ciclo_5(self):
+        """Avaliador ciclo 5 (AT-005): valor numérico com nome de credencial reprova; nome que só CONTÉM um marcador
+        ("secretaria", "resenha", "max_tokens") e frase que começa por "Token" não são credencial."""
+        # números longos montados em tempo de execução: o publish-check reprova 11+ dígitos seguidos no texto
+        n11, n15, n13 = int("123456" + "78901"), int("9876543" + "21012345"), int("123456" + "7890123")
+        for nome, campo in {"password numérico": {"password": n11},
+                            "senha numérica no data": {"data": {"senha": 98765432}},
+                            "X-API-KEY numérico": {"headers": [{"name": "X-API-KEY", "value": n15}]},
+                            "qs token numérico": {"qs": [{"name": "token", "value": n11}]},
+                            "app_key/app_secret numéricos": {"data": {"call": "ListarClientes", "app_key": n13,
+                                                                      "app_secret": n13 + 7}},
+                            "corpo raw token numérico": {"data": '{"token": ' + str(n11) + ', "cnpj": "{{1.cnpj}}"}'},
+                            "corpo raw senha numérica": {"data": '{"usuario": "contador", "senha": 98765432}'},
+                            "corpo raw ilegível senha numérica": {"data": '{"senha": 98765432, "n": {{1.n}}}'}}.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"secretaria": {"secretaria": "Secretaria da Fazenda SP"},
+                            "resenha": {"resenha": "Cliente pediu revisão do balancete"},
+                            "Token expirado": {"texto": "Token expirado: renove a conexão no Make"},
+                            "max_tokens texto": {"model": "gpt-4.1-mini", "max_tokens": "100000"},
+                            "max_tokens número": {"max_tokens": 100000},
+                            "token_ttl curto": {"token_ttl": 3600},
+                            "booleano": {"shareCookies": True, "password_required": False}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

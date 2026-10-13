@@ -46,7 +46,7 @@
     "Comportamento idêntico em todos os agentes e modelos",
     "Que o conector do Make no ChatGPT expõe as ferramentas de gravação",
     "Funcionamento no plano Free do Make",
-    "O verificador de blueprint pega credencial escrita pelo NOME do campo, cabeçalho ou parâmetro (lista MARCADORES/NOMES_DE_PAR no script) e pelo FORMATO conhecido (lista TOKEN: OpenAI, Stripe, Slack, GitHub, GitLab, Google, AWS, JWT, Telegram, Discord, chave privada); segredo sob nome neutro e em formato desconhecido não é detectado — a defesa principal continua sendo a conexão do Make ([B1])"
+    "O verificador de blueprint pega credencial escrita pelo NOME do campo, cabeçalho ou parâmetro (lista MARCADORES/NOMES_DE_PAR no script) e pelo FORMATO conhecido (lista TOKEN: OpenAI, Stripe, Slack, GitHub, GitLab, Google, AWS, JWT, Telegram, Discord, chave privada), em texto ou número; segredo sob nome neutro e em formato desconhecido não é detectado — a defesa principal continua sendo a conexão do Make ([B1])"
   ],
   "author": "Roberto Dias Duarte",
   "license": "MIT",
