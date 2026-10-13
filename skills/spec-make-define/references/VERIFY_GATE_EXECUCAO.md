@@ -14,7 +14,7 @@ modo: sob demanda com a amostra | gatilho real
 amostra: <descrição; sem dado pessoal real; origem: pública | inventada>
 resultado esperado: <valores concretos que devem aparecer, e onde>
 grava registros: sim | não
-segunda execução: <se grava: rodar a mesma amostra de novo (gatilho real: recolocar a mesma amostra na origem de teste antes); esperado = mesma contagem de registros no destino>
+segunda execução: <se grava: rodar a mesma amostra de novo (gatilho real: o mesmo item, com o mesmo id, de novo — nunca um reenvio, que cria item novo); esperado = mesma contagem de registros no destino>
 operações estimadas: <por execução> × <execuções do teste> = <total>
 passa quando: <resultado esperado igual ao obtido> e <segunda execução sem registro novo, se grava>
 ```
@@ -25,7 +25,7 @@ passa quando: <resultado esperado igual ao obtido> e <segunda execução sem reg
 |---|---|---|
 | Entrada que você informa (sob demanda) | sob demanda com a amostra | `scenarios_run` com os dados da amostra |
 | Webhook | sob demanda com a amostra | Envia a amostra ao endereço do webhook ou roda com os dados |
-| E-mail, planilha, pasta, agenda | gatilho real | Coloca a amostra numa **origem de teste** (um rótulo, aba ou pasta só para o teste, nunca a caixa, planilha ou pasta real do escritório) e roda uma vez. Se o fluxo grava, coloca a **mesma** amostra de novo na origem de teste (reenvia o mesmo e-mail de teste ou o marca de novo como não lido; recoloca a mesma linha ou o mesmo arquivo) e roda de novo: a contagem no destino tem de ser a mesma |
+| E-mail, planilha, pasta, agenda | gatilho real | Coloca a amostra numa **origem de teste** (um rótulo, aba ou pasta só para o teste, nunca a caixa, planilha ou pasta real do escritório) e roda uma vez. Se o fluxo grava, faz o **mesmo** item passar de novo — mesmo id na origem: reexecute a 1ª execução com `scenarios_replay` quando o Make permitir, ou marque o mesmo e-mail de teste de novo como não lido; **não** reenvie o e-mail nem recrie a linha ou o arquivo (isso gera item novo, com id novo, e um 2º registro aí é o certo, não duplicata) e roda de novo: a contagem no destino tem de ser a mesma |
 
 ## O que recusar
 

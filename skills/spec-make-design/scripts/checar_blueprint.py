@@ -29,8 +29,11 @@ TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [
 # Marcadores no NOME normalizado (minúsculas, sem "-", "_", "." nem espaço) de campo, cabeçalho ou parâmetro de query:
 # "app_key", "Ocp-Apim-Subscription-Key", "client_secret", "x-api-key" contêm um deles. O nome exato "key" fica de
 # fora: é a chave do registro no data store do Make, não credencial (na URL, "?key=" continua sendo).
-MARCADORES = ("secret", "password", "senha", "token", "apikey", "appkey", "accesskey", "subscriptionkey",
-              "privatekey", "authorization", "clientsecret")
+MARCADORES = ("secret", "password", "passwd", "passphrase", "authpass", "senha", "token", "apikey", "appkey",
+              "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret")
+# Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
+# passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
+ENDERECO = ("url", "uri", "endpoint", "href", "link")
 PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}", re.I)
 NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]{6,})")
 # usuário:senha antes do host: https://usuario:senha@api.exemplo.com
@@ -76,14 +79,20 @@ def _literal(valor: object) -> bool:
 
 def _como_json(texto: str) -> object | None:
     """Corpo JSON escrito como texto (bodyType raw): o objeto lido, ou None quando o texto não começa com { ou [.
-    Se não se deixa ler (mapeamento sem aspas no meio), devolve os pares "nome": "valor" achados no texto."""
+    Se não se deixa ler (mapeamento sem aspas no meio), devolve CADA par "nome": "valor" achado no texto como um item
+    separado — nunca achatado num dicionário, onde um par posterior de mesmo nome apagaria o anterior (A1 do auditor,
+    rodada 3b)."""
     t = texto.strip()
     if not t.startswith(("{", "[")) or t.startswith("{{"):
         return None
     try:
         return json.loads(t)
     except ValueError:
-        return {m.group(1): m.group(2) for m in PAR_JSON.finditer(t)} or None
+        return [{"name": m.group(1), "value": m.group(2)} for m in PAR_JSON.finditer(t)] or None
+
+
+def _nome_de_endereco(nome: object) -> bool:
+    return isinstance(nome, str) and any(e in _normalizado(nome) for e in ENDERECO)
 
 
 def _url_sem_credencial(valor: object) -> bool:
@@ -97,13 +106,17 @@ def credenciais_literais(no: object) -> list[str]:
     ou qualquer um desses dentro de um corpo JSON escrito como texto."""
     achados: list[str] = []
 
-    def suspeito(nome: object, valor: object) -> bool:
-        return nome_de_credencial(nome) and _literal(valor) and not _url_sem_credencial(valor)
+    def suspeito(nome: object, valor: object, par: bool = False) -> bool:
+        # par = {name, value} de cabeçalho ou query: aí "key" é credencial (como "?key=" na URL — R3@opus, rodada 3b);
+        # como chave de objeto, "key" é a do registro do data store e não conta.
+        credencial = nome_de_credencial(nome) or (par and isinstance(nome, str) and _normalizado(nome) == "key")
+        isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
+        return credencial and _literal(valor) and not isento
 
     def andar(x: object, caminho: str) -> None:
         if isinstance(x, dict):
             nome = x.get("name") if isinstance(x.get("name"), str) else x.get("key")
-            if suspeito(nome, x.get("value")):
+            if "value" in x and suspeito(nome, x.get("value"), par=True):
                 achados.append(f"{caminho}.{nome}")
             for k, v in x.items():
                 if suspeito(k, v):

@@ -127,6 +127,29 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(chave=chave):
                 self.assertEqual(cb.checar(_com_datastore(chave)), [])
 
+    def test_rodada_3b(self):
+        """A1/A2 do auditor e R2/R3 do opus (rodada 3b)."""
+        casos = {
+            "A1: 2 objetos com password no corpo texto": {"body": '{"a":{"password":"Segredo123"},"b":{"password":""},"n":{{1.n}}}'},
+            "A2: password com valor https": {"password": "https://segredo.exemplo/abc123"},
+            "R2: authPass literal": {"authUser": "escritorio", "authPass": "S3nhaFixa2026"},
+            "R3: qs name=key": {"qs": [{"name": "key", "value": "AIzaSyD" + "x" * 20}]},
+            "R3: cabeçalho name=key": {"headers": [{"name": "key", "value": "abcd1234efgh5678"}]},
+        }
+        for nome, campo in casos.items():
+            with self.subTest(caso=nome):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"].update(campo)
+                self.assertTrue(any("credencial" in p for p in cb.checar(bp)), nome)
+        for nome, campo in {"token_url com https": {"token_url": "https://auth.exemplo/oauth/token"},
+                            "token_type Bearer": {"token_type": "Bearer"},
+                            "Authorization Bearer mapeado": {"headers": [{"name": "Authorization", "value": "Bearer {{1.access_token}}"}]},
+                            "qs name=key mapeado": {"qs": [{"name": "key", "value": "{{3.chave}}"}]}}.items():
+            with self.subTest(caso=nome):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"].update(campo)
+                self.assertEqual(cb.checar(bp), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

@@ -12,7 +12,7 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
    módulos do DESIGN), mandar o link, esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat.
 3. `validate_module_configuration` (por módulo) e `validate_blueprint_schema` — o blueprint final, já com as conexões.
    Rode também `scripts/checar_blueprint.py` se o ambiente executar código.
-4. `data-stores_create` — só se o DESIGN tiver data store novo (com `data-structures_create` antes). Em seguida,
+4. `data-structures_create` e depois `data-stores_create` — só se o DESIGN tiver data store novo. Em seguida,
    valide o módulo que grava nele (`validate_module_configuration` com o id do data store): os campos só aparecem
    depois que ele existe (MCP_MAKE.md, fato 9).
 5. `scenarios_create` — com `scheduling: { "type": "on-demand" }`, `confidential: true` e o nome do DESIGN. Se
@@ -22,7 +22,7 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 8. `scenarios_run` — com os dados da amostra do DEFINE e `responsive: true`. Anote o id da execução.
 9. `executions_get-detail` e `executions_get` — resultado e operações gastas.
 10. Fluxo que grava: conferir o destino (`data-store-records_list` ou o app) e repetir os passos 8–9 com a mesma
-    amostra (gatilho real: a mesma amostra recolocada na origem de teste, tabela abaixo); a contagem não pode mudar.
+    amostra (gatilho real: o mesmo item, com o mesmo id, de novo — tabela abaixo); a contagem não pode mudar.
 11. Recibo, pergunta [B2] e, só com "Ligar agora" ou "sim", `scenarios_update` com o agendamento do DESIGN (ou ligar o
     gatilho real).
 
@@ -31,7 +31,7 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 | Modo do DEFINE | Como rodar |
 |---|---|
 | Sob demanda com a amostra | `scenarios_run` com `data` = campos da amostra |
-| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data`. Fluxo que grava: peça à pessoa para colocar a **mesma** amostra de novo na origem de teste (reenviar o mesmo e-mail de teste ou marcá-lo de novo como não lido; recolocar a mesma linha ou o mesmo arquivo), rode de novo com `scenarios_run` sem `data` e confira que a contagem no destino não mudou (passo 10). A origem real só entra depois do teste aprovado **e** da resposta "Ligar agora" na pergunta [B2], com o ponto de partida "a partir de agora" (nunca "todos": isso reprocessaria o histórico); qualquer outra resposta mantém o gatilho na origem de teste |
+| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data`. Fluxo que grava: faça o **mesmo** item passar de novo — mesmo id na origem: reexecute a 1ª execução com `scenarios_replay` quando o Make permitir, ou marque o mesmo e-mail de teste de novo como não lido; **não** reenvie o e-mail nem recrie a linha ou o arquivo (isso gera item novo, com id novo, e um 2º registro aí é o certo, não duplicata); rode de novo e confira que a contagem no destino não mudou (passo 10). A origem real só entra depois do teste aprovado **e** da resposta "Ligar agora" na pergunta [B2], com o ponto de partida "a partir de agora" (nunca "todos": isso reprocessaria o histórico); qualquer outra resposta mantém o gatilho na origem de teste |
 
 ## Depois do teste
 
