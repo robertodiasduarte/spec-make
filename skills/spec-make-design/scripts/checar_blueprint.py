@@ -17,6 +17,10 @@ O que confere (as três coisas que os validadores do MCP do Make não pegam):
 
 Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN), em texto ou número. Um segredo com
 nome neutro e formato desconhecido não é detectado: a defesa principal é a conexão do Make, nunca o texto do blueprint.
+Nome com palavra de senha ou segredo em QUALQUER posição ("senha_certificado", "X-Senha-Certificado", "api_password")
+conta a partir de 1 caractere fixo, salvo quando outra palavra do nome diz que o campo descreve a senha em vez de
+guardá-la ("password_type", "token_expires_in", "token_url"); palavra de senha fundida a outra numa palavra só
+("senhacertificado") segue o limite de 6 caracteres dos nomes comuns.
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
 """
@@ -113,13 +117,29 @@ def _pedacos(w: list[str]) -> list[str]:
     return [p for p in todos if not _palavra_comum(p)]
 
 
+# Palavra que descreve a senha em vez de guardá-la ("password_type", "secret_encoding", "secret_name", "token_url"):
+# junto de uma palavra de FORTES, o nome volta ao limite de 6 (SPEC_MAKE s2). Por PALAVRA inteira, nunca por pedaço.
+# "hash" e "reset" ficam de fora: "password_hash" e "senha_reset" guardam um segredo.
+CONFIGURACAO = {"type", "tipo", "encoding", "codificacao", "policy", "politica", "hint", "dica", "required",
+                "obrigatorio", "obrigatoria", "enabled", "habilitado", "field", "campo", "format", "formato", "mode",
+                "modo", "strength", "forca", "rule", "rules", "regra", "regras", "label", "rotulo", "placeholder",
+                "length", "tamanho", "name", "nome", "id", "ref", "arn", "path", "file", "arquivo"}
+DESCRITIVA = CONFIGURACAO | MEDIDA | set(ENDERECO)
+
+
+def _forte(p: str) -> bool:
+    """"senha", "passwords", "dbpwd", "pass": a palavra é de senha, segredo ou Authorization."""
+    return any(p.rstrip("s").endswith(f) or p == f for f in FORTES)
+
+
 def _minimo(nome: object) -> int:
-    """Caracteres fixos a partir dos quais o valor é credencial: 1 quando a ÚLTIMA palavra do nome é de senha/segredo/
-    Authorization ("senha", "api_password", "client_secret", "dbpwd", "pass", "passwords"), 6 nos outros —
-    "password_type" e "secret_encoding" são configuração (A2, rodada 9)."""
+    """Caracteres fixos a partir dos quais o valor é credencial: 1 quando ALGUMA palavra do nome é de senha/segredo/
+    Authorization, em qualquer posição ("senha_certificado", "X-Senha-Certificado", "pwd_certificado", "secret_key",
+    "password_hash" — avaliador, ciclo 7) e NENHUMA descreve a senha ("password_type", "secret_encoding", "token_url":
+    6, como os nomes comuns — A2, rodada 9). Palavra comum ("secretaria", "resenha") não conta como forte."""
     if isinstance(nome, str):
-        w = _palavras(re.sub(r"[-_.\s]+", " ", nome))
-        if w and not _palavra_comum(w[-1]) and any(w[-1].rstrip("s").endswith(f) or w[-1] == f for f in FORTES):
+        w = [p for p in _palavras(re.sub(r"[-_.\s]+", " ", nome)) if not _palavra_comum(p)]
+        if any(_forte(p) for p in w) and not DESCRITIVA & set(w):
             return 1
     return 6
 

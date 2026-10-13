@@ -378,6 +378,65 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_s2_nome_forte_em_qualquer_posicao(self):
+        """SPEC_MAKE s2 (avaliador, ciclo 7): nome de senha em ordem portuguesa com valor de 1 a 5 caracteres reprova nas
+        4 superfícies — chave de objeto, par {name, value} de cabeçalho e de query, URL e parte do Cookie."""
+        nomes = ["senha_certificado", "senha_do_certificado", "senhaCertificado", "senha_usuario", "senha_api",
+                 "senha_portal_nfse", "pwd_certificado", "secret_key", "password_hash"]
+        for nome in nomes:
+            for valor in ("x", "1234", "12345", 1234):
+                casos = {
+                    "chave de objeto": {"data": {nome: valor}},
+                    "par de cabeçalho": {"headers": [{"name": "X-" + nome.replace("_", "-"), "value": str(valor)}]},
+                    "par de query": {"qs": [{"name": nome, "value": str(valor)}]},
+                    "na URL": {"url": f"https://api.exemplo.com/v1?{nome}={valor}"},
+                    "parte do Cookie": {"headers": [{"name": "Cookie", "value": f"sessao=abc; {nome}={valor}"}]},
+                }
+                for sup, campo in casos.items():
+                    with self.subTest(nome=nome, valor=valor, superficie=sup):
+                        self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), campo)
+        for cabecalho in ("X-Senha-Certificado", "X-Password-Certificado"):
+            with self.subTest(cabecalho=cabecalho):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(
+                    {"headers": [{"name": cabecalho, "value": "1234"}]}))))
+
+    def test_s2_palavra_forte_fora_da_lista_medida(self):
+        """Contrato C2 #3: "qualquer posição" vale para nome que não está na lista do avaliador (início, meio, fim) e o par
+        {name, value} com valor NUMÉRICO reprova em query e em cabeçalho."""
+        for nome in ("app_senha_certificado", "senha_nova", "password_confirm", "cliente_pwd_portal"):
+            with self.subTest(nome=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {nome: "1234"}}))))
+        for sup in ("qs", "headers"):
+            with self.subTest(superficie=sup):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(
+                    {sup: [{"name": "senha_api", "value": 1234}]}))))
+
+    def test_s2_fronteira_do_minimo(self):
+        """Fronteira exata dos dois limites: nome forte reprova com 1 caractere; nome comum aprova 5 e reprova 6."""
+        self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {"senha_api": "x"}}))))
+        self.assertEqual(cb.checar(_com_http({"data": {"api_key": "abcde"}})), [])
+        self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {"api_key": "abcdef"}}))))
+        self.assertEqual((cb._minimo("senha_certificado"), cb._minimo("password_type"), cb._minimo("api_key")), (1, 6, 6))
+
+    def test_s2_nome_que_descreve_a_senha_continua_aprovado(self):
+        """Palavra de configuração, medida ou endereço junto da palavra de senha: o campo descreve a senha."""
+        for nome, campo in {"password_type": {"data": {"password_type": "md5"}},
+                            "secret_encoding": {"data": {"secret_encoding": "utf8"}},
+                            "password_hint": {"data": {"password_hint": "pet"}},
+                            "senha_policy": {"data": {"senha_policy": "forte"}},
+                            "password_min_length": {"data": {"password_min_length": 8}},
+                            "secret_name": {"data": {"secret_name": "prod"}},
+                            "password_reset_url": {"data": {"password_reset_url": "https://x.com/r"}},
+                            "password_required": {"password_required": True}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
+    def test_s2_senha_reset_reprova(self):
+        """"reset" não descreve: "senha_reset"/"password_reset" guardam token de redefinição (R5, review do DESIGN s2)."""
+        for nome in ("senha_reset", "password_reset"):
+            with self.subTest(nome=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {nome: "ab12"}}))))
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
