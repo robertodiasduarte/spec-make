@@ -211,6 +211,28 @@ class ChecarBlueprint(unittest.TestCase):
             with self.subTest(caso=nome):
                 self.assertEqual(cb.checar(_com_http(campo)), [], nome)
 
+    def test_avaliador_ciclo_3(self):
+        """Avaliador ciclo 3 (AT-005): nomes de credencial em cabeçalho, query e corpo de formulário em texto."""
+        v = "abcdef" + "123456"
+        def hdr(nome):
+            return {"headers": [{"name": nome, "value": v}]}
+        for nome, campo in {"X-Auth-Key": hdr("X-Auth-Key"), "chave-api": hdr("chave-api"), "pwd": hdr("pwd"),
+                            "chave": hdr("chave"), "X-Pass": hdr("X-Pass"),
+                            "?pwd=": {"url": "https://api.x.com/v1?user=ana&pwd=" + v},
+                            "?chave=": {"url": "https://api.x.com/v1?chave=" + v},
+                            "form client_secret": {"data": "client_secret=" + v + "&grant_type=client_credentials"},
+                            "form password no meio": {"data": "grant_type=password&username=ana&password=" + v},
+                            "app_hash": {"data": {"app_hash": v}}}.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("credencial" in p for p in cb.checar(_com_http(campo))), nome)
+        for nome, campo in {"Content-Type": {"headers": [{"name": "Content-Type", "value": "application/json"}]},
+                            "X-Tenant mapeado": {"headers": [{"name": "X-Auth-Key", "value": "{{1.chave}}"}]},
+                            "form mapeado": {"data": "client_secret={{1.segredo}}&grant_type=client_credentials"},
+                            "form sem credencial": {"data": "grant_type=client_credentials&scope=leitura"},
+                            "?chave= mapeada": {"url": "https://api.x.com/v1?chave={{1.chave_nfe}}"}}.items():
+            with self.subTest(caso=nome):
+                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)

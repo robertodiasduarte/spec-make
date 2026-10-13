@@ -45,6 +45,38 @@ class Contrato(unittest.TestCase):
         self.assertEqual(checar_texto(r, texto), [])
         self.assertNotEqual(checar_texto(r, texto.replace(velho, "liga o gatilho do DESIGN mesmo assim")), [])
 
+    def test_regra_invertida_reprova(self):
+        """Avaliador ciclo 3 (achado 2): inverter a regra com 1 edição (o "nunca", o "não", o "pare", o número do teto)
+        tem de reprovar — Decision 2: grep de palavra solta passa com a regra invertida."""
+        b, p, d = "spec-make-build/SKILL.md", "spec-make-build/references/PROTOCOLO.md", \
+            "spec-make-build/references/DIAGNOSTICO.md"
+        ds, df = "spec-make-design/SKILL.md", "spec-make-define/SKILL.md"
+        casos = [
+            (b, "Nunca chame `scenarios_update`", "Pode chamar `scenarios_update`"),
+            (b, 'ou ligue o gatilho real depois de a pessoa responder "Ligar agora" ou "sim"',
+             'ou ligue o gatilho real; depois de a pessoa responder "Ligar agora" ou "sim"'),
+            (d, "pare: não corrija nem rode de novo", "continue: corrija e rode de novo"),
+            (d, "o teste roda no máximo 4 vezes", "o teste roda no máximo 9 vezes"),
+            (p, "7. `scenarios_activate` — necessário para rodar; sob demanda, ele só roda quando alguém pede.\n", ""),
+            (p, "Nunca peça chave no chat.", "Peça a chave no chat."),
+            (b, "O fluxo é criado com `metadata.scenario.confidential: true`.",
+             "O fluxo é criado com `metadata.scenario.confidential: false` (não `confidential: true`)."),
+            (ds, "Sem a chave, recuse o\nDESIGN como pronto e peça a chave.",
+             "Sem a chave, não recuse o\nDESIGN como pronto e não peça a chave."),
+            (ds, "Sem esse passo,\nrecuse o DESIGN como pronto", "Sem esse passo,\nnão recuse o DESIGN como pronto"),
+            (df, "Recuse como incompleto o teste", "Não Recuse como incompleto o teste"),
+            (b, "pare antes do `scenarios_create`, diga", "não pare antes do `scenarios_create`, diga"),
+            (b, "Não afirme que criou, rodou ou ligou nada.",
+             "Diga que criou e rodou. (Não afirme que criou, rodou ou ligou nada só se pedirem.)"),
+        ]
+        for arq, de, para in casos:
+            with self.subTest(arquivo=arq, de=de[:40]):
+                texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")
+                self.assertEqual(texto.count(de), 1, "trecho do mutante não achado no texto real")
+                mut = texto.replace(de, para)
+                erros = [e for r in REGRAS if r.arquivo == arq for e in checar_texto(r, mut)]
+                self.assertTrue(erros, "regra invertida passou")
+
     def test_ancora_ausente_reprova(self):
         r = REGRAS[0]
         texto = (RAIZ / "skills" / r.arquivo).read_text(encoding="utf-8").replace(f"**[{r.ancora}] ", "**[Z9] ")

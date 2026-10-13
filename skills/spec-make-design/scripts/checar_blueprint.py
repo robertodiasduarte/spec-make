@@ -12,7 +12,8 @@ O que confere (as três coisas que os validadores do MCP do Make não pegam):
   2. fluxo sob demanda com entrada (scenario-service:StartSubscenario) declara os campos no módulo 1 e NÃO
      traz a chave `interface` no blueprint (o validador do Make a recusa; ela é gravada com scenarios_set-interface);
   3. não há credencial escrita no blueprint: chave, token, senha, cabeçalho Authorization, chave ou usuário:senha
-     na URL, inclusive dentro de corpo JSON escrito como texto. O nome exato "key" (data store) não é credencial.
+     na URL, inclusive dentro de corpo JSON ou de formulário escrito como texto e dentro de fórmula {{…}}. O nome
+     exato "key" como chave de objeto (data store) não é credencial; em cabeçalho, query ou corpo em texto, é.
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
 """
@@ -30,7 +31,13 @@ TOKEN = re.compile(r"(sk-[A-Za-z0-9_-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.|-----BEGIN [
 # "app_key", "Ocp-Apim-Subscription-Key", "client_secret", "x-api-key" contêm um deles. O nome exato "key" fica de
 # fora: é a chave do registro no data store do Make, não credencial (na URL, "?key=" continua sendo).
 MARCADORES = ("secret", "password", "passwd", "passphrase", "authpass", "senha", "token", "apikey", "appkey",
-              "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret")
+              "accesskey", "subscriptionkey", "privatekey", "authorization", "clientsecret", "pwd", "authkey",
+              "chaveapi", "apichave", "chavesecreta", "chaveprivada", "apphash")
+# Em cabeçalho, parâmetro de query e corpo HTTP em texto, o nome é de credencial também quando tem uma destas PALAVRAS
+# ("X-Auth-Key", "chave-api", "pwd", "chave") — avaliador, ciclo 3. Fora desses pares (chave de objeto do blueprint) não:
+# "key" é a chave do registro no data store. "chave" inclui a chave de acesso da nota escrita à mão: valor de teste
+# que tem de vir mapeado da entrada, nunca fixo no blueprint.
+PALAVRAS_DE_PAR = ("key", "chave", "pwd", "pass")
 # Nome de campo que guarda ENDEREÇO ("token_url", "authorization_endpoint"): só nele um https://… sem credencial
 # passa. Em "password": "https://…" o valor é a senha (A2 do auditor, rodada 3b).
 ENDERECO = ("url", "uri", "endpoint", "href", "link")
@@ -38,6 +45,8 @@ PREFIXO = re.compile(r"^(Bearer|Basic|Token)\s+\S{6,}", re.I)
 NA_URL = re.compile(r"[?&]([A-Za-z0-9_.\-\[\]]+)=(?!\{\{)([^&\s\"#]{6,})")
 # usuário:senha antes do host: https://usuario:senha@api.exemplo.com
 USUARIO_SENHA = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://[^/\s:@\"]+:([^/\s@\"]+)@")
+# corpo de formulário escrito como texto: nome=valor&nome=valor
+FORM = re.compile(r"^[A-Za-z0-9_.\-\[\]]+=[^&]*(?:&[A-Za-z0-9_.\-\[\]]+=[^&]*)*$")
 # par "nome": "valor" num corpo JSON que não se deixa ler (ex.: {{1.n}} sem aspas no meio)
 PAR_JSON = re.compile(r'"([^"\\]{1,80})"\s*:\s*"((?:[^"\\]|\\.)*)"')
 
@@ -54,12 +63,20 @@ def nome_de_credencial(nome: object) -> bool:
     return n != "key" and any(m in n for m in MARCADORES)
 
 
+def nome_de_credencial_em_par(nome: object) -> bool:
+    """Nome de cabeçalho, parâmetro de query ou campo de corpo HTTP em texto que guarda credencial."""
+    if not isinstance(nome, str):
+        return False
+    palavras = _palavras(re.sub(r"[-_.\s]+", " ", nome))
+    return nome_de_credencial(nome) or any(w in PALAVRAS_DE_PAR for w in palavras) or _normalizado(nome).endswith("key")
+
+
 def _na_url(texto: str) -> bool:
     """Credencial na URL: parâmetro de query com nome de credencial (ou "key") e valor fixo, ou usuário:senha. Confere
     o texto como está e com cada expressão {{…}} trocada pelo texto fixo dela (?key={{"abc123…"}})."""
     for t in dict.fromkeys((texto, _resolvido(texto))):
         for m in NA_URL.finditer(t):
-            if nome_de_credencial(m.group(1)) or _normalizado(m.group(1)) == "key":
+            if nome_de_credencial_em_par(m.group(1)):
                 return True
         if any(_sem_mapeamento(m.group(1)) for m in USUARIO_SENHA.finditer(t)):
             return True
@@ -152,7 +169,7 @@ def credenciais_literais(no: object) -> list[str]:
         # par = {name, value} de cabeçalho ou query, ou campo de um corpo HTTP escrito como texto: aí "key" é credencial
         # (como "?key=" na URL — R3@opus 3b; o mesmo nos dois jeitos de ler o corpo — R4@opus 4). Só a chave de objeto do
         # próprio blueprint (o "key" do módulo de data store) fica de fora.
-        credencial = nome_de_credencial(nome) or (par and isinstance(nome, str) and _normalizado(nome) == "key")
+        credencial = nome_de_credencial_em_par(nome) if par else nome_de_credencial(nome)
         isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
         return credencial and _literal(valor) and not isento
 
@@ -176,6 +193,10 @@ def credenciais_literais(no: object) -> list[str]:
             lido = _como_json(x)
             if lido is not None:
                 andar(lido, f"{caminho}<json>", corpo=True)
+            elif FORM.match(x.strip()):
+                # corpo x-www-form-urlencoded escrito como texto: client_secret=…&grant_type=… (avaliador, ciclo 3)
+                pares = [{"name": n, "value": v} for n, _, v in (par.partition("=") for par in x.strip().split("&"))]
+                andar(pares, f"{caminho}<form>", corpo=True)
 
     andar(no, "$")
     return list(dict.fromkeys(achados))
@@ -223,7 +244,7 @@ def checar(bp: dict) -> list[str]:
     if onde:
         problemas.append(
             "há credencial escrita no blueprint (chave, token, senha ou cabeçalho Authorization) em "
-            + ", ".join(onde[:3]) + ": use a conexão do Make"
+            + ", ".join(onde[:3]) + ": use a conexão do Make, ou mapeie o valor da entrada do fluxo"
         )
 
     return problemas

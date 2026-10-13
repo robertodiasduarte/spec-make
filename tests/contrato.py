@@ -4,6 +4,10 @@ Cada regra vive num bloco que começa em `**[XN]` e vai até a próxima âncora 
 olha só dentro do bloco: tokens que precisam aparecer (todos) e tokens que precisam aparecer NESTA ORDEM — tanto em
 sequência quanto pela primeira menção de cada um (nenhum token citado antes do anterior).
 test_contrato.py roda cada regra contra o texto real e contra um mutante, que tem de reprovar.
+
+Regra com polaridade (nunca, não, recuse, pare) exige a FRASE inteira, com a palavra que vem antes: "Sem a chave, recuse o
+DESIGN" e não só "recuse o", senão "Sem a chave, não recuse o DESIGN" passa (achado 2 do avaliador, ciclo 3). A comparação
+ignora quebra de linha e espaço repetido.
 """
 from __future__ import annotations
 
@@ -34,42 +38,54 @@ ETAPAS = [("spec-make-brainstorm", 1, "Brainstorm", "Use a skill spec-make-defin
 
 REGRAS: list[Regra] = [
     Regra("B1", _skill("spec-make-build", "references/PROTOCOLO.md"), at="AT-002",
-          contem=['"on-demand"', "confidential: true", "credential-requests_create"],
+          contem=['"on-demand"', "confidential: true", "credential-requests_create",
+                  "esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat."],
           em_ordem=["environment_get", "credential-requests_create", "validate_module_configuration",
                     "validate_blueprint_schema", "scenarios_create", "scenarios_set-interface",
                     "scenarios_activate", "scenarios_run", "executions_get-detail"]),
     Regra("B2", _skill("spec-make-build"), at="AT-003",
           contem=["Ligar agora", "Deixar só sob demanda", "aguardando OK para ligar o gatilho",
-                  "scenarios_update", "on-demand", "Só troque o agendamento",
-                  'depois de a pessoa responder "Ligar agora" ou "sim"',
+                  "scenarios_update", "on-demand",
+                  'Só troque o agendamento (`scenarios_update` com `scheduling` diferente de `on-demand`) ou ligue o '
+                  'gatilho real depois de a pessoa responder "Ligar agora" ou "sim".',
                   # a consequência da falta do "sim", inteira (M8 do avaliador, ciclo 2: trocá-la passava)
                   "Qualquer outra resposta, ou nenhuma, mantém o fluxo sob demanda, sem agenda nem webhook ligados"]),
     Regra("B3", _skill("spec-make-build", "references/DIAGNOSTICO.md"), at="AT-004",
-          contem=["o que aconteceu", "o que eu já fiz", "o que você faz agora", "Teto: 3 tentativas", "operações"],
+          contem=["o que aconteceu", "o que eu já fiz", "o que você faz agora", "operações",
+                  "**Teto: 3 tentativas** de correção para o mesmo teste: o teste roda no máximo 4 vezes",
+                  "ainda falhar, pare: não corrija nem rode de novo, deixe o fluxo sob demanda"],
           em_ordem=["**interface**", "**módulo**", "**conexão**", "**mapeamento**"]),
     Regra("B4", _skill("spec-make-build"), at="AT-004",
-          contem=["scenarios_update", "scenarios_delete", "que esta conversa não criou"]),
+          contem=["Só o que você criou.** Nunca chame `scenarios_update`, `scenarios_delete`",
+                  "ou qualquer alteração em fluxo, data store ou conexão que esta conversa não criou."]),
     Regra("B5", _skill("spec-make-build"), at="UX MUST 5",
           contem=["Antes de criar qualquer coisa na conta", "antes de cada execução", "operações"]),
-    Regra("C1", _skill("spec-make-build"), at="AT-005", contem=["confidential: true"]),
-    Regra("C1", _skill("spec-make-design"), at="AT-005", contem=["confidential: true"]),
+    Regra("C1", _skill("spec-make-build"), at="AT-005",
+          contem=["O fluxo é criado com `metadata.scenario.confidential: true`. Se"]),
+    Regra("C1", _skill("spec-make-design"), at="AT-005",
+          contem=["Todo blueprint sai com `metadata.scenario.confidential: true`. O"]),
     Regra("P1", _skill("spec-make-design"), at="AT-007", contem=["inventário de prompts", "sdd-prompt-builder"]),
     Regra("P1", _skill("spec-make-build"), at="AT-007",
-          contem=["sem inventário", "pare antes do `scenarios_create`", "[G1]", "[G2]"]),
+          contem=["sem inventário", "[G1]", "[G2]",
+                  "sem inventário de prompts no DESIGN: pare antes do `scenarios_create`, diga o que falta"]),
     Regra("G1", _skill("spec-make-design"), at="AT-007",
-          contem=["pessoa identificada antes da gravação", "recuse o DESIGN"]),
+          contem=["pessoa identificada antes da gravação",
+                  "Sem esse passo, recuse o DESIGN como pronto e diga o que falta."]),
     Regra("G2", _skill("spec-make-design"), at="AT-007",
           contem=["fora do histórico", "modelo", "versão do prompt", "sugestão original", "quem aceitou",
                   "(UTC)", "se editou", "recuse o DESIGN"]),
     Regra("G3", _skill("spec-make-design"), at="AT-011",
-          contem=["chave natural", "já existe ⇒ não grava de novo", "recuse o", "peça a chave"]),
+          contem=["chave natural", "já existe ⇒ não grava de novo",
+                  "Sem a chave, recuse o DESIGN como pronto e peça a chave."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
           contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
-                  "Recuse como incompleto", "recuse \"blueprint validado\""]),
+                  "no destino. Recuse como incompleto o teste que só confere uma execução",
+                  ', e recuse "blueprint validado" como teste de aceite']),
 ]
 for _nome, _n, _rot, _prox in ETAPAS:
     REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=["a confirmar na conta"] if _nome != "spec-make-build"
-                        else ["a confirmar na conta", "Não afirme que criou, rodou ou ligou nada", "Importar blueprint"]))
+                        else ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
+                              "Importar blueprint"]))
     REGRAS.append(Regra("E1", _skill(_nome), at="UX MUST 4",
                         contem=[f"spec-make · Etapa {_n} de 4 — {_rot}", _prox]))
 
@@ -87,11 +103,17 @@ def bloco(texto: str, ancora: str) -> str | None:
     return resto[:fim]
 
 
+def _junto(s: str) -> str:
+    """Quebra de linha e espaço repetido viram 1 espaço: a frase pode estar quebrada em linhas no Markdown."""
+    return " ".join(s.split())
+
+
 def checar_texto(regra: Regra, texto: str) -> list[str]:
     b = bloco(texto, regra.ancora)
     if b is None:
         return [f"[{regra.ancora}] âncora ausente em {regra.arquivo}"]
-    erros = [f"[{regra.ancora}] {regra.arquivo}: falta {t!r}" for t in regra.contem if t not in b]
+    b = _junto(b)
+    erros = [f"[{regra.ancora}] {regra.arquivo}: falta {t!r}" for t in regra.contem if _junto(t) not in b]
     pos = -1
     for t in regra.em_ordem:
         j = b.find(t, pos + 1)
@@ -121,9 +143,10 @@ def mutantes(regra: Regra, texto: str) -> list[tuple[str, str]]:
     if b is None:
         return []
     saida = []
+    j = _junto(b) + "\n\n"
     for t in regra.contem + regra.em_ordem:
-        if t in b:
-            saida.append((f"sem {t!r}", texto.replace(b, b.replace(t, "XXX")), ))
+        if _junto(t) in j:
+            saida.append((f"sem {t!r}", texto.replace(b, j.replace(_junto(t), "XXX"))))
     if len(regra.em_ordem) >= 2:
         a, c = regra.em_ordem[0], regra.em_ordem[-1]
         trocado = b.replace(a, "\x00").replace(c, a).replace("\x00", c)
