@@ -91,8 +91,14 @@ def _como_json(texto: str) -> object | None:
         return [{"name": m.group(1), "value": m.group(2)} for m in PAR_JSON.finditer(t)] or None
 
 
+def _palavras(nome: str) -> list[str]:
+    """token_url → [token, url]; securityToken → [security, token]; authorizationEndpoint → [authorization, endpoint]."""
+    return [w.lower() for w in re.findall(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+", nome)]
+
+
 def _nome_de_endereco(nome: object) -> bool:
-    return isinstance(nome, str) and any(e in _normalizado(nome) for e in ENDERECO)
+    """Endereço por PALAVRA, não por pedaço: "security_password" contém "uri" mas não é endereço (R5@opus, rodada 4)."""
+    return isinstance(nome, str) and any(w in ENDERECO for w in _palavras(nome))
 
 
 def _url_sem_credencial(valor: object) -> bool:
@@ -107,32 +113,33 @@ def credenciais_literais(no: object) -> list[str]:
     achados: list[str] = []
 
     def suspeito(nome: object, valor: object, par: bool = False) -> bool:
-        # par = {name, value} de cabeçalho ou query: aí "key" é credencial (como "?key=" na URL — R3@opus, rodada 3b);
-        # como chave de objeto, "key" é a do registro do data store e não conta.
+        # par = {name, value} de cabeçalho ou query, ou campo de um corpo HTTP escrito como texto: aí "key" é credencial
+        # (como "?key=" na URL — R3@opus 3b; o mesmo nos dois jeitos de ler o corpo — R4@opus 4). Só a chave de objeto do
+        # próprio blueprint (o "key" do módulo de data store) fica de fora.
         credencial = nome_de_credencial(nome) or (par and isinstance(nome, str) and _normalizado(nome) == "key")
         isento = _nome_de_endereco(nome) and _url_sem_credencial(valor)
         return credencial and _literal(valor) and not isento
 
-    def andar(x: object, caminho: str) -> None:
+    def andar(x: object, caminho: str, corpo: bool = False) -> None:
         if isinstance(x, dict):
             nome = x.get("name") if isinstance(x.get("name"), str) else x.get("key")
             if "value" in x and suspeito(nome, x.get("value"), par=True):
                 achados.append(f"{caminho}.{nome}")
             for k, v in x.items():
-                if suspeito(k, v):
+                if suspeito(k, v, par=corpo):
                     achados.append(f"{caminho}.{k}")
-                andar(v, f"{caminho}.{k}")
+                andar(v, f"{caminho}.{k}", corpo)
         elif isinstance(x, list):
             for i, v in enumerate(x):
-                andar(v, f"{caminho}[{i}]")
+                andar(v, f"{caminho}[{i}]", corpo)
         elif isinstance(x, str):
             # Token conhecido e chave na URL valem até DENTRO de uma expressão {{…}} (R1@opus, rodada 2): só o
             # teste de "texto fixo" (prefixo de esquema) desconta os mapeamentos.
             if (PREFIXO.match(x.strip()) and len(_sem_mapeamento(x)) >= 6) or TOKEN.search(x) or _na_url(x):
                 achados.append(caminho)
-            corpo = _como_json(x)
-            if corpo is not None:
-                andar(corpo, f"{caminho}<json>")
+            lido = _como_json(x)
+            if lido is not None:
+                andar(lido, f"{caminho}<json>", corpo=True)
 
     andar(no, "$")
     return list(dict.fromkeys(achados))

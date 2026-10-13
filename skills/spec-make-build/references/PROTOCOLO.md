@@ -22,7 +22,8 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 8. `scenarios_run` — com os dados da amostra do DEFINE e `responsive: true`. Anote o id da execução.
 9. `executions_get-detail` e `executions_get` — resultado e operações gastas.
 10. Fluxo que grava: conferir o destino (`data-store-records_list` ou o app) e repetir os passos 8–9 com a mesma
-    amostra (gatilho real: o mesmo item, com o mesmo id, de novo — tabela abaixo); a contagem não pode mudar.
+    amostra (gatilho real: tabela abaixo); a contagem não pode mudar e a 2ª execução tem de ter processado o item
+    (operações > 0, iguais às da 1ª).
 11. Recibo, pergunta [B2] e, só com "Ligar agora" ou "sim", `scenarios_update` com o agendamento do DESIGN (ou ligar o
     gatilho real).
 
@@ -31,7 +32,7 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 | Modo do DEFINE | Como rodar |
 |---|---|
 | Sob demanda com a amostra | `scenarios_run` com `data` = campos da amostra |
-| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data`. Fluxo que grava: faça o **mesmo** item passar de novo — mesmo id na origem: reexecute a 1ª execução com `scenarios_replay` quando o Make permitir, ou marque o mesmo e-mail de teste de novo como não lido; **não** reenvie o e-mail nem recrie a linha ou o arquivo (isso gera item novo, com id novo, e um 2º registro aí é o certo, não duplicata); rode de novo e confira que a contagem no destino não mudou (passo 10). A origem real só entra depois do teste aprovado **e** da resposta "Ligar agora" na pergunta [B2], com o ponto de partida "a partir de agora" (nunca "todos": isso reprocessaria o histórico); qualquer outra resposta mantém o gatilho na origem de teste |
+| Gatilho real (e-mail, planilha, pasta) | Teste numa **origem de teste**, nunca na caixa, planilha ou pasta real do escritório: um rótulo, aba ou pasta só para o teste, com limite de 1 item por execução no módulo de gatilho. Peça à pessoa para colocar a amostra lá, rode uma vez com `scenarios_run` sem `data`. Fluxo que grava: a 2ª passada tem de levar ao fluxo um item com a **mesma chave natural** do DESIGN. Chave de conteúdo (chave de acesso da nota, CNPJ, número do documento): ponha na origem de teste um item novo com o mesmo conteúdo (reenvie o e-mail de teste, copie a linha ou o arquivo) — a contagem no destino não pode mudar. Chave que é o id do item na origem (id do e-mail, do arquivo, número da linha): um item novo é outro registro, e um 2º registro aí é o certo; marque o mesmo e-mail de novo como não lido e rode, e se o gatilho não o pegar de novo, volte à etapa 3 e troque por uma chave de conteúdo. Em qualquer caso, confira em `executions_get` que a 2ª execução processou o item (operações maiores que zero, iguais às da 1ª): execução que não processou nada não testa nada. (passo 10) A origem real só entra depois do teste aprovado **e** da resposta "Ligar agora" na pergunta [B2], com o ponto de partida "a partir de agora" (nunca "todos": isso reprocessaria o histórico); qualquer outra resposta mantém o gatilho na origem de teste |
 
 ## Depois do teste
 

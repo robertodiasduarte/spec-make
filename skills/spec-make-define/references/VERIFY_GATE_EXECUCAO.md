@@ -14,9 +14,9 @@ modo: sob demanda com a amostra | gatilho real
 amostra: <descrição; sem dado pessoal real; origem: pública | inventada>
 resultado esperado: <valores concretos que devem aparecer, e onde>
 grava registros: sim | não
-segunda execução: <se grava: rodar a mesma amostra de novo (gatilho real: o mesmo item, com o mesmo id, de novo — nunca um reenvio, que cria item novo); esperado = mesma contagem de registros no destino>
+segunda execução: <se grava: rodar a mesma amostra de novo (gatilho real: um item com a mesma chave natural — ver a tabela abaixo); esperado = mesma contagem de registros no destino>
 operações estimadas: <por execução> × <execuções do teste> = <total>
-passa quando: <resultado esperado igual ao obtido> e <segunda execução sem registro novo, se grava>
+passa quando: <resultado esperado igual ao obtido> e <segunda execução processou o item (operações > 0) sem registro novo, se grava>
 ```
 
 ## Como escolher o modo
@@ -25,7 +25,7 @@ passa quando: <resultado esperado igual ao obtido> e <segunda execução sem reg
 |---|---|---|
 | Entrada que você informa (sob demanda) | sob demanda com a amostra | `scenarios_run` com os dados da amostra |
 | Webhook | sob demanda com a amostra | Envia a amostra ao endereço do webhook ou roda com os dados |
-| E-mail, planilha, pasta, agenda | gatilho real | Coloca a amostra numa **origem de teste** (um rótulo, aba ou pasta só para o teste, nunca a caixa, planilha ou pasta real do escritório) e roda uma vez. Se o fluxo grava, faz o **mesmo** item passar de novo — mesmo id na origem: reexecute a 1ª execução com `scenarios_replay` quando o Make permitir, ou marque o mesmo e-mail de teste de novo como não lido; **não** reenvie o e-mail nem recrie a linha ou o arquivo (isso gera item novo, com id novo, e um 2º registro aí é o certo, não duplicata) e roda de novo: a contagem no destino tem de ser a mesma |
+| E-mail, planilha, pasta, agenda | gatilho real | Coloca a amostra numa **origem de teste** (um rótulo, aba ou pasta só para o teste, nunca a caixa, planilha ou pasta real do escritório) e roda uma vez. Se o fluxo grava: a 2ª passada tem de levar ao fluxo um item com a **mesma chave natural** do DESIGN. Chave de conteúdo (chave de acesso da nota, CNPJ, número do documento): ponha na origem de teste um item novo com o mesmo conteúdo (reenvie o e-mail de teste, copie a linha ou o arquivo) — a contagem no destino não pode mudar. Chave que é o id do item na origem (id do e-mail, do arquivo, número da linha): um item novo é outro registro, e um 2º registro aí é o certo; marque o mesmo e-mail de novo como não lido e rode, e se o gatilho não o pegar de novo, volte à etapa 3 e troque por uma chave de conteúdo. Em qualquer caso, confira em `executions_get` que a 2ª execução processou o item (operações maiores que zero, iguais às da 1ª): execução que não processou nada não testa nada. |
 
 ## O que recusar
 

@@ -150,6 +150,25 @@ class ChecarBlueprint(unittest.TestCase):
                 bp["flow"][1]["mapper"].update(campo)
                 self.assertEqual(cb.checar(bp), [], nome)
 
+    def test_rodada_4(self):
+        """R4/R5@opus (rodada 4): 'key' no corpo texto vale igual lido ou não como JSON; endereço por palavra."""
+        chave = "AIzaSyD" + "x" * 20
+        for nome, campo in {"corpo JSON legível com key": {"body": '{"key":"' + chave + '"}'},
+                            "corpo com mapeamento e key": {"body": '{"key":"' + chave + '","n":{{1.n}}}'},
+                            "security_password https": {"security_password": "https://segredo.exemplo/abc123"},
+                            "securityToken https": {"securityToken": "https://segredo.exemplo/abc123"}}.items():
+            with self.subTest(caso=nome):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"].update(campo)
+                self.assertTrue(any("credencial" in p for p in cb.checar(bp)), nome)
+        for nome, campo in {"token_url https": {"token_url": "https://auth.exemplo/oauth/token"},
+                            "authorizationEndpoint https": {"authorizationEndpoint": "https://auth.exemplo/authorize"},
+                            "corpo com key mapeado": {"body": '{"key":"{{2.cnpj}}"}'}}.items():
+            with self.subTest(caso=nome):
+                bp = _ler("blueprint_valido.json")
+                bp["flow"][1]["mapper"].update(campo)
+                self.assertEqual(cb.checar(bp), [], nome)
+
     def test_modulo_dentro_de_rota_conta(self):
         bp = _ler("blueprint_entrada_sem_campos.json")
         entrada = bp["flow"].pop(0)
