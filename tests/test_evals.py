@@ -10,7 +10,7 @@ from pathlib import Path
 
 from contrato import REGRAS
 import evals
-from evals import ESPERADO, problemas
+from evals import ESPERADO, POSITIVOS, problemas, problemas_positivos
 
 RAIZ = Path(__file__).resolve().parents[1]
 EXIGIDOS = {
@@ -93,6 +93,47 @@ class Evals(unittest.TestCase):
             erros = problemas(real)
         self.assertIn("spec-make-brainstorm/amostra-pessoal: âncora COPY sem regra em spec-make-brainstorm", erros)
         self.assertEqual(problemas(real), [])
+
+    def test_positivo_do_handoff(self):
+        """AT-010: o positivo `handoff-boletos` cita H1, H2 e H3 — oráculo separado do mapa dos negativos, que continua
+        com os 23."""
+        self.assertEqual(POSITIVOS, {"spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}}})
+        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 23)
+        self.assertEqual(problemas_positivos(_reais()), [])
+
+    def test_positivo_reprova_mutantes(self):
+        """Avaliador fresco do s3, ciclo 2 (EV4): `regras` do positivo sem H2, trocada, acrescida, repetida, vazia ou
+        removida; o caso virando negativo; o caso removido; o caso duplicado — cada um derruba `handoff-boletos`."""
+        real = _reais()
+        cid, sk = "handoff-boletos", "spec-make-handoff"
+
+        def com(fn):
+            ev = copy.deepcopy(real)
+            fn(ev[sk]["cases"], next(c for c in ev[sk]["cases"] if c["id"] == cid))
+            return problemas_positivos(ev)
+
+        mutantes = {
+            "EV4 sem H2": lambda cs, c: c.__setitem__("regras", ["H1", "H3"]),
+            "H2 trocada por H4": lambda cs, c: c.__setitem__("regras", ["H1", "H4", "H3"]),
+            "M1 acrescida": lambda cs, c: c.__setitem__("regras", ["H1", "H2", "H3", "M1"]),
+            "H2 repetida": lambda cs, c: c.__setitem__("regras", ["H1", "H2", "H2", "H3"]),
+            "regras vazia": lambda cs, c: c.__setitem__("regras", []),
+            "regras removida": lambda cs, c: c.pop("regras"),
+            "virou negativo": lambda cs, c: c.__setitem__("type", "negative_control"),
+            "caso removido": lambda cs, c: cs.remove(c),
+            "caso duplicado com H1 só": lambda cs, c: cs.insert(0, dict(c, regras=["H1"])),
+        }
+        for nome, fn in mutantes.items():
+            with self.subTest(mutante=nome):
+                erros = com(fn)
+                self.assertTrue(any(e.startswith(f"{sk}/{cid}:") for e in erros), f"mutante passou: {erros}")
+        self.assertEqual(problemas_positivos(real), [], "o mutante vazou para o real")
+        # âncora de OUTRA skill: só a regra "âncora com regra na mesma skill" pega (oráculo e caso mudam juntos)
+        ev = copy.deepcopy(real)
+        next(c for c in ev[sk]["cases"] if c["id"] == cid)["regras"] = ["H1", "B6", "H3"]
+        with mock.patch.dict(evals.POSITIVOS[sk], {cid: {"H1", "B6", "H3"}}):
+            erros = problemas_positivos(ev)
+        self.assertIn(f"{sk}/{cid}: âncora B6 sem regra em {sk}", erros)
 
 
 def _reais() -> dict:

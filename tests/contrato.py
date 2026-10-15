@@ -82,9 +82,22 @@ REGRAS: list[Regra] = [
                   "com o aviso [B5].",
                   "nunca chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele",
                   "Recurso `compartilhado com N cenários`: só ler e acrescentar registro — nunca chame "
-                  "`data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele;"],
+                  "`data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele;",
+                  # avaliador fresco do s3, ciclo 2 (B6e/B6e2/B6h, B6f): a consequência do uso novo fora da família e o
+                  # [B4] do recurso fora da ficha, inteiros — "recalcule a custódia" solto passava com "continua `desta
+                  # família`, sem avisar a pessoa" e com "fora do spec-make: altere também"
+                  "Depois releia `data-stores_list` e `hooks_list` e recalcule a custódia pelos `scenarioUsages` e "
+                  "`scenarioId` de agora: recurso que ganhou uso fora da família passa a `compartilhado com N cenários`, "
+                  "e você diz isso à pessoa.",
+                  "Recurso ausente da ficha ou `fora do spec-make`: [B4] como sempre."],
           em_ordem=["lastEdit", "scenarioUsages", "scenarios_update"]),
-    Regra("E1", _skill("spec-make-build"), at="AT-006", contem=["`HANDOFF_<FLUXO>.md`", "o handoff, como continuar depois"]),
+    # avaliador fresco do s3, ciclo 2 (E1i, E1h): o fecho NORMAL inteiro, do "dois arquivos" ao "como continuar depois" —
+    # "Pronto: o fluxo está na sua conta." solto é achado no texto de reserva ("Sem a skill de handoff instalada…")
+    Regra("E1", _skill("spec-make-build"), at="AT-006",
+          contem=["`HANDOFF_<FLUXO>.md`", "o handoff, como continuar depois",
+                  "O fecho entrega o recibo e dois arquivos, `FICHA_DO_FLUXO_<FLUXO>.md` e `HANDOFF_<FLUXO>.md`, pede para "
+                  'salvar os dois e diz: "Pronto: o fluxo está na sua conta. A ficha diz o que fazer quando ele falhar; o '
+                  'handoff, como continuar depois."']),
     # skill de handoff: fora de ETAPAS (não é etapa — a 1ª linha não diz "Etapa N de 4")
     # avaliador fresco do s3, ciclo 1: as 3 classes de custódia, a pergunta da 1ª ficha e o `scenarios_list` com a
     # linha inteira — "compartilhado com N cenários" solto passava com a classe redefinida como `desta família`
@@ -115,7 +128,10 @@ REGRAS: list[Regra] = [
                   "conversa relê com `hooks_get`); do data store, só o id, o nome e o número de registros.",
                   "quem altera é a etapa 3 ou 4, sob a custódia da ficha"]),
     Regra("H3", _skill("spec-make-handoff"), at="AT-006",
-          contem=["nunca crie um arquivo novo para a mesma família", "Use a skill spec-make-", "sem nenhum trecho entre « »"],
+          contem=["nunca crie um arquivo novo para a mesma família", "Use a skill spec-make-", "sem nenhum trecho entre « »",
+                  # avaliador fresco do s3, ciclo 2 (H3d): design e build trocados no mapeamento passavam
+                  'qual skill abrir ("Use a skill spec-make-design." quando o desenho muda; "Use a skill '
+                  'spec-make-build." quando só implementa; a etapa em que a conversa parou, se parou no meio)'],
           em_ordem=["qual skill abrir", "quais arquivos anexar", "onde paramos", "último teste", "próxima ação"]),
     Regra("H4", _skill("spec-make-handoff"), at="AT-004",
           contem=["checar_handoff.py", "URL de webhook", "11 ou mais dígitos", "sem id"]),
@@ -145,8 +161,11 @@ M1 = {"spec-make-brainstorm": ['como "a confirmar na conta". Não afirme que um 
       "spec-make-design": ['marque cada um como "a confirmar na conta" e não declare o blueprint validado.'],
       "spec-make-build": ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
                           "Importar blueprint"]}
+# avaliador fresco do s3, ciclo 2 (M1b, M1c): o aviso em 1 frase e o "sem o conector" na linha "Gerada", inteiros
 M1["spec-make-handoff"] = ['"a confirmar na conta" em cada estado. Não afirme `lastEdit`, custódia nem contagem de registros '
-                           'sem ter lido a conta.']
+                           'sem ter lido a conta.',
+                           'Se a conversa não tiver o MCP do Make, avise em uma frase, escreva "sem o conector" na linha '
+                           '"Gerada" da ficha e preencha o inventário']
 REGRAS.append(Regra("M1", _skill("spec-make-handoff"), at="AT-009", contem=M1["spec-make-handoff"]))
 for _nome, _n, _rot, _prox in ETAPAS:
     REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=M1[_nome]))
@@ -155,8 +174,13 @@ for _nome, _n, _rot, _prox in ETAPAS:
 
 
 # Regras que vivem nos arquivos de referência (fora das âncoras), com a polaridade inteira (avaliador, ciclo 4). Uma frase
-# ACRESCENTADA que desmente a regra é pega pelo snapshot de tests/regras.py.
+# ACRESCENTADA que desmente a regra é pega pelo snapshot de tests/regras.py. Vale também para o trecho de um SKILL.md que
+# fica fora de qualquer âncora (o passo a passo numerado).
 FRASES: dict[str, list[str]] = {
+    # avaliador fresco do s3, ciclo 2 (B9): o passo 9 da build entrega o handoff com os ids lidos agora e a sessão
+    "spec-make-build/SKILL.md": [
+        "9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill `spec-make-handoff`, "
+        "com os ids lidos agora e esta sessão no histórico — e feche com [E1]."],
     "spec-make-design/references/GOVERNANCA_DO_FLUXO.md": [
         "**Sem a chave:** recuse o DESIGN como pronto e peça a chave.",
         "**Sem o passo:** recuse o DESIGN e diga o que falta; a etapa 4 para antes de criar o fluxo.",

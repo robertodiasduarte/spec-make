@@ -100,6 +100,27 @@ class Contrato(unittest.TestCase):
             ("spec-make-handoff/references/PROTOCOLO.md", "Use `scenarios_list` só quando a pessoa der o nome sem o id",
              "Use `scenarios_list` para achar as partes; `scenarios_list` só quando a pessoa der o nome sem o id não é "
              "regra"),
+            # avaliador fresco do s3, ciclo 2 — os mutantes que sobreviveram com o snapshot regravado
+            # AT-003 (B6e, B6e2, B6h): uso novo fora da família continua `desta família` / sem avisar / segue a ficha
+            (b, "recurso que ganhou uso fora da família passa a `compartilhado com N\ncenários`, e você diz isso à pessoa",
+             "recurso que ganhou uso fora da família continua `desta família`, sem avisar a pessoa"),
+            (b, "passa a `compartilhado com N\ncenários`, e você diz isso à pessoa", "passa a `compartilhado com N\ncenários`"),
+            (b, "recurso que ganhou uso fora da família passa a `compartilhado com N\ncenários`, e você diz isso à pessoa",
+             "recurso que ganhou uso fora da família segue com a custódia da ficha"),
+            # AT-003 (B6f): recurso fora da ficha alterado em vez de [B4]
+            (b, "Recurso ausente da ficha ou `fora do spec-make`: [B4] como sempre.",
+             "Recurso ausente da ficha ou `fora do spec-make`: altere também, com o aviso [B5]."),
+            # AT-006 (E1i, E1h): fecho normal sem o "Pronto: …"; sem pedir para salvar os dois
+            (b, 'diz: "Pronto: o fluxo\nestá na sua conta. A ficha diz o que fazer quando ele falhar; o handoff',
+             'diz: "Feito. A ficha diz o que fazer quando ele falhar; o handoff'),
+            (b, "pede para salvar os dois e diz", "e diz"),
+            # AT-006 (H3d): design e build trocados no mapeamento do prompt de retomada
+            (h, '("Use a skill spec-make-design." quando o desenho muda; "Use a skill spec-make-build." quando só\nimplementa',
+             '("Use a skill spec-make-build." quando o desenho muda; "Use a skill spec-make-design." quando só\nimplementa'),
+            # AT-009 (M1b, M1c): sem o aviso em 1 frase; sem o "sem o conector" na linha "Gerada"
+            (h, "Se a conversa não tiver o MCP do Make, avise em uma frase, escreva",
+             "Se a conversa não tiver o MCP do Make, escreva"),
+            (h, 'avise em uma frase, escreva "sem o conector" na\nlinha "Gerada" da ficha e preencha', "preencha"),
         ]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
@@ -127,7 +148,8 @@ class Contrato(unittest.TestCase):
                 self.assertEqual(checar_frases(arq, (RAIZ / "skills" / arq).read_text(encoding="utf-8")), [])
 
     def test_regra_invertida_nos_arquivos_de_referencia_reprova(self):
-        """Avaliador ciclo 4 (achado 2): as 8 inversões de 1 edição nos arquivos de referência."""
+        """Avaliador ciclo 4 (achado 2): as 8 inversões de 1 edição nos arquivos de referência; avaliador fresco do s3,
+        ciclo 2 (B9): o passo 9 da build, fora das âncoras."""
         g, pr = "spec-make-design/references/GOVERNANCA_DO_FLUXO.md", "spec-make-design/references/PROMPTS_DE_IA.md"
         v = "spec-make-define/references/VERIFY_GATE_EXECUCAO.md"
         casos = [(g, "**Sem o passo:** recuse o DESIGN", "**Sem o passo:** aceite o DESIGN"),
@@ -143,7 +165,13 @@ class Contrato(unittest.TestCase):
                  ("spec-make-handoff/references/PROTOCOLO.md", "Nunca troque o `lastEdit` da ficha",
                   "Troque o `lastEdit` da ficha"),
                  ("spec-make-handoff/references/PROTOCOLO.md", "a ficha mantém o `lastEdit` antigo",
-                  "a ficha passa a ter o `lastEdit` da conta")]
+                  "a ficha passa a ter o `lastEdit` da conta"),
+                 # avaliador fresco do s3, ciclo 2 (B9): o passo 9 da build sem os ids lidos agora e a sessão
+                 ("spec-make-build/SKILL.md", "com os ids\n   lidos agora e esta sessão no histórico ", ""),
+                 ("spec-make-build/SKILL.md",
+                  "9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill "
+                  "`spec-make-handoff`, com os ids\n   lidos agora e esta sessão no histórico — e feche",
+                  "9. **Fichas.** Preencha a ficha do fluxo e feche")]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
                 texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")
