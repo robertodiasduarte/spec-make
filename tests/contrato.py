@@ -68,22 +68,52 @@ REGRAS: list[Regra] = [
           contem=["inventário de prompts", "sdd-prompt-builder",
                   "Fluxo com módulo de IA e sem esse inventário: recuse o DESIGN como pronto e diga o que falta."]),
     # SPEC_MAKE_HANDOFF (s3): custódia pela ficha na build — lastEdit e usos relidos ANTES de gravar (A2 da review do DESIGN)
+    # avaliador fresco do s3, ciclo 1: a conferência do lastEdit e a regra do compartilhado, com a polaridade inteira
+    # ("se for diferente, diga … e siga só depois do sim"; "compartilhado: só ler … — nunca chame") — trechos soltos
+    # passavam com a regra invertida
     Regra("B6", _skill("spec-make-build"), at="AT-003",
           contem=["contam como criados por esta conversa para [B4] — e só eles",
                   "editado no Make depois da ficha", 'siga só depois do "sim" da pessoa',
+                  "Primeiro leia `scenarios_get` de cada parte e compare o `lastEdit` com o da ficha: se for diferente, "
+                  'diga em 1 frase os dois horários ("editado no Make depois da ficha") e siga só depois do "sim" da '
+                  "pessoa.",
                   "releia `data-stores_list` e `hooks_list` e recalcule a custódia",
-                  "nunca chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele"],
+                  "Só então chame `scenarios_update`, `scenarios_set-interface`, `data-stores_update` ou `hooks_update`, "
+                  "com o aviso [B5].",
+                  "nunca chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele",
+                  "Recurso `compartilhado com N cenários`: só ler e acrescentar registro — nunca chame "
+                  "`data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele;"],
           em_ordem=["lastEdit", "scenarioUsages", "scenarios_update"]),
     Regra("E1", _skill("spec-make-build"), at="AT-006", contem=["`HANDOFF_<FLUXO>.md`", "o handoff, como continuar depois"]),
     # skill de handoff: fora de ETAPAS (não é etapa — a 1ª linha não diz "Etapa N de 4")
+    # avaliador fresco do s3, ciclo 1: as 3 classes de custódia, a pergunta da 1ª ficha e o `scenarios_list` com a
+    # linha inteira — "compartilhado com N cenários" solto passava com a classe redefinida como `desta família`
     Regra("H1", _skill("spec-make-handoff", "references/PROTOCOLO.md"), at="AT-002",
           contem=["desta família", "compartilhado com N cenários", "fora do spec-make", "scenarioUsages", "lastEdit",
-                  "pergunte quais cenários fazem parte do fluxo", "`scenarios_list` só quando a pessoa der o nome sem o id",
-                  "Cenário que a pessoa não confirmou nunca entra como `desta família`."],
+                  "Sem ficha anterior, pergunte quais cenários fazem parte do fluxo antes de escrever qualquer custódia",
+                  "Use `scenarios_list` só quando a pessoa der o nome sem o id: procure o nome exato e confirme com ela o "
+                  "cenário achado.",
+                  "Cenário que a pessoa não confirmou nunca entra como `desta família`.",
+                  "- `desta família` — cenário confirmado como parte; data store em que todo `scenarioUsages` é parte da "
+                  "família; webhook ligado a uma parte.",
+                  "- `compartilhado com N cenários — só ler e acrescentar` — data store usado também fora da família; N é "
+                  "o total de cenários em `scenarioUsages`.",
+                  "- `fora do spec-make` — toda conexão (ela se reautoriza no Make), webhook ligado a outro cenário e todo "
+                  "cenário que a pessoa não confirmou."],
           em_ordem=["environment_get", "scenarios_get", "hooks_list", "data-stores_list", "connections_list"]),
+    # avaliador fresco do s3, ciclo 1: a lista do "Nunca chame" até o `data-store-records_list` e o motivo, numa frase só,
+    # e o que a ficha guarda do webhook com o parêntese que vem depois — trechos soltos passavam com "Leia
+    # `data-store-records_list`" e com "e também a URL completa"
     Regra("H2", _skill("spec-make-handoff"), at="AT-005",
           contem=["Nunca chame `scenarios_create`, `scenarios_update`", "`data-store-records_list`",
-                  "do webhook, guarde só o id e o nome", "quem altera é a etapa 3 ou 4, sob a custódia da ficha"]),
+                  "Esta skill só lê a conta. Nunca chame `scenarios_create`, `scenarios_update`, `scenarios_activate`, "
+                  "`scenarios_deactivate`, `scenarios_delete`, `scenarios_run`, `hooks_create`, `hooks_update`, "
+                  "`hooks_delete`, `data-stores_create`, `data-stores_update`, `data-stores_delete` nem "
+                  "`data-store-records_list` — o registro de um data store pode guardar senha ou chave.",
+                  "do webhook, guarde só o id e o nome",
+                  "Na ficha, do webhook, guarde só o id e o nome (o endereço dele carrega o código de acesso; a próxima "
+                  "conversa relê com `hooks_get`); do data store, só o id, o nome e o número de registros.",
+                  "quem altera é a etapa 3 ou 4, sob a custódia da ficha"]),
     Regra("H3", _skill("spec-make-handoff"), at="AT-006",
           contem=["nunca crie um arquivo novo para a mesma família", "Use a skill spec-make-", "sem nenhum trecho entre « »"],
           em_ordem=["qual skill abrir", "quais arquivos anexar", "onde paramos", "último teste", "próxima ação"]),

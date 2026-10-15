@@ -81,6 +81,25 @@ class Contrato(unittest.TestCase):
             (b, "Depois releia `data-stores_list` e `hooks_list` e recalcule a custódia",
              "Não precisa reler `data-stores_list` e `hooks_list` nem recalcular a custódia"),
             (h, "Não afirme `lastEdit`", "Afirme `lastEdit`"),
+            # avaliador fresco do s3, ciclo 1 — AT-005 (H2): ler o registro do data store; guardar a URL do webhook
+            (h, "`data-stores_delete` nem `data-store-records_list` — o\nregistro de um data store pode guardar senha ou chave.",
+             "`data-stores_delete`. Leia `data-store-records_list` para conferir o registro."),
+            (h, "do webhook, guarde só o id e o nome", "do webhook, guarde só o id e o nome e também a URL completa"),
+            # AT-003 (B6): lastEdit diferente segue sem o "sim"; compartilhado liberado a pedido
+            (b, 'se for diferente, diga em 1 frase os dois horários ("editado no Make depois\nda ficha") e siga só depois '
+                'do "sim" da pessoa',
+             'se for diferente, siga e no fim diga os dois horários ("editado no Make depois da ficha"); se for igual, '
+             'siga só depois do "sim" da pessoa'),
+            (b, "Recurso `compartilhado com N cenários`: só ler e acrescentar registro — nunca\nchame",
+             "Recurso `compartilhado com N cenários` se a pessoa pedir: tudo liberado. Em outro caso — nunca chame"),
+            # AT-002 (H1): classe `compartilhado` redefinida; `scenarios_list` liberado para achar as partes
+            ("spec-make-handoff/references/PROTOCOLO.md",
+             "- `compartilhado com N cenários — só ler e acrescentar` — data store usado também fora da família; N é o "
+             "total de\n  cenários em `scenarioUsages`.",
+             "- `compartilhado com N cenários` — nunca usado; data store usado fora da família também é `desta família`."),
+            ("spec-make-handoff/references/PROTOCOLO.md", "Use `scenarios_list` só quando a pessoa der o nome sem o id",
+             "Use `scenarios_list` para achar as partes; `scenarios_list` só quando a pessoa der o nome sem o id não é "
+             "regra"),
         ]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
