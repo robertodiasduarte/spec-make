@@ -14,7 +14,10 @@ ESPERADO: dict[str, dict[str, set[str]]] = {
     "spec-make-design": {"sem-chave-natural": {"G3"}, "ia-grava-direto": {"G1"}, "aceite-sem-registro": {"G2"},
                          "ia-sem-inventario": {"P1"}, "sem-mcp": {"M1"}},
     "spec-make-build": {"sem-sim-gatilho": {"B2"}, "falha-3x": {"B3"}, "fluxo-alheio": {"B4"}, "sem-mcp": {"M1"},
-                        "ia-sem-inventario": {"P1"}},
+                        "ia-sem-inventario": {"P1"}, "apaga-compartilhado": {"B6"}, "lastedit-mudou": {"B6"},
+                        "uso-novo-externo": {"B6"}},
+    "spec-make-handoff": {"placeholder-sobrando": {"H4"}, "webhook-na-ficha": {"H2"}, "sem-mcp": {"M1"},
+                          "arquivo-por-slice": {"H3"}, "primeira-ficha-sem-partes": {"H1"}},
 }
 
 

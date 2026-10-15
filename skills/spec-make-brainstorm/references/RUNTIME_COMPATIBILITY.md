@@ -1,6 +1,6 @@
 # Compatibilidade
 
-Este arquivo é igual nas quatro skills do spec-make.
+Este arquivo é igual em todas as skills do spec-make.
 
 ## O que a skill precisa do ambiente
 
@@ -9,7 +9,7 @@ Este arquivo é igual nas quatro skills do spec-make.
 | Ler e seguir instruções em Markdown | Tudo | A skill não funciona |
 | MCP do Make conectado | Ler a conta, validar, criar e rodar o fluxo | Trabalho no papel (regra [M1]): documentos completos, itens da conta marcados "a confirmar na conta"; a etapa de build entrega o blueprint e os passos de importação manual |
 | MCP do Make com ferramentas de gravação | Etapa de build | Igual à linha acima, só na etapa de build |
-| Execução de Python 3.9+ | `scripts/checar_blueprint.py` (etapas de design e build) | A skill faz a mesma conferência lendo o blueprint, item a item |
+| Execução de Python 3.9+ | `scripts/checar_blueprint.py` (etapas de design e build) e `scripts/checar_handoff.py` (skill de handoff) | A skill faz a mesma conferência lendo o blueprint ou a ficha, item a item |
 | Anexar e devolver arquivos | Passar o documento de uma etapa para a próxima | O agente mostra o documento inteiro; a pessoa copia e cola na próxima conversa |
 
 ## Onde instalar

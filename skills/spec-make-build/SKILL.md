@@ -5,14 +5,14 @@ description: "Conduz a etapa 4 de 4 do spec-make: cria na conta do Make, pelo MC
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.0.1"
+  version: "1.1.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 4: Build do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-build v1.0.1 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-build v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 4 de 4 — Build`
 
 ## Quick start
@@ -24,11 +24,12 @@ Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
 5. Rode o teste de aceite do DEFINE e compare com o resultado esperado.
 6. Se falhar, siga **[B3]** ([references/DIAGNOSTICO.md](references/DIAGNOSTICO.md)).
 7. Passou: entregue o recibo ([assets/RECIBO_TEMPLATE.md](assets/RECIBO_TEMPLATE.md)) e faça a pergunta **[B2]**.
-8. Entregue `FICHA_DO_FLUXO_<FLUXO>.md` ([assets/FICHA_DO_FLUXO_TEMPLATE.md](assets/FICHA_DO_FLUXO_TEMPLATE.md)) e feche com **[E1]**.
+8. Entregue `FICHA_DO_FLUXO_<FLUXO>.md` ([assets/FICHA_DO_FLUXO_TEMPLATE.md](assets/FICHA_DO_FLUXO_TEMPLATE.md)) e `HANDOFF_<FLUXO>.md` (skill `spec-make-handoff`) e feche com **[E1]**.
 
 ## Quando usar / Quando não usar
 
-Usar quando o fluxo já tem BRAINSTORM, DEFINE e DESIGN e a pessoa quer vê-lo funcionando na conta dela.
+Usar quando o fluxo já tem BRAINSTORM, DEFINE e DESIGN e a pessoa quer vê-lo funcionando na conta dela. Usar também
+para implementar algo novo num fluxo que já está na conta, com o `HANDOFF_<FLUXO>.md` anexado (**[B6]**).
 
 Não usar sem os três documentos. Não usar para mudar o desenho: se o teste mostrar que o desenho está errado, volte à
 skill `spec-make-design`. Não mexe em fluxo, data store ou conexão que esta conversa não criou.
@@ -39,6 +40,7 @@ skill `spec-make-design`. Não mexe em fluxo, data store ou conexão que esta co
 - O teste de aceite do DEFINE (amostra sem dado pessoal real, resultado esperado, segunda execução se grava).
 - `organizationId` e `teamId`.
 - O "sim" da pessoa para cada gravação na conta e para ligar o gatilho.
+- `HANDOFF_<FLUXO>.md`, quando a conversa retoma um fluxo que já existe na conta ([B6]).
 
 ## Procedimento passo a passo
 
@@ -53,7 +55,9 @@ skill `spec-make-design`. Não mexe em fluxo, data store ou conexão que esta co
    na tabela de clientes: …").
 7. **Falha.** [B3].
 8. **Recibo e gatilho.** Recibo com operações gastas; depois, a pergunta [B2].
-9. **Ficha.** Preencha a ficha do fluxo e feche com [E1].
+9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill `spec-make-handoff`, com os ids
+   lidos agora e esta sessão no histórico — e feche com [E1]. Sem a skill de handoff instalada, diga isso em uma frase e
+   indique o download; a ficha do fluxo sai do mesmo jeito.
 
 **[B2] Pergunta do gatilho.** Depois do teste aprovado, faça uma única pergunta dizendo o estado de agora e o que
 muda: "Hoje o fluxo só roda quando você pede. Ligo para {o gatilho do DESIGN: rodar todo dia às 8h / quando chegar
@@ -70,6 +74,16 @@ fluxo antigo da pessoa, crie um novo com outro nome e diga isso a ela.
 vai acontecer e o custo: "Vou criar o fluxo na sua conta, sob demanda e sem ligar o gatilho." · "Vou rodar o teste com
 a sua amostra: gasta cerca de {n} operações das {limite} do seu plano no mês."
 
+**[B6] Custódia pela ficha.** Com `HANDOFF_<FLUXO>.md` anexo, os recursos listados como `desta família` contam como
+criados por esta conversa para [B4] — e só eles, e só depois de conferir a conta. Primeiro leia `scenarios_get` de cada
+parte e compare o `lastEdit` com o da ficha: se for diferente, diga em 1 frase os dois horários ("editado no Make depois
+da ficha") e siga só depois do "sim" da pessoa. Depois releia `data-stores_list` e `hooks_list` e recalcule a custódia
+pelos `scenarioUsages` e `scenarioId` de agora: recurso que ganhou uso fora da família passa a `compartilhado com N
+cenários`, e você diz isso à pessoa. Só então chame `scenarios_update`, `scenarios_set-interface`, `data-stores_update`
+ou `hooks_update`, com o aviso [B5]. Recurso `compartilhado com N cenários`: só ler e acrescentar registro — nunca
+chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele; ofereça criar um data store
+novo só para este fluxo. Recurso ausente da ficha ou `fora do spec-make`: [B4] como sempre.
+
 **[C1] Confidencial.** O fluxo é criado com `metadata.scenario.confidential: true`. Se o blueprint do DESIGN não
 tiver, corrija antes de criar e diga isso.
 
@@ -83,8 +97,8 @@ Importar blueprint), o roteiro do teste de aceite para a pessoa rodar, e marque 
 conexões a autorizar, o plano e as operações. Não afirme que criou, rodou ou ligou nada.
 
 **[E1] Etapa 4 de 4.** A primeira resposta traz a linha "spec-make · Etapa 4 de 4 — Build". O fecho entrega o recibo
-e o arquivo `FICHA_DO_FLUXO_<FLUXO>.md`, pede para salvá-lo e diz: "Pronto: o fluxo está na sua conta. A ficha diz o
-que fazer quando ele falhar."
+e dois arquivos, `FICHA_DO_FLUXO_<FLUXO>.md` e `HANDOFF_<FLUXO>.md`, pede para salvar os dois e diz: "Pronto: o fluxo
+está na sua conta. A ficha diz o que fazer quando ele falhar; o handoff, como continuar depois."
 
 ## Validações e checklist de qualidade
 
@@ -97,7 +111,8 @@ que fazer quando ele falhar."
 - [ ] Operações gastas informadas
 - [ ] Gatilho ligado só depois de "Ligar agora" ou "sim" ([B2])
 - [ ] Nada alterado fora do que esta conversa criou ([B4])
-- [ ] Recibo e ficha entregues
+- [ ] Com `HANDOFF` anexo: `lastEdit` e usos conferidos antes de gravar ([B6])
+- [ ] Recibo, ficha do fluxo e handoff entregues
 
 ## Tratamento de exceções
 

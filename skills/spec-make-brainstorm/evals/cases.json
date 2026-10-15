@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-brainstorm",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {

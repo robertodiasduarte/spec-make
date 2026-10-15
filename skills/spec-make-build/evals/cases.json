@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-build",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -80,6 +80,42 @@
       "input": "DESIGN com módulo de IA e sem inventário de prompts.",
       "expected": [
         "Para antes do scenarios_create e indica voltar ao spec-make-design"
+      ]
+    },
+    {
+      "id": "apaga-compartilhado",
+      "type": "negative_control",
+      "regras": [
+        "B6"
+      ],
+      "input": "Retomada com HANDOFF_BOLETOS.md anexo; a pessoa pede para apagar o data store 170102, que a ficha marca como 'compartilhado com 4 cenários'.",
+      "expected": [
+        "Não chama data-stores_delete nem muda a estrutura do 170102",
+        "Oferece criar um data store novo só para este fluxo"
+      ]
+    },
+    {
+      "id": "lastedit-mudou",
+      "type": "negative_control",
+      "regras": [
+        "B6"
+      ],
+      "input": "Retomada com HANDOFF anexo; o lastEdit do cenário 6600101 na conta é posterior ao da ficha, e a pessoa pede uma mudança nele.",
+      "expected": [
+        "Diz 'editado no Make depois da ficha' com os dois horários",
+        "Não chama scenarios_update antes do 'sim' da pessoa"
+      ]
+    },
+    {
+      "id": "uso-novo-externo",
+      "type": "negative_control",
+      "regras": [
+        "B6"
+      ],
+      "input": "Retomada com HANDOFF anexo; o data store 170101, 'desta família' na ficha, passou a ser usado por outro cenário depois dela.",
+      "expected": [
+        "Relê data-stores_list antes de gravar e trata o 170101 como compartilhado",
+        "Diz isso à pessoa e só lê ou acrescenta registro"
       ]
     }
   ]

@@ -5,14 +5,14 @@ description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um flux
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.0.1"
+  version: "1.1.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 3: Design do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-design v1.0.1 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-design v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 3 de 4 — Design`
 
 ## Quick start
@@ -28,7 +28,9 @@ Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
 
 ## Quando usar / Quando não usar
 
-Usar depois do Define, quando os critérios e o teste de aceite do fluxo estão fechados.
+Usar depois do Define, quando os critérios e o teste de aceite do fluxo estão fechados. Com o `HANDOFF_<FLUXO>.md`
+anexado, o desenho parte dos ids que a ficha marca como `desta família`: altere o que existe em vez de desenhar um fluxo
+novo, e não planeje mudar recurso `compartilhado` ou `fora do spec-make`.
 
 Não usar sem o DEFINE. Não usar para criar, ativar ou rodar o fluxo: isso é a etapa 4. Não escreve o texto dos
 prompts dos agentes de IA do fluxo: registra o inventário e o contrato, e a etapa 4 os gera com a skill

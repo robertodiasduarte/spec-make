@@ -15,7 +15,7 @@ from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
 FONTE = RAIZ / "compartilhado"
-SKILLS = ["spec-make-brainstorm", "spec-make-define", "spec-make-design", "spec-make-build"]
+SKILLS = ["spec-make-brainstorm", "spec-make-define", "spec-make-design", "spec-make-build", "spec-make-handoff"]
 
 # arquivo de compartilhado/ → (pasta de destino dentro da skill, skills que recebem)
 MAPA = {

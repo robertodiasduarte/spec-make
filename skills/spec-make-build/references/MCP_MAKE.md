@@ -1,6 +1,6 @@
 # MCP do Make — o que esta skill usa e o que já foi medido
 
-Este arquivo é igual nas quatro skills do spec-make. Os nomes das ferramentas são os do
+Este arquivo é igual em todas as skills do spec-make. Os nomes das ferramentas são os do
 servidor MCP oficial do Make e valem em qualquer agente que o tenha conectado.
 
 ## Como saber se a conversa tem o MCP do Make
@@ -25,6 +25,7 @@ Se houver mais de uma organização ou equipe, pergunte uma vez qual usar e anot
 | Brainstorm | `environment_get` · `organizations_list` · `connections_list` · `apps_recommend` | Plano e limites da conta; o que já está conectado; se existe app nativo para cada passo |
 | Define | `environment_get` · `organizations_list` | Orçamento de operações por mês contra o plano |
 | Design | `apps_recommend` · `app-modules_list` · `app-module_get` · `connections_list` · `validate_module_configuration` · `validate_blueprint_schema` · `validate_scenario_interface` | Só módulos que existem; parâmetros conferidos; blueprint validado |
+| Handoff | `environment_get` · `scenarios_get` · `hooks_list` · `data-stores_list` · `connections_list` | Ficha do fluxo para continuar depois: só leitura, 0 operações; nunca lê registros de data store |
 | Build | `credential-requests_create` · `validate_*` · `scenarios_create` · `scenarios_set-interface` · `scenarios_activate` · `scenarios_run` · `executions_get` · `executions_get-detail` · `scenarios_interface` · `scenarios_update` · `data-stores_create` · `data-store-records_list` · `scenarios_deactivate` | Criar, testar, ler a execução, ligar o gatilho com OK |
 
 Ler a conta não gasta operação. Executar um fluxo gasta.

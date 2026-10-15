@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
-SKILLS = ["spec-make-brainstorm", "spec-make-define", "spec-make-design", "spec-make-build"]
+SKILLS = ["spec-make-brainstorm", "spec-make-define", "spec-make-design", "spec-make-build", "spec-make-handoff"]
 
 SECOES = [
     "## Quick start",

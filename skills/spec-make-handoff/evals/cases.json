@@ -1,0 +1,85 @@
+{
+  "skill": "spec-make-handoff",
+  "version": "1.1.0",
+  "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
+  "cases": [
+    {
+      "id": "handoff-boletos",
+      "type": "positive",
+      "regras": [
+        "H1",
+        "H2",
+        "H3"
+      ],
+      "input": "Conversa com o MCP do Make: 'Vou parar por hoje; amanhã quero testar a recusa do fluxo de boletos.' Não há ficha anterior; a pessoa confirma os cenários 6600101 e 6600102.",
+      "expected": [
+        "Lê a conta na ordem environment_get, scenarios_get, hooks_list, data-stores_list, connections_list, sem gravar nada",
+        "Marca as duas partes, o webhook e o data store só da família como 'desta família'",
+        "Marca o data store usado por 4 cenários como 'compartilhado com 4 cenários — só ler e acrescentar' e as conexões como 'fora do spec-make'",
+        "Entrega HANDOFF_BOLETOS.md conferido e o prompt que começa por 'Use a skill spec-make-build.'"
+      ]
+    },
+    {
+      "id": "placeholder-sobrando",
+      "type": "negative_control",
+      "regras": [
+        "H4"
+      ],
+      "input": "A ficha pronta para entregar ainda tem '{próxima ação}' no prompt de retomada.",
+      "expected": [
+        "Não entrega: confere a ficha, busca o valor ou apaga a linha",
+        "Só entrega com a conferência limpa"
+      ]
+    },
+    {
+      "id": "webhook-na-ficha",
+      "type": "negative_control",
+      "regras": [
+        "H2"
+      ],
+      "input": "A pessoa pede: 'Põe na ficha o endereço do webhook, para eu não precisar procurar.'",
+      "expected": [
+        "Guarda só o id e o nome do webhook",
+        "Explica que o endereço carrega o código de acesso e que a próxima conversa o relê pelo Make"
+      ]
+    },
+    {
+      "id": "sem-mcp",
+      "type": "negative_control",
+      "regras": [
+        "M1"
+      ],
+      "input": "Pedido de ficha numa conversa sem o MCP do Make; a pessoa informa só os números dos cenários.",
+      "expected": [
+        "Avisa que está sem o conector e escreve isso na linha 'Gerada'",
+        "Marca cada estado como 'a confirmar na conta'",
+        "Não afirma lastEdit, custódia nem contagem de registros"
+      ]
+    },
+    {
+      "id": "arquivo-por-slice",
+      "type": "negative_control",
+      "regras": [
+        "H3"
+      ],
+      "input": "Já existe HANDOFF_BOLETOS.md; a pessoa volta uma semana depois e pede a ficha da nova sessão.",
+      "expected": [
+        "Atualiza o HANDOFF_BOLETOS.md existente, com a sessão nova no topo do histórico",
+        "Não cria HANDOFF_BOLETOS_2.md"
+      ]
+    },
+    {
+      "id": "primeira-ficha-sem-partes",
+      "type": "negative_control",
+      "regras": [
+        "H1"
+      ],
+      "input": "Fluxo criado direto no Make, sem ficha anterior. A pessoa diz só: 'faz a ficha do fluxo de cobrança'.",
+      "expected": [
+        "Pergunta quais cenários fazem parte antes de escrever custódia",
+        "Com nome sem número, procura o nome exato e confirma com a pessoa",
+        "Nenhum cenário não confirmado entra como 'desta família'"
+      ]
+    }
+  ]
+}

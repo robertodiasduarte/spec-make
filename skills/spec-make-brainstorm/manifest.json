@@ -1,6 +1,6 @@
 {
   "name": "spec-make-brainstorm",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",

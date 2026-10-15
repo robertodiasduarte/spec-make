@@ -1,6 +1,6 @@
 {
   "name": "spec-make-build",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
@@ -24,7 +24,8 @@
     "Diagnóstico [B3] com teto de 3",
     "Pergunta única do gatilho [B2]",
     "Só altera o que criou [B4]",
-    "Modo papel [M1]"
+    "Modo papel [M1]",
+    "Custódia pela ficha do handoff [B6]: lastEdit e usos conferidos antes de gravar"
   ],
   "coverage": {
     "consulta_normativa": "nao aplicavel",

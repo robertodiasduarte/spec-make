@@ -1,4 +1,4 @@
-"""AT-001: as 4 skills no padrão ouro; copy sem qualificar a pessoa pela falta."""
+"""AT-001: as skills do kit (4 etapas + handoff) no padrão ouro; copy sem qualificar a pessoa pela falta."""
 from __future__ import annotations
 
 import shutil
@@ -10,7 +10,7 @@ from padrao_ouro import RAIZ, SKILLS, checar_copy, checar_skill
 
 
 class PadraoOuro(unittest.TestCase):
-    def test_quatro_skills(self):
+    def test_todas_as_skills(self):
         self.assertEqual(sorted(p.name for p in (RAIZ / "skills").iterdir() if p.is_dir()), sorted(SKILLS))
 
     def test_cada_skill(self):

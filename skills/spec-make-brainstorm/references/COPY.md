@@ -1,6 +1,6 @@
 # Como falar com quem usa o spec-make
 
-Este arquivo é igual nas quatro skills do spec-make.
+Este arquivo é igual em todas as skills do spec-make.
 
 ## Quem é a pessoa
 

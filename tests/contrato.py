@@ -67,6 +67,30 @@ REGRAS: list[Regra] = [
     Regra("P1", _skill("spec-make-design"), at="AT-007",
           contem=["inventário de prompts", "sdd-prompt-builder",
                   "Fluxo com módulo de IA e sem esse inventário: recuse o DESIGN como pronto e diga o que falta."]),
+    # SPEC_MAKE_HANDOFF (s3): custódia pela ficha na build — lastEdit e usos relidos ANTES de gravar (A2 da review do DESIGN)
+    Regra("B6", _skill("spec-make-build"), at="AT-003",
+          contem=["contam como criados por esta conversa para [B4] — e só eles",
+                  "editado no Make depois da ficha", 'siga só depois do "sim" da pessoa',
+                  "releia `data-stores_list` e `hooks_list` e recalcule a custódia",
+                  "nunca chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele"],
+          em_ordem=["lastEdit", "scenarioUsages", "scenarios_update"]),
+    Regra("E1", _skill("spec-make-build"), at="AT-006", contem=["`HANDOFF_<FLUXO>.md`", "o handoff, como continuar depois"]),
+    # skill de handoff: fora de ETAPAS (não é etapa — a 1ª linha não diz "Etapa N de 4")
+    Regra("H1", _skill("spec-make-handoff", "references/PROTOCOLO.md"), at="AT-002",
+          contem=["desta família", "compartilhado com N cenários", "fora do spec-make", "scenarioUsages", "lastEdit",
+                  "pergunte quais cenários fazem parte do fluxo", "`scenarios_list` só quando a pessoa der o nome sem o id",
+                  "Cenário que a pessoa não confirmou nunca entra como `desta família`."],
+          em_ordem=["environment_get", "scenarios_get", "hooks_list", "data-stores_list", "connections_list"]),
+    Regra("H2", _skill("spec-make-handoff"), at="AT-005",
+          contem=["Nunca chame `scenarios_create`, `scenarios_update`", "`data-store-records_list`",
+                  "do webhook, guarde só o id e o nome", "quem altera é a etapa 3 ou 4, sob a custódia da ficha"]),
+    Regra("H3", _skill("spec-make-handoff"), at="AT-006",
+          contem=["nunca crie um arquivo novo para a mesma família", "Use a skill spec-make-", "sem nenhum trecho entre « »"],
+          em_ordem=["qual skill abrir", "quais arquivos anexar", "onde paramos", "último teste", "próxima ação"]),
+    Regra("H4", _skill("spec-make-handoff"), at="AT-004",
+          contem=["checar_handoff.py", "URL de webhook", "11 ou mais dígitos", "sem id"]),
+    Regra("E1", _skill("spec-make-handoff"), at="AT-007",
+          contem=["spec-make · Handoff — para continuar depois", "Use a skill spec-make-"]),
     Regra("P1", _skill("spec-make-build"), at="AT-007",
           contem=["sem inventário", "[G1]", "[G2]",
                   "sem inventário de prompts no DESIGN: pare antes do `scenarios_create`, diga o que falta"]),
@@ -91,6 +115,9 @@ M1 = {"spec-make-brainstorm": ['como "a confirmar na conta". Não afirme que um 
       "spec-make-design": ['marque cada um como "a confirmar na conta" e não declare o blueprint validado.'],
       "spec-make-build": ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
                           "Importar blueprint"]}
+M1["spec-make-handoff"] = ['"a confirmar na conta" em cada estado. Não afirme `lastEdit`, custódia nem contagem de registros '
+                           'sem ter lido a conta.']
+REGRAS.append(Regra("M1", _skill("spec-make-handoff"), at="AT-009", contem=M1["spec-make-handoff"]))
 for _nome, _n, _rot, _prox in ETAPAS:
     REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=M1[_nome]))
     REGRAS.append(Regra("E1", _skill(_nome), at="UX MUST 4",
@@ -118,6 +145,16 @@ FRASES: dict[str, list[str]] = {
     "spec-make-build/references/DIAGNOSTICO.md": [
         "Correções só no fluxo que esta conversa criou ([B4])."],
 }
+
+
+# AT-007 (R5 da review do DESIGN do s3): jargão do harness que a pessoa não lê no corpo da skill de handoff.
+JARGAO = ("transversal", "etapa 5")
+
+
+def jargao(texto: str) -> list[str]:
+    """Palavras de JARGAO fora do frontmatter (o `metadata.fase: "transversal"` do frontmatter não conta)."""
+    corpo = re.sub(r"\A---\n.*?\n---\n", "", texto, count=1, flags=re.S).lower()
+    return [j for j in JARGAO if j in corpo]
 
 
 def checar_frases(arquivo: str, texto: str) -> list[str]:

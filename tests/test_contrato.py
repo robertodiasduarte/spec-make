@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import unittest
 
-from contrato import FRASES, RAIZ, REGRAS, checar, checar_frases, checar_texto, mutantes
+from contrato import FRASES, RAIZ, REGRAS, checar, checar_frases, checar_texto, jargao, mutantes
 
 
 class Contrato(unittest.TestCase):
@@ -51,6 +51,7 @@ class Contrato(unittest.TestCase):
         b, p, d = "spec-make-build/SKILL.md", "spec-make-build/references/PROTOCOLO.md", \
             "spec-make-build/references/DIAGNOSTICO.md"
         ds, df = "spec-make-design/SKILL.md", "spec-make-define/SKILL.md"
+        h = "spec-make-handoff/SKILL.md"
         casos = [
             (b, "Nunca chame `scenarios_update`", "Pode chamar `scenarios_update`"),
             (b, 'ou ligue o gatilho real depois de a pessoa responder "Ligar agora" ou "sim"',
@@ -74,6 +75,12 @@ class Contrato(unittest.TestCase):
             ("spec-make-brainstorm/SKILL.md", "Não afirme\nque um app existe", "Afirme\nque um app existe"),
             (b, "Não afirme que criou, rodou ou ligou nada.",
              "Diga que criou e rodou. (Não afirme que criou, rodou ou ligou nada só se pedirem.)"),
+            # SPEC_MAKE_HANDOFF (s3): H2, B6 (as 2 polaridades) e M1 do handoff
+            (h, "Nunca chame `scenarios_create`", "Pode chamar `scenarios_create`"),
+            (b, 'siga só depois do "sim" da pessoa', 'siga mesmo sem o "sim" da pessoa'),
+            (b, "Depois releia `data-stores_list` e `hooks_list` e recalcule a custódia",
+             "Não precisa reler `data-stores_list` e `hooks_list` nem recalcular a custódia"),
+            (h, "Não afirme `lastEdit`", "Afirme `lastEdit`"),
         ]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
@@ -82,6 +89,18 @@ class Contrato(unittest.TestCase):
                 mut = texto.replace(de, para)
                 erros = [e for r in REGRAS if r.arquivo == arq for e in checar_texto(r, mut)]
                 self.assertTrue(erros, "regra invertida passou")
+
+    def test_handoff_sem_jargao(self):
+        """AT-007 (R5 da review do DESIGN do s3): "transversal" e "Etapa 5" fora do frontmatter de todo .md do handoff
+        reprovam; o frontmatter (metadata.fase) não conta."""
+        pasta = RAIZ / "skills" / "spec-make-handoff"
+        for arq in sorted(pasta.rglob("*.md")):
+            with self.subTest(arquivo=arq.relative_to(pasta).as_posix()):
+                self.assertEqual(jargao(arq.read_text(encoding="utf-8")), [])
+        sk = (pasta / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn('fase: "transversal"', sk)
+        self.assertTrue(jargao(sk.replace("## Quick start", "## Quick start\n\nEsta skill é transversal.", 1)))
+        self.assertTrue(jargao(sk + "\nspec-make · Etapa 5 de 5 — Handoff\n"))
 
     def test_frases_dos_arquivos_de_referencia(self):
         for arq in FRASES:

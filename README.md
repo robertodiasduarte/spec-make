@@ -9,7 +9,11 @@ sua amostra e só liga o gatilho quando você disser sim.
 | 1 | `spec-make-brainstorm` | A ideia do fluxo, conferida na sua conta: apps nativos, conexões, plano |
 | 2 | `spec-make-define` | O que o fluxo tem de fazer e o teste de aceite (amostra + resultado esperado) |
 | 3 | `spec-make-design` | O fluxo módulo a módulo, o que fazer quando cada app falha e o blueprint validado |
-| 4 | `spec-make-build` | O fluxo criado e testado na sua conta, o recibo do teste e a ficha do fluxo |
+| 4 | `spec-make-build` | O fluxo criado e testado na sua conta, o recibo do teste, a ficha do fluxo e a ficha para continuar depois |
+
+Para parar e continuar outro dia — em qualquer etapa — ou para mudar um fluxo que já roda, use a `spec-make-handoff`:
+ela lê a sua conta (sem gravar nada), guarda a ficha do fluxo com os números de cada cenário, webhook e data store, diz
+o que a próxima conversa pode alterar e escreve a frase para retomar.
 
 Fluxo com agente de IA dentro (OpenAI, Claude, Gemini)? Instale também a
 [`sdd-prompt-builder`](https://github.com/robertodiasduarte/sdd-starter/releases/latest/download/sdd-prompt-builder.zip),
@@ -34,6 +38,8 @@ Sem o conector, as skills funcionam no papel: os documentos saem completos, com 
 - Fluxo que grava não duplica registro (chave natural); IA que decide não grava sem aceite de uma pessoa, e cada
   aceite fica registrado.
 - Nenhuma chave ou senha passa pelo chat: conexões são autorizadas por link, dentro do Make.
+- Quem retoma um fluxo só altera o que a ficha diz ser dele, depois de conferir na conta que nada mudou desde a ficha;
+  o que outro fluxo também usa fica só para leitura.
 
 ## Instalação
 

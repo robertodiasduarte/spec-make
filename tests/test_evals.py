@@ -17,7 +17,10 @@ EXIGIDOS = {
     "spec-make-brainstorm": {"sem-mcp"},
     "spec-make-define": {"gate-uma-execucao", "gate-blueprint-validado", "sem-mcp"},
     "spec-make-design": {"sem-chave-natural", "ia-grava-direto", "aceite-sem-registro", "ia-sem-inventario", "sem-mcp"},
-    "spec-make-build": {"sem-sim-gatilho", "falha-3x", "fluxo-alheio", "sem-mcp", "ia-sem-inventario"},
+    "spec-make-build": {"sem-sim-gatilho", "falha-3x", "fluxo-alheio", "sem-mcp", "ia-sem-inventario",
+                        "apaga-compartilhado", "lastedit-mudou", "uso-novo-externo"},
+    "spec-make-handoff": {"placeholder-sobrando", "webhook-na-ficha", "sem-mcp", "arquivo-por-slice",
+                          "primeira-ficha-sem-partes"},
 }
 ANCORAS = {r.ancora for r in REGRAS} | {"COPY"}
 
@@ -53,7 +56,12 @@ class Evals(unittest.TestCase):
                     ("spec-make-define", "gate-uma-execucao", None),
                     ("spec-make-build", "sem-mcp", None),
                     ("spec-make-design", "ia-grava-direto", []),
-                    ("spec-make-design", "aceite-sem-registro", ["G2", "G3"])]
+                    ("spec-make-design", "aceite-sem-registro", ["G2", "G3"]),
+                    # SPEC_MAKE_HANDOFF (s3): outra âncora válida da mesma skill · negativo da build removido ·
+                    # âncora de OUTRA skill (B6 vive na build, não no handoff)
+                    ("spec-make-handoff", "placeholder-sobrando", ["H3"]),
+                    ("spec-make-build", "apaga-compartilhado", None),
+                    ("spec-make-handoff", "webhook-na-ficha", ["B6"])]
         for skill, cid, regras in mutantes:
             with self.subTest(skill=skill, caso=cid, regras=regras):
                 ev = copy.deepcopy(real)

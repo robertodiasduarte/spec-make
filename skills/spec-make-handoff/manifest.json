@@ -1,0 +1,53 @@
+{
+  "name": "spec-make-handoff",
+  "version": "1.1.0",
+  "kind": "skill",
+  "perfil": "C",
+  "funcao": "Transversal do spec-make: ficha do fluxo para continuar depois, com o MCP do Make (só leitura)",
+  "nucleo": [
+    "SKILL.md",
+    "references/PROTOCOLO.md",
+    "references/MCP_MAKE.md",
+    "references/COPY.md",
+    "references/RUNTIME_COMPATIBILITY.md",
+    "assets/HANDOFF_TEMPLATE.md",
+    "assets/HANDOFF_EXEMPLO.md",
+    "scripts/checar_handoff.py",
+    "manifest.json",
+    "evals/cases.json"
+  ],
+  "caminhos_implementados": [
+    "Leitura [H1] pelo MCP, só leitura, com custódia por recurso",
+    "Primeira ficha a partir dos cenários que a pessoa confirma",
+    "Ficha sem segredo [H2]",
+    "Uma ficha por fluxo e prompt de retomada [H3]",
+    "Conferência da ficha [H4] pelo script",
+    "Modo papel [M1]"
+  ],
+  "coverage": {
+    "consulta_normativa": "nao aplicavel",
+    "calculo_profissional": "nao aplicavel"
+  },
+  "runtime": {
+    "mcp": "servidor MCP oficial do Make (opcional: sem ele, modo papel)",
+    "python": "3.9+ (opcional)",
+    "third_party_dependencies": []
+  },
+  "executados": [
+    "Leitura real em 15/10/2026 pelo conector do Make no Claude (plano Core), seguindo [H1]: 2 cenários, 1 webhook, 2 data stores (1 compartilhado com 4 cenários) e 2 conexões de um fluxo de 2 partes; 0 operações; a ficha gerada passou pelo scripts/checar_handoff.py"
+  ],
+  "pending": [
+    "Retomada com agente real: anexar uma ficha com o lastEdit alterado e conferir que a etapa 4 avisa e não grava antes do sim",
+    "Executar os casos de evals/cases.json em mais de um agente (Claude e ChatGPT)",
+    "Medir o conector do Make no ChatGPT e o plano Free do Make"
+  ],
+  "o_que_ainda_nao_prova": [
+    "Comportamento idêntico em todos os agentes e modelos",
+    "Que o conector do Make no ChatGPT expõe as ferramentas de leitura usadas em [H1]",
+    "Que um agente, lendo a regra [B6] da etapa 4, para antes de gravar quando a ficha e a conta divergem: o texto da regra é testado; o comportamento depende do recibo de uma retomada real",
+    "O verificador da ficha pega placeholder, URL de webhook do Make, sequência de 11 ou mais dígitos, recurso sem id e ficha sem o conector que afirma custódia; não pega segredo com formato desconhecido nem dado pessoal escrito por extenso (nome de pessoa, endereço) — a defesa principal é a regra [H2]"
+  ],
+  "author": "Roberto Dias Duarte",
+  "license": "MIT",
+  "methodology": "Metodologia de Roberto Dias Duarte"
+}

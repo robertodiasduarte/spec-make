@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.1.0 — 2026-10
+
+- Skill nova `spec-make-handoff`: guarda a ficha do fluxo para continuar depois — um arquivo por fluxo, com os números
+  de cada cenário, webhook, data store e conexão lidos na sua conta (sem gravar nada), o que a próxima conversa pode
+  alterar, o que já foi testado, o que falta, e a frase para retomar numa conversa nova. Serve também para um fluxo
+  criado direto no Make.
+- A etapa 4 passa a entregar também a ficha para continuar depois, e pode mudar um fluxo que já está na conta quando a
+  ficha vem anexada: antes de gravar, confere se alguém mexeu no fluxo depois da ficha e se algum recurso passou a ser
+  usado por outro fluxo.
+- A etapa 3, com a ficha anexada, desenha a mudança sobre o que já existe em vez de um fluxo novo.
+
 ## v1.0.1 — 2026-10
 
 - A conferência do blueprint passa a pegar senha escrita em campo com nome em qualquer ordem (senha_certificado,
