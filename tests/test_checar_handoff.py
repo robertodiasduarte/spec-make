@@ -1,5 +1,5 @@
 """AT-004/AT-009 (SPEC_MAKE_HANDOFF): o verificador da ficha aprova o exemplo e a mesma ficha gerada sem o conector, e
-reprova cada problema — 7 mutantes em memória, nunca em disco (LM-146). Os dígitos longos são montados em tempo de
+reprova cada problema — 13 mutantes em memória, nunca em disco (LM-146). Os dígitos longos são montados em tempo de
 execução: um literal de 11 dígitos reprovaria o publish-check (LM-058)."""
 from __future__ import annotations
 
@@ -41,6 +41,18 @@ MUTANTES = [
      "sem o conector afirma"),
     ("com-conector-a-confirmar", lambda t: t.replace("| Webhook | 2900101 |", f"| Webhook | {ch.A_CONFIRMAR} |", 1),
      "sem id numérico"),
+    # review pós-build, rodada 1b (R1/R4@opus, A1@codex)
+    ("placeholder-digito", lambda t: t.replace("Onde paramos:", "Onde paramos: {2 ou 3 linhas}.", 1), "placeholder sobrando"),
+    ("placeholder-reticencias", lambda t: t.replace("## Feito\n", "## Feito\n\n- {…}\n", 1), "placeholder sobrando"),
+    ("rotulo-outra-caixa", lambda t: t.replace("| Data store | 170101 |", "| Data Store | — |", 1), "sem id numérico"),
+    ("inventario-vazio", lambda t: "\n".join(l for l in t.splitlines() if not ch.LINHA_INV.match(l)) + "\n",
+     "nenhum recurso listado"),
+    ("sem-conector-contagem", lambda t: sem_conector(t).replace(
+        '"Boletos – aprovação ERP" | a confirmar na conta', '"Boletos – aprovação ERP" | 5 registros', 1),
+     "sem o conector afirma"),
+    ("conexao-da-familia", lambda t: t.replace("ok · Gmail expira em 2027-04-13 | fora do spec-make |",
+                                               "ok · Gmail expira em 2027-04-13 | desta família |", 1),
+     "tem de ser 'fora do spec-make'"),
 ]
 
 

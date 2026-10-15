@@ -102,7 +102,8 @@ continuar, abra uma conversa nova, anexe os arquivos e cole este bloco."
 - [ ] Leitura na ordem [H1], só com ferramentas de leitura ([H2])
 - [ ] Sem ficha anterior: cenários confirmados pela pessoa antes de qualquer custódia
 - [ ] Custódia em um dos três textos, por recurso; compartilhado com N = total de cenários que usam o recurso
-- [ ] `lastEdit` de cada cenário copiado da conta
+- [ ] `lastEdit` de cada cenário copiado da conta — o de um cenário editado depois da ficha anterior, só com o "sim"
+  da pessoa
 - [ ] Nenhuma URL de webhook, registro de data store, e-mail, CNPJ, CPF, chave ou senha na ficha
 - [ ] Prompt de retomada na ordem [H3], sem trecho de modelo
 - [ ] Ficha conferida ([H4]) antes de entregar
@@ -112,8 +113,9 @@ continuar, abra uma conversa nova, anexe os arquivos e cole este bloco."
 
 - **A pessoa pede para mudar ou apagar algo no fluxo:** diga que esta skill só lê e escreve a ficha; entregue a ficha
   e o prompt de retomada para a etapa 3 ou 4 fazer a mudança.
-- **A conta mudou depois da ficha anterior** (`lastEdit` diferente): registre os dois horários na sessão desta conversa
-  e atualize a ficha com o que está na conta agora.
+- **A conta mudou depois da ficha anterior** (`lastEdit` diferente): diga à pessoa e pergunte se a versão da conta
+  passa a ser a base; sem o "sim", a ficha mantém o `lastEdit` antigo e ganha o aviso
+  ([references/PROTOCOLO.md](references/PROTOCOLO.md)).
 - **Um cenário da ficha sumiu da conta:** marque a linha como "não encontrado na conta em AAAA-MM-DD" e diga isso à
   pessoa; não invente substituto.
 - **Um data store da família passou a ser usado por outro fluxo:** a custódia dele vira

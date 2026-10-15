@@ -98,7 +98,9 @@ conexões a autorizar, o plano e as operações. Não afirme que criou, rodou ou
 
 **[E1] Etapa 4 de 4.** A primeira resposta traz a linha "spec-make · Etapa 4 de 4 — Build". O fecho entrega o recibo
 e dois arquivos, `FICHA_DO_FLUXO_<FLUXO>.md` e `HANDOFF_<FLUXO>.md`, pede para salvar os dois e diz: "Pronto: o fluxo
-está na sua conta. A ficha diz o que fazer quando ele falhar; o handoff, como continuar depois."
+está na sua conta. A ficha diz o que fazer quando ele falhar; o handoff, como continuar depois." Sem a skill de handoff
+instalada, entregue só a ficha do fluxo, diga em uma frase que falta a skill `spec-make-handoff` e feche com "Pronto: o
+fluxo está na sua conta. A ficha diz o que fazer quando ele falhar."
 
 ## Validações e checklist de qualidade
 
@@ -112,7 +114,7 @@ está na sua conta. A ficha diz o que fazer quando ele falhar; o handoff, como c
 - [ ] Gatilho ligado só depois de "Ligar agora" ou "sim" ([B2])
 - [ ] Nada alterado fora do que esta conversa criou ([B4])
 - [ ] Com `HANDOFF` anexo: `lastEdit` e usos conferidos antes de gravar ([B6])
-- [ ] Recibo, ficha do fluxo e handoff entregues
+- [ ] Recibo, ficha do fluxo e handoff entregues (sem a skill de handoff: o aviso no lugar do handoff)
 
 ## Tratamento de exceções
 

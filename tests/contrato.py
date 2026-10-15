@@ -144,6 +144,10 @@ FRASES: dict[str, list[str]] = {
         "a contagem não pode mudar e a 2ª execução tem de ter processado o item"],
     "spec-make-build/references/DIAGNOSTICO.md": [
         "Correções só no fluxo que esta conversa criou ([B4])."],
+    # SPEC_MAKE_HANDOFF, review pós-build R2@opus: o handoff não desarma a conferência de lastEdit da [B6]
+    "spec-make-handoff/references/PROTOCOLO.md": [
+        'Nunca troque o `lastEdit` da ficha pelo da conta sem o "sim" da pessoa.',
+        "**Sem o \"sim\":** a ficha mantém o `lastEdit` antigo"],
 }
 
 

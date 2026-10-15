@@ -120,7 +120,11 @@ class Contrato(unittest.TestCase):
                  (v, "sem dado pessoal real; origem", "pode usar dado real de cliente; origem"),
                  ("spec-make-build/references/PROTOCOLO.md", "a contagem não pode mudar", "a contagem pode mudar"),
                  ("spec-make-build/references/DIAGNOSTICO.md", "Correções só no fluxo que esta conversa criou ([B4]).",
-                  "Correções em qualquer fluxo da conta.")]
+                  "Correções em qualquer fluxo da conta."),
+                 ("spec-make-handoff/references/PROTOCOLO.md", "Nunca troque o `lastEdit` da ficha",
+                  "Troque o `lastEdit` da ficha"),
+                 ("spec-make-handoff/references/PROTOCOLO.md", "a ficha mantém o `lastEdit` antigo",
+                  "a ficha passa a ter o `lastEdit` da conta")]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
                 texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")

@@ -10,6 +10,7 @@ sua amostra e só liga o gatilho quando você disser sim.
 | 2 | `spec-make-define` | O que o fluxo tem de fazer e o teste de aceite (amostra + resultado esperado) |
 | 3 | `spec-make-design` | O fluxo módulo a módulo, o que fazer quando cada app falha e o blueprint validado |
 | 4 | `spec-make-build` | O fluxo criado e testado na sua conta, o recibo do teste, a ficha do fluxo e a ficha para continuar depois |
+| — | `spec-make-handoff` | A ficha do fluxo com os números da sua conta e a frase para retomar numa conversa nova |
 
 Para parar e continuar outro dia — em qualquer etapa — ou para mudar um fluxo que já roda, use a `spec-make-handoff`:
 ela lê a sua conta (sem gravar nada), guarda a ficha do fluxo com os números de cada cenário, webhook e data store, diz

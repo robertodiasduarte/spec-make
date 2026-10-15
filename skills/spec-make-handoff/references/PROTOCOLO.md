@@ -8,10 +8,11 @@ nada — e atualizar a ficha."
 **[H1] Leitura da conta e custódia.** Leia nesta ordem, só com ferramentas de leitura:
 
 1. `environment_get` — organização, equipe e zona. Anote `organizationId` e `teamId` na ficha.
-2. As partes do fluxo. Com ficha anterior da família, as partes são os cenários do inventário dela. Sem ficha
-   anterior, pergunte quais cenários fazem parte do fluxo antes de escrever qualquer custódia: "Quais cenários do Make
-   fazem parte deste fluxo? O número aparece no endereço do cenário (…/scenarios/número); o nome também serve." Use
-   `scenarios_list` só quando a pessoa der o nome sem o id: procure o nome exato e confirme com ela o cenário achado.
+2. As partes do fluxo. Com ficha anterior da família, as partes são os cenários que o inventário dela marca como
+   `desta família`. Sem ficha anterior, pergunte quais cenários fazem parte do fluxo antes de escrever qualquer
+   custódia: "Quais cenários do Make fazem parte deste fluxo? O número aparece no endereço do cenário
+   (…/scenarios/número); o nome também serve." Use `scenarios_list` só quando a pessoa der o nome sem o id: procure o
+   nome exato e confirme com ela o cenário achado.
    Cenário que a pessoa não confirmou nunca entra como `desta família`.
 3. `scenarios_get` de cada parte — o nome como está na conta, se está ativo, o agendamento (`scheduling.type`), o
    `lastEdit`, o `hookId` e os ids de data store e de conexão que os módulos usam (`datastore`, `__IMTCONN__`).
@@ -54,6 +55,14 @@ Use [assets/HANDOFF_TEMPLATE.md](../assets/HANDOFF_TEMPLATE.md). Regras de forma
 
 ## Quando a conta mudou depois da ficha
 
-A ficha anterior traz um `lastEdit` e a conta outro: registre os dois na sessão desta conversa ("editado no Make
-depois da ficha") e atualize a ficha com o que está na conta agora. Esta skill não decide se a mudança fica: quem
-altera o fluxo é a etapa 3 ou 4, que pergunta à pessoa antes de gravar (regra [B6] da skill `spec-make-build`).
+A ficha anterior traz um `lastEdit` e a conta outro: alguém mexeu no fluxo direto no Make. Diga isso à pessoa em
+três partes — o que aconteceu ("o cenário X foi editado no Make em AAAA-MM-DD, depois da ficha de AAAA-MM-DD"), o que
+você já fez ("não alterei nada; só li a conta") e o que ela faz agora: "A versão que está na conta passa a ser a base
+do fluxo?", com as opções "Sim, usar a da conta" e "Não, conferir antes". Nunca troque o `lastEdit` da ficha pelo da
+conta sem o "sim" da pessoa.
+
+- **Sem o "sim":** a ficha mantém o `lastEdit` antigo, a linha do cenário ganha "editado no Make depois da ficha em
+  AAAA-MM-DD" e o aviso entra em "Alertas (não tocar)". É esse descompasso que faz a etapa 4 parar e perguntar antes
+  de gravar (regra [B6] da skill `spec-make-build`).
+- **Com o "sim":** a ficha passa a ter o `lastEdit` da conta, a linha "Blueprint publicado" ganha "desatualizado:
+  exporte de novo do Make" e a sessão desta conversa registra a decisão e a data.
