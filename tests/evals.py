@@ -92,6 +92,9 @@ def problemas_positivos(ev_por_skill: dict[str, dict]) -> list[str]:
                 if not isinstance(regras, list) or not regras:
                     erros.append(f"{skill}/{cid}: sem `regras`")
                     continue
+                if not all(isinstance(r, str) for r in regras):   # {} na lista estourava TypeError no set() (A1@codex r3b)
+                    erros.append(f"{skill}/{cid}: `regras` com item que não é texto: {regras!r}")
+                    continue
                 if set(regras) != ancoras or len(regras) != len(set(regras)):
                     erros.append(f"{skill}/{cid}: regras {sorted(regras)} diferente do esperado {sorted(ancoras)}")
                 for a in regras:

@@ -122,6 +122,7 @@ class Evals(unittest.TestCase):
             "virou negativo": lambda cs, c: c.__setitem__("type", "negative_control"),
             "caso removido": lambda cs, c: cs.remove(c),
             "caso duplicado com H1 só": lambda cs, c: cs.insert(0, dict(c, regras=["H1"])),
+            "item que não é texto": lambda cs, c: c.__setitem__("regras", ["H1", {}, "H3"]),   # A1@codex r3b: era TypeError
         }
         for nome, fn in mutantes.items():
             with self.subTest(mutante=nome):
