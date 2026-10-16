@@ -79,7 +79,9 @@ sem IA).
   mesma chave natural mais de uma vez (o mesmo documento pode chegar duas vezes): ela tem o próprio `id` como chave
   primária, e o destino deduplica.
 - **Dinheiro é sempre `numeric(18,2)`**, nunca `real` nem `float`: ponto flutuante erra o centavo e a diferença só
-  aparece na conciliação. Se o fluxo rateia um valor, o DESIGN escreve a regra do centavo residual (quem fica com a
+  aparece na conciliação. A conferência no fim do SQL olha as colunas que **você lista** no `a.attname in (…)` (uma por
+  coluna de dinheiro) e, em qualquer coluna, recusa `real` e `double precision`; taxa e código de conta (`aliquota`,
+  `conta_debito`) não são dinheiro e ficam fora da lista. Se o fluxo rateia um valor, o DESIGN escreve a regra do centavo residual (quem fica com a
   sobra).
 - **`processado`** (`boolean not null default false`) e **`processado_em`**: o `searchRows` filtra o pendente por
   `processado` igual a `false`.
@@ -167,8 +169,7 @@ do $$ begin
               where n.nspname = 'public' and c.relname in ('<fila>', '<destino>', '<auditoria>') and c.relkind = 'r'
                 and a.attnum > 0 and not a.attisdropped
                 and (a.atttypid in ('real'::regtype, 'double precision'::regtype)
-                     or ((a.attname = '<valor>'
-                          or a.attname ~* '(valor|preco|saldo|total|montante|debito|credito|juros|multa|desconto|aliquota|imposto|tributo|tarifa|salario)')
+                     or (a.attname in ('<valor>')       -- escreva aqui o nome de CADA coluna de dinheiro do fluxo, entre aspas e com vírgula
                          and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then
     raise exception 'Prepare o banco: há coluna de dinheiro fora de numeric(18,2), ou em real/double precision — o centavo se perde';
   end if;

@@ -292,6 +292,7 @@ FRASES: dict[str, list[str]] = {
         "if to_regclass('public.<destino>') is not null then",
         "pg_get_expr(d.adbin, d.adrelid) = 'false'",
         "and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then",
+        "escreva aqui o nome de CADA coluna de dinheiro do fluxo, entre aspas e com vírgula",
         "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then",
         "inclusive a `chave_do_aceite`, e acrescente ao filtro do `searchRows` a condição `chave_natural` contém `TESTE-`",
         "raise exception 'Prepare o banco: a auditoria precisa dos 6 campos de [G2]"],
