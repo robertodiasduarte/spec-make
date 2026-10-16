@@ -206,12 +206,25 @@ class Contrato(unittest.TestCase):
                  ("spec-make-build/references/PROTOCOLO.md", "(operações maiores que zero; ela pode gastar menos que a 1ª): execução que não processou nada",
                   "(operações maiores que zero, iguais às da 1ª): execução que não processou nada"),
                  ("spec-make-build/references/PROTOCOLO.md",
-                  "a condição `chave_natural` contém `TESTE-` (as duas condições juntas), para o teste nunca ler nem marcar",
-                  "a condição `chave_natural` contém `TESTE-` (ou nenhuma), para o teste ler e marcar"),
+                  "a condição `chave_natural` igual a `TESTE-1` (as duas condições juntas), para o teste nunca ler nem marcar",
+                  "a condição `chave_natural` igual a `TESTE-1` (ou nenhuma), para o teste ler e marcar"),
+                 # R2@opus (rodada 2): o mutante do passo 10 (não da linha "Gatilho real") também reprova
+                 ("spec-make-build/references/PROTOCOLO.md",
+                  "(operações maiores que zero; ela pode gastar menos que a 1ª). Execução que não processou nada também gasta 1",
+                  "(operações maiores que zero, iguais às da 1ª). Execução que não processou nada também gasta 1"),
+                 # R1@opus (rodada 2): ligar de verdade sem tirar o filtro de teste
+                 ("spec-make-build/references/PROTOCOLO.md", "no mesmo `scenarios_update` tire a condição `TESTE-1` do `searchRows`",
+                  "no mesmo `scenarios_update` troque a agenda"),
                  ("spec-make-build/references/PROTOCOLO.md", "o destino segue com 1 linha com essa chave",
                   "o destino pode ter qualquer contagem"),
                  ("spec-make-design/references/SUPABASE.md", "and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then",
                   "and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,0)'))) then"),
+                 # R2@codex (rodada 2): a conferência da fila preexistente sem a coluna do marcador
+                 ("spec-make-design/references/SUPABASE.md", "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",
+                  "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado'"),
+                 # R1@codex (rodada 2): o filtro de teste é a chave exata, não "contém"
+                 ("spec-make-design/references/SUPABASE.md", "a condição `chave_natural` *Equals* `TESTE-1`",
+                  "a condição `chave_natural` contém `TESTE-`"),
                  ("spec-make-build/references/DIAGNOSTICO.md", "Correções só no fluxo que esta conversa criou ([B4]).",
                   "Correções em qualquer fluxo da conta."),
                  ("spec-make-handoff/references/PROTOCOLO.md", "Nunca troque o `lastEdit` da ficha",

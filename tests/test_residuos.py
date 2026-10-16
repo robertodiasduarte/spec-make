@@ -18,7 +18,8 @@ TERMOS = ("x-make-apikey", "hooks_create", "keys_list", "Database Webhook", "/fu
           "makeAnApiCall", "watchEvents", "pg_cron", "pg_net", "ActionSendDataAPIKeyAuth", "withSupabase",
           "security definer", "New secret key", "Webhook API Key Auth")
 # palavras soltas do kit congelado (R3@codex/R4@opus 1b): "tabelas, cron ou edges" na prosa passava pela lista de termos exatos
-PADROES = (re.compile(r"\bedges?\b", re.I), re.compile(r"\bcron\b", re.I))
+PADROES = (re.compile(r"\bedges?\b", re.I), re.compile(r"\bcron\b", re.I),
+           re.compile(r"\bchaves?\s+nomeadas?\b", re.I))      # R4@opus (rodada 2): a docstring a prometia e nada a pegava
 RESERVADA = "1.2" + ".0"      # montada em pedaços: este arquivo não pode ser o resíduo que ele procura
 PERMITIDOS = {"spec-make-design/SKILL.md": "S2", "spec-make-handoff/SKILL.md": "H2"}
 
@@ -36,8 +37,9 @@ def textos_publicados(raiz=RAIZ) -> dict[str, str]:
     """caminho relativo → texto a varrer (já sem os blocos permitidos e só com os casos positivos dos evals)."""
     saida: dict[str, str] = {}
     arquivos = sorted((raiz / "skills").rglob("*.md")) + sorted((raiz / "compartilhado").glob("*.md"))
-    if (raiz / "README.md").is_file():
-        arquivos.append(raiz / "README.md")
+    for extra in ("README.md", "CHANGELOG.md"):      # R4@opus (rodada 2): o CHANGELOG também é texto publicado
+        if (raiz / extra).is_file():
+            arquivos.append(raiz / extra)
     for f in arquivos:
         rel = f.relative_to(raiz).as_posix()
         texto = f.read_text(encoding="utf-8")
@@ -91,10 +93,10 @@ class Residuos(unittest.TestCase):
         base = textos_publicados()
         for chave in ("skills/spec-make-design/SKILL.md", "skills/spec-make-design/assets/DESIGN_TEMPLATE.md",
                       "skills/spec-make-design/references/PROTOCOLO.md", "compartilhado/MCP_MAKE.md",
-                      "compartilhado/SUPABASE.md", "skills/spec-make-build/SKILL.md",
+                      "compartilhado/SUPABASE.md", "CHANGELOG.md", "skills/spec-make-build/SKILL.md",
                       "skills/spec-make-build/references/PROTOCOLO.md", "skills/spec-make-build/manifest.json",
                       "skills/spec-make-design/evals/cases.json#positivos"):
-            for termo in ("watchEvents", "Database Webhook", "pg_cron", "receitas de cron", "chame uma edge"):
+            for termo in ("watchEvents", "Database Webhook", "pg_cron", "receitas de cron", "chame uma edge", "crie uma chave nomeada"):
                 with self.subTest(arquivo=chave, termo=termo):
                     mut = dict(base)
                     mut[chave] = mut[chave] + f"\nUse {termo}.\n"

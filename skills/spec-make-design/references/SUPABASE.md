@@ -96,9 +96,11 @@ sem IA).
 - **Taxa de correção:** a view `<auditoria>_taxa_de_correcao` mostra, por pessoa e por mês, quantos aceites e quantos foram
   editados antes de aceitar. Quem aceita 100% sem editar por meses merece uma conversa. A view ignora a chave de aceite
   que começa com `TESTE-`.
-- **Teste sem sujar:** nos testes, use chaves que começam com `TESTE-`, inclusive a `chave_do_aceite`, e acrescente ao
-  filtro do `searchRows` a condição `chave_natural` contém `TESTE-`, para o teste nunca ler nem marcar um pendente real
-  (tire essa condição quando ligar de verdade). O aceite de teste fica na auditoria (ela não se apaga), mas a view da
+- **Teste sem sujar:** nos testes, grave as linhas da fila com a chave natural exatamente `TESTE-1` (a fila aceita a
+  mesma chave mais de uma vez), use uma `chave_do_aceite` que começa com `TESTE-` e acrescente ao filtro do `searchRows`
+  a condição `chave_natural` *Equals* `TESTE-1`, para o teste nunca ler nem marcar um pendente real ("contém" casaria
+  uma chave real com `TESTE-` no meio). Quando ligar de verdade, tire essa condição, valide o módulo editado e confira
+  que o filtro ficou só com `processado` igual a `false`. O aceite de teste fica na auditoria (ela não se apaga), mas a view da
   taxa de correção o ignora; o registro de teste do destino você apaga com um `delete`.
 
 ```sql
@@ -181,6 +183,11 @@ do $$ begin
                                                   and k.conkey = array[a.attnum]
                     where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then
       raise exception 'Prepare o banco: <fila>.id precisa ser a primary key, gerada "by default" — senão o marcador não regrava a linha';
+    end if;
+    if not exists (select 1 from pg_attribute a
+                    where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em' and a.atttypid = 'timestamptz'::regtype
+                      and not a.attisdropped) then
+      raise exception 'Prepare o banco: <fila>.processado_em (timestamptz) não existe — o marcador não grava e o item volta à fila';
     end if;
     if not exists (select 1 from pg_attribute a join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
                     where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado' and a.atttypid = 'boolean'::regtype

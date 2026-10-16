@@ -269,11 +269,17 @@ FRASES: dict[str, list[str]] = {
         "a contagem não pode mudar e a 2ª execução tem de ter processado o item",
         "Execução que não processou nada também gasta 1 operação: com fila, confira que a linha nova voltou como "
         "`processado = true`.",
-        "use chaves que começam com `TESTE-` e acrescente ao filtro do `searchRows`",
+        "use a chave natural `TESTE-1` e acrescente ao filtro do `searchRows`",
         "o destino segue com 1 linha com essa chave, as operações são maiores que zero **e** a linha nova voltou como "
         "`processado = true`",
-        "acrescente ao filtro do `searchRows` a condição `chave_natural` contém `TESTE-` (as duas condições juntas), para "
+        "acrescente ao filtro do `searchRows` a condição `chave_natural` igual a `TESTE-1` (as duas condições juntas), para "
         "o teste nunca ler nem marcar um pendente real",
+        # R2@opus (rodada 2): o passo 10 inteiro, que a linha "Gatilho real" não repete
+        "a 2ª execução tem de ter processado o item (operações maiores que zero; ela pode gastar menos que a 1ª). "
+        "Execução que não processou nada também gasta 1 operação",
+        # R1@opus + A2@fable (rodada 2): ligar de verdade tira o filtro de teste, valida e confere
+        "no mesmo `scenarios_update` tire a condição `TESTE-1` do `searchRows`",
+        "o filtro ficou só com `processado` igual a `false`",
         "A chave do aceite (`chave_do_aceite`) também começa com `TESTE-`",
         "(operações maiores que zero; ela pode gastar menos que a 1ª): execução que não processou nada não testa nada"],
     # SPEC_MAKE_S5: as receitas com polaridade (o "nunca", o "sempre" e as travas do SQL inteiros)
@@ -294,7 +300,9 @@ FRASES: dict[str, list[str]] = {
         "and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then",
         "escreva aqui o nome de CADA coluna de dinheiro do fluxo, entre aspas e com vírgula",
         "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then",
-        "inclusive a `chave_do_aceite`, e acrescente ao filtro do `searchRows` a condição `chave_natural` contém `TESTE-`",
+        "a condição `chave_natural` *Equals* `TESTE-1`, para o teste nunca ler nem marcar um pendente real",
+        "if not exists (select 1 from pg_attribute a\n                    where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",
+        "raise exception 'Prepare o banco: <fila>.processado_em (timestamptz) não existe",
         "raise exception 'Prepare o banco: a auditoria precisa dos 6 campos de [G2]"],
     "spec-make-design/references/PROTOCOLO.md": [
         'Sem acesso à web nesta conversa, escreva "não consultado".',
