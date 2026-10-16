@@ -38,7 +38,9 @@
     "python": "3.9+ (opcional)",
     "third_party_dependencies": []
   },
-  "executados": [],
+  "executados": [
+    "Negativos rodados por agentes novos em 16/10/2026 (spec-make @ a90d735, Claude Sonnet, 1 agente por caso, só a pasta da skill): os 7 negativos do design (modulo-fora-da-lista, cadastro-extra, filtro-nulo, polling-sem-custo-ocioso, valor-float, auditoria-editavel, fonte-sem-consulta) recusam ou escrevem 'não consultado' e nomeiam o item; a regra foi confirmada por pergunta de acompanhamento ao mesmo agente (a resposta ao aluno não cita a âncora); evidência em evidence/SPEC_MAKE_S5/evals-executados/ do worktree"
+  ],
   "pending": [
     "Executar os casos de evals/cases.json em mais de um agente (Claude e ChatGPT)",
     "Medir o conector do Make no ChatGPT e o plano Free do Make"
