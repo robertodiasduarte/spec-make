@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.2 — 2026-10
+
+- O verificador de blueprint passa a conferir também a busca que está dentro de uma rota de roteador (o valor em texto do
+  filtro de verdade ou falso e o filtro "existe" no módulo seguinte), e a reconhecer o módulo do Supabase escrito com
+  outra caixa de letra ou com espaço (`Supabase:watchEvents` não escapa mais da lista).
+
 ## v1.3.1 — 2026-10
 
 - Duas correções do fluxo que lê uma fila no Supabase, achadas no 1º teste de ponta a ponta com o kit publicado:

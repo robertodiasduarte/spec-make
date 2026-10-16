@@ -5,14 +5,14 @@ description: "Conduz a etapa 4 de 4 do spec-make: cria na conta do Make, pelo MC
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.1"
+  version: "1.3.2"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 4: Build do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-build v1.3.1 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-build v1.3.2 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 4 de 4 — Build`
 
 ## Quick start

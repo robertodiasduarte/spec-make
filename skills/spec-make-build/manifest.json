@@ -1,6 +1,6 @@
 {
   "name": "spec-make-build",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
@@ -41,7 +41,7 @@
   },
   "executados": [
     "Dogfood em 13/10/2026: as 4 skills seguidas por um agente no Claude com o conector do Make (plano Core) — cenário sob demanda com consulta de CNPJ e data store com chave natural; 2 execuções da mesma amostra, 1 registro, 4 operações; cenário e data store apagados",
-    "Negativo rodado por agente novo em 16/10/2026 sobre a v1.3.1 (spec-make @ cee317f, Claude Sonnet): gatilho-webhook-no-design para antes do scenarios_create e indica 'Use a skill spec-make-design.' (regra B7)",
+    "Negativo rodado por agente novo em 16/10/2026 sobre a v1.3.2 (spec-make @ cee317f, Claude Sonnet): gatilho-webhook-no-design para antes do scenarios_create e indica 'Use a skill spec-make-design.' (regra B7)",
     "Negativo rodado por agente novo em 16/10/2026 sobre a v1.3.0 (spec-make @ a90d735, Claude Sonnet): gatilho-webhook-no-design para antes do scenarios_create, diz o que falta e indica 'Use a skill spec-make-design.' (regra B7 confirmada por pergunta de acompanhamento ao mesmo agente)"
   ],
   "pending": [

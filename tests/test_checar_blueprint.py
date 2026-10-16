@@ -584,6 +584,25 @@ class ChecarBlueprint(unittest.TestCase):
         ultimo = copy.deepcopy(ok)
         ultimo["flow"] = ultimo["flow"][:1]
         self.assertEqual(cb.checar(ultimo), [])
+        # avaliador, ciclo 1: a mesma busca dentro de uma rota do roteador também vale
+        na_rota = copy.deepcopy(ok)
+        busca, resto = na_rota["flow"][0], na_rota["flow"][1:]
+        na_rota["flow"] = [{"id": 8, "module": "builtin:BasicRouter", "version": 1, "mapper": {},
+                            "routes": [{"flow": [busca] + copy.deepcopy(resto)}]}]
+        self.assertEqual(cb.checar(na_rota), [], "rota com busca + filtro 'existe' passa")
+        na_rota["flow"][0]["routes"][0]["flow"][1].pop("filter")
+        self.assertTrue(any("pacote vazio" in p for p in cb.checar(na_rota)), "rota sem o filtro 'existe' reprova")
+        na_rota["flow"][0]["routes"][0]["flow"][1]["filter"] = {"conditions": [[{"a": "{{1.id}}", "o": "exist"}]]}
+        na_rota["flow"][0]["routes"][0]["flow"][0]["mapper"]["search"][0][0]["b"] = False
+        self.assertTrue(any("booleano" in p for p in cb.checar(na_rota)), "rota com filtro booleano reprova")
+
+    def test_nome_do_modulo_supabase_sem_normalizar_nao_escapa(self):
+        """Avaliador, ciclo 1 (achado 3): caixa e espaço no nome do módulo não fazem módulo fora da lista passar."""
+        for nome in ("Supabase:watchEvents", " supabase:watchEvents", "SUPABASE:makeAnApiCall", "supabase:makeanapicall "):
+            with self.subTest(modulo=nome):
+                self.assertTrue(any("só como banco" in p for p in cb.checar(self._com_modulo(nome))), nome)
+        bp = self._com_modulo("Supabase:UpsertARecord", {"table": "pedidos"})
+        self.assertEqual(cb.checar(bp), [], "caixa diferente num módulo permitido não reprova")
 
     def test_conexao_com_id_real_nao_e_credencial(self):
         """O id da conexão do Make tem 6–8 dígitos na conta real: não é credencial escrita."""

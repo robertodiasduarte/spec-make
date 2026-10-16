@@ -348,18 +348,19 @@ def _modulos(flow: list) -> list[dict]:
 def problemas_supabase(m: dict) -> list[str]:
     """O Supabase entra só como banco: lista permitida do app, nada de supabase-management/postgres, nada de endereço
     de projeto fora do app (SPEC_MAKE_S5, [S1] e [S2])."""
-    nome = str(m.get("module") or "")
+    original = str(m.get("module") or "")
+    nome = original.strip().lower()        # "Supabase:watchEvents" e " supabase:..." não escapam; a mensagem cita o original
     if nome.startswith("supabase:"):
-        if nome in SUPABASE_PERMITIDOS:
+        if nome in {p.lower() for p in SUPABASE_PERMITIDOS}:
             return []
-        return [f"o módulo {nome} não está entre os do banco (searchRows, createARow, upsertARecord, getRowsCount, "
+        return [f"o módulo {original} não está entre os do banco (searchRows, createARow, upsertARecord, getRowsCount, "
                 "deleteRows): o fluxo usa o Supabase só como banco ([S2])"]
     saida = []
     if nome.startswith(APPS_FORA):
-        saida.append(f"o módulo {nome} abre o banco inteiro ou todos os projetos: use o app supabase ([S1])")
+        saida.append(f"o módulo {original} abre o banco inteiro ou todos os projetos: use o app supabase ([S1])")
     texto = json.dumps(m.get("mapper") or {}, ensure_ascii=False).lower()
     if DOMINIO_PROJETO.search(texto) or any(t in texto for t in PROJETO_SUPABASE):
-        saida.append(f"o módulo {nome} traz o endereço de um projeto Supabase: use os módulos do app supabase ([S2])")
+        saida.append(f"o módulo {original} traz o endereço de um projeto Supabase: use os módulos do app supabase ([S2])")
     return saida
 
 
@@ -368,8 +369,11 @@ def problemas_busca_supabase(fluxo: list) -> list[str]:
     verdade/falso do `searchRows` tem de ir em texto, o booleano faz o Make ignorar a condição; (2) sem pendente a busca
     devolve 1 pacote vazio, então o módulo seguinte precisa do filtro "existe" sobre o id da busca."""
     saida: list[str] = []
+    for m in fluxo:                       # cada rota de um roteador é uma lista de módulos própria (avaliador, ciclo 1)
+        for rota in (m.get("routes") if isinstance(m, dict) else None) or []:
+            saida += problemas_busca_supabase(rota.get("flow") if isinstance(rota, dict) else [])
     for i, m in enumerate(fluxo):
-        if not isinstance(m, dict) or m.get("module") != "supabase:searchRows":
+        if not isinstance(m, dict) or str(m.get("module") or "").strip().lower() != "supabase:searchrows":
             continue
         for grupo in (m.get("mapper") or {}).get("search") or []:
             for cond in grupo if isinstance(grupo, list) else []:
