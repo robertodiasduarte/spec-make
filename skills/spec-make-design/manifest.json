@@ -39,7 +39,8 @@
     "third_party_dependencies": []
   },
   "executados": [
-    "Negativos rodados por agentes novos em 16/10/2026 (spec-make @ a90d735, Claude Sonnet, 1 agente por caso, só a pasta da skill): os 7 negativos do design (modulo-fora-da-lista, cadastro-extra, filtro-nulo, polling-sem-custo-ocioso, valor-float, auditoria-editavel, fonte-sem-consulta) recusam ou escrevem 'não consultado' e nomeiam o item; a regra foi confirmada por pergunta de acompanhamento ao mesmo agente (a resposta à pessoa não cita a âncora); evidência em evidence/SPEC_MAKE_S5/evals-executados/ do worktree"
+    "Negativos rodados por agentes novos em 16/10/2026 sobre a v1.3.1 (spec-make @ cee317f, Claude Sonnet, 1 agente por caso, só a pasta da skill; a âncora da regra pedida numa última linha do próprio prompt): os 7 negativos do design recusam ou escrevem 'não consultado' e nomeiam o item e a regra; os mesmos 7 já tinham passado na v1.3.0 (a90d735), antes das duas correções do teste de ponta a ponta",
+    "Negativos rodados por agentes novos em 16/10/2026 sobre a v1.3.0 (spec-make @ a90d735, Claude Sonnet, 1 agente por caso, só a pasta da skill): os 7 negativos do design (modulo-fora-da-lista, cadastro-extra, filtro-nulo, polling-sem-custo-ocioso, valor-float, auditoria-editavel, fonte-sem-consulta) recusam ou escrevem 'não consultado' e nomeiam o item; a regra foi confirmada por pergunta de acompanhamento ao mesmo agente (a resposta à pessoa não cita a âncora); evidência em evidence/SPEC_MAKE_S5/evals-executados/ do worktree"
   ],
   "pending": [
     "Executar os casos de evals/cases.json em mais de um agente (Claude e ChatGPT)",
