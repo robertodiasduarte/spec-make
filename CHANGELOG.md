@@ -4,7 +4,7 @@
 
 - O verificador de blueprint passa a conferir também a busca que está dentro de uma rota de roteador (o valor em texto do
   filtro de verdade ou falso e o filtro "existe" no módulo seguinte), e a reconhecer o módulo do Supabase escrito com
-  outra caixa de letra ou com espaço (`Supabase:watchEvents` não escapa mais da lista).
+  outra caixa de letra ou com espaço (módulo fora da lista não escapa mais por causa disso).
 
 ## v1.3.1 — 2026-10
 
