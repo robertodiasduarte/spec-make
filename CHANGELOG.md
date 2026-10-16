@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.3 — 2026-10
+
+- A etapa 4, quando o fluxo toca o Supabase, roda o verificador de blueprint como passo obrigatório e, se ele reprovar,
+  não cria o fluxo: diz o problema e manda voltar à etapa 3.
+- A etapa 3 manda o desenho dizer que a pessoa lê a view da taxa de correção no SQL Editor do Supabase, com o comando.
+
 ## v1.3.2 — 2026-10
 
 - O verificador de blueprint passa a conferir também a busca que está dentro de uma rota de roteador (o valor em texto do

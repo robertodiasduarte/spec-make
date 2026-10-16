@@ -204,6 +204,9 @@ REGRAS: list[Regra] = [
           contem=[COND, "a chave natural como `primary key` da tabela de destino que o `upsertARecord` grava (a fila, que "
                   "aceita a chave repetida, tem o `id` como `primary key` e o marcador a grava por ele)",
                   "`numeric(18,2)`", "os 6 campos de [G2] `not null`", "a view da taxa de correção",
+                  # 1.3.3 (avaliador, ciclo 2): a pessoa lê a view no SQL Editor
+                  "O DESIGN diz que a pessoa lê a view da taxa de correção no SQL Editor do Supabase "
+                  "(`select * from public.<auditoria>_taxa_de_correcao`).",
                   'Os 6 campos vêm do passo de aceite, gravados antes do "processa" e nunca recalculados, para a repetição '
                   "do mesmo aceite ser idêntica.",
                   "Chave natural que não é a `primary key` da tabela de destino do `upsertARecord`, coluna de valor em "
@@ -224,7 +227,10 @@ REGRAS: list[Regra] = [
                   "gatilho só pela agenda do Make ou sob demanda; bloco `Relógio` com o gatilho e, quando é agenda, o "
                   "intervalo e a linha de operações paradas na seção `Custo`.",
                   'Faltando qualquer um, não crie o fluxo: diga o que falta e indique "Use a skill spec-make-design." '
-                  "antes de qualquer `scenarios_create`."]),
+                  "antes de qualquer `scenarios_create`.",
+                  # 1.3.3 (avaliador, ciclo 2): o verificador do blueprint manda parar o build
+                  "Rode também `scripts/checar_blueprint.py` sobre o blueprint do DESIGN: se ele reprovar, não crie o "
+                  "fluxo; diga o problema e indique a mesma skill."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
           contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
                   "no destino. Recuse como incompleto o teste que só confere uma execução",
@@ -279,6 +285,9 @@ FRASES: dict[str, list[str]] = {
         "`processado = true`",
         "acrescente ao filtro do `searchRows` a condição `chave_natural` igual a `TESTE-1` (as duas condições juntas), para "
         "o teste nunca ler nem marcar um pendente real",
+        # 1.3.3: o verificador é obrigatório no build com Supabase e reprovar para o fluxo
+        "Fluxo que toca Supabase: o verificador é obrigatório; se ele reprovar, não crie o fluxo: diga o problema e indique "
+        "\"Use a skill spec-make-design.\"",
         # 1.3.1: a 3ª execução, com a fila vazia, prova o filtro e o pacote vazio
         "Com fila, rode também uma 3ª execução com a fila vazia: ela termina em sucesso e gasta exatamente 1 operação.",
         "Faça ainda a **3ª execução com a fila vazia**: ela termina em sucesso e gasta exatamente 1 operação",
@@ -309,6 +318,7 @@ FRASES: dict[str, list[str]] = {
         "escreva aqui o nome de CADA coluna de dinheiro do fluxo, entre aspas e com vírgula",
         "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then",
         "a condição `chave_natural` *Equals* `TESTE-1`, para o teste nunca ler nem marcar um pendente real",
+        "A pessoa lê essa view no SQL Editor do Supabase (`select * from public.<auditoria>_taxa_de_correcao`),",
         "No blueprint, o valor do\n   filtro vai **em texto** (`\"b\": \"false\"`): com o booleano `false` o Make ignora a condição",
         "devolve **1 pacote vazio** (não zero): o 1º módulo depois da busca leva o filtro",
         "if not exists (select 1 from pg_attribute a\n                    where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",

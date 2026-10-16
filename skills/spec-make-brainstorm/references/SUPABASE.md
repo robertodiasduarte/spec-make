@@ -98,7 +98,8 @@ sem IA).
   nem use "agora" no campo `quando` na hora de gravar a auditoria, ou a reexecução do mesmo item seria recusada.
 - **Taxa de correção:** a view `<auditoria>_taxa_de_correcao` mostra, por pessoa e por mês, quantos aceites e quantos foram
   editados antes de aceitar. Quem aceita 100% sem editar por meses merece uma conversa. A view ignora a chave de aceite
-  que começa com `TESTE-`.
+  que começa com `TESTE-`. A pessoa lê essa view no SQL Editor do Supabase (`select * from public.<auditoria>_taxa_de_correcao`),
+  e o DESIGN diz isso.
 - **Teste sem sujar:** nos testes, grave as linhas da fila com a chave natural exatamente `TESTE-1` (a fila aceita a
   mesma chave mais de uma vez), use uma `chave_do_aceite` que começa com `TESTE-` e acrescente ao filtro do `searchRows`
   a condição `chave_natural` *Equals* `TESTE-1`, para o teste nunca ler nem marcar um pendente real ("contém" casaria

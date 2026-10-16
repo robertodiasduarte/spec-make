@@ -5,14 +5,14 @@ description: "Conduz a etapa 1 de 4 do spec-make: transforma uma rotina do escri
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.2"
+  version: "1.3.3"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 1: Brainstorm do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-brainstorm v1.3.2 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-brainstorm v1.3.3 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 1 de 4 — Brainstorm`
 
 ## Quick start

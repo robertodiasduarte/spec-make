@@ -1,6 +1,6 @@
 {
   "name": "spec-make-handoff",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Transversal do spec-make: ficha do fluxo para continuar depois, com o MCP do Make (só leitura)",

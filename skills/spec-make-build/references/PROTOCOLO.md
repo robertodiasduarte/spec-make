@@ -13,7 +13,8 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
    2b. Fluxo que toca Supabase: confirme com a pessoa que o SQL do `Prepare o banco` rodou sem erro no SQL Editor; o
    teste do passo 10 prova o resto.
 3. `validate_module_configuration` (por módulo) e `validate_blueprint_schema` — o blueprint final, já com as conexões.
-   Rode também `scripts/checar_blueprint.py` se o ambiente executar código.
+   Rode também `scripts/checar_blueprint.py` se o ambiente executar código. Fluxo que toca Supabase: o verificador é
+   obrigatório; se ele reprovar, não crie o fluxo: diga o problema e indique "Use a skill spec-make-design."
 4. `data-structures_create` e depois `data-stores_create` — só se o DESIGN tiver data store novo. Em seguida,
    valide o módulo que grava nele (`validate_module_configuration` com o id do data store): os campos só aparecem
    depois que ele existe (MCP_MAKE.md, fato 9).

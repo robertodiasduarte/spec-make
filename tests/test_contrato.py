@@ -163,6 +163,11 @@ class Contrato(unittest.TestCase):
             (h, "Se a conversa não tiver o MCP do Make, avise em uma frase, escreva",
              "Se a conversa não tiver o MCP do Make, escreva"),
             (h, 'avise em uma frase, escreva "sem o conector" na\nlinha "Gerada" da ficha e preencha', "preencha"),
+            # 1.3.3 (avaliador, ciclo 2): B7 manda parar quando o verificador reprova; S5 manda o DESIGN dizer onde se lê a view
+            ("spec-make-build/SKILL.md", "se ele reprovar, não crie o fluxo; diga o problema e indique a",
+             "se ele reprovar, crie o fluxo mesmo assim; diga o problema e indique a"),
+            ("spec-make-design/SKILL.md", "O DESIGN diz que a pessoa lê a view da taxa de correção no\nSQL Editor do Supabase",
+             "O DESIGN não diz onde a pessoa lê a view da taxa de correção no\nSQL Editor do Supabase"),
             # 1.3.1 (S3): valor do filtro em texto e filtro "existe" depois da busca, na âncora do design
             ("spec-make-design/SKILL.md", 'vai em texto (`"false"`, nunca o booleano `false`:',
              'vai em booleano (`false`, nunca o texto `"false"`:'),
@@ -226,6 +231,11 @@ class Contrato(unittest.TestCase):
                  # R2@codex (rodada 2): a conferência da fila preexistente sem a coluna do marcador
                  ("spec-make-design/references/SUPABASE.md", "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",
                   "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado'"),
+                 # 1.3.3: verificador obrigatório no build e leitura da view no SQL Editor
+                 ("spec-make-build/references/PROTOCOLO.md", "o verificador é obrigatório; se ele reprovar, não crie o fluxo:",
+                  "o verificador é opcional; se ele reprovar, crie o fluxo:"),
+                 ("spec-make-design/references/SUPABASE.md", "A pessoa lê essa view no SQL Editor do Supabase",
+                  "A pessoa não lê essa view no SQL Editor do Supabase"),
                  # 1.3.1: o teste de ponta a ponta achou o filtro booleano e o pacote vazio
                  ("spec-make-build/references/PROTOCOLO.md",
                   "Faça ainda a **3ª execução com a fila vazia**: ela termina em sucesso e gasta exatamente 1 operação",

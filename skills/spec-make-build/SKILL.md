@@ -5,14 +5,14 @@ description: "Conduz a etapa 4 de 4 do spec-make: cria na conta do Make, pelo MC
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.2"
+  version: "1.3.3"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 4: Build do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-build v1.3.2 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-build v1.3.3 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 4 de 4 — Build`
 
 ## Quick start
@@ -91,7 +91,9 @@ motivo, as tabelas e as operações; seção `Prepare o banco` com o SQL quando 
 só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`; nenhum módulo `postgres` ou
 `supabase-management`, nenhum HTTP para o projeto; gatilho só pela agenda do Make ou sob demanda; bloco `Relógio` com o
 gatilho e, quando é agenda, o intervalo e a linha de operações paradas na seção `Custo`. Faltando qualquer um, não crie
-o fluxo: diga o que falta e indique "Use a skill spec-make-design." antes de qualquer `scenarios_create`.
+o fluxo: diga o que falta e indique "Use a skill spec-make-design." antes de qualquer `scenarios_create`. Rode também
+`scripts/checar_blueprint.py` sobre o blueprint do DESIGN: se ele reprovar, não crie o fluxo; diga o problema e indique a
+mesma skill.
 
 **[C1] Confidencial.** O fluxo é criado com `metadata.scenario.confidential: true`. Se o blueprint do DESIGN não
 tiver, corrija antes de criar e diga isso.

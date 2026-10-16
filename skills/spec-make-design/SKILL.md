@@ -5,14 +5,14 @@ description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um flux
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.2"
+  version: "1.3.3"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 3: Design do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-design v1.3.2 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-design v1.3.3 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 3 de 4 — Design`
 
 ## Quick start
@@ -110,7 +110,8 @@ tem o `id` como `primary key` e o marcador a grava por ele), `processado` e `pro
 RLS ligado sem política, coluna de valor em dinheiro como `numeric(18,2)` e, com IA aceita, a tabela de auditoria só de
 acréscimo (chave do aceite como `primary key`, os 6 campos de [G2] `not null`, gatilho que recusa alterar, apagar e
 truncar, e a view da taxa de correção). Os 6 campos vêm do passo de aceite, gravados antes do "processa" e nunca
-recalculados, para a repetição do mesmo aceite ser idêntica. Chave natural que não é a `primary key` da tabela de
+recalculados, para a repetição do mesmo aceite ser idêntica. O DESIGN diz que a pessoa lê a view da taxa de correção no
+SQL Editor do Supabase (`select * from public.<auditoria>_taxa_de_correcao`). Chave natural que não é a `primary key` da tabela de
 destino do `upsertARecord`, coluna de valor em `real`, `float4`, `float8` ou `double precision`, rateio sem a regra do
 centavo residual, campo da auditoria anulável, auditoria sem o gatilho ou sem a view: recuse o DESIGN como pronto e
 nomeie a coluna, o campo ou o rateio que falta corrigir.
