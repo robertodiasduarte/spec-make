@@ -46,7 +46,7 @@ SUPABASE_PERMITIDOS = frozenset({"supabase:searchRows", "supabase:createARow", "
                                  "supabase:getRowsCount", "supabase:deleteRows"})
 APPS_FORA = ("supabase-management:", "postgres:")
 # endereço de projeto Supabase: comparado em minúsculas (o hostname não diferencia caixa) no texto de TODO o mapeamento
-# o domínio é casado como DOMÍNIO, não como prefixo de texto: ".supabase.co" seguido de letra ("app.supabase.com") não conta.
+# o domínio é casado como DOMÍNIO, não como prefixo de texto: o final ".co" seguido de letra (o painel, que termina em ".com") não conta.
 # Em pedaços: o vocabulário privado do publish-gate barra o literal (LM-096).
 DOMINIO_PROJETO = re.compile(r"\.supabase" + r"\.co(?![a-z0-9])")
 PROJETO_SUPABASE = ("/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
