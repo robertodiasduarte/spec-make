@@ -187,7 +187,8 @@ REGRAS: list[Regra] = [
                   "Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make → `searchRows` com "
                   "`processado` igual a `false` e um limite → processa → `upsertARecord` pela primary key da fila, que "
                   "regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`).",
-                  "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make: recuse o DESIGN como pronto."]),
+                  "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make nem a execução sob demanda: recuse o "
+                  "DESIGN como pronto."]),
     Regra("S4", _skill("spec-make-design"), at="AT-004",
           contem=[COND, "agenda do Make com o intervalo, ou sob demanda", "disparos por mês × operações do disparo vazio",
                   "Se o fluxo toca Supabase, o DESIGN declara no bloco `Relógio` como o fluxo dispara — agenda do Make "
@@ -268,9 +269,13 @@ FRASES: dict[str, list[str]] = {
         "a contagem não pode mudar e a 2ª execução tem de ter processado o item",
         "Execução que não processou nada também gasta 1 operação: com fila, confira que a linha nova voltou como "
         "`processado = true`.",
-        "Use chaves de teste que começam com `TESTE-`",
-        "a contagem do destino não muda, as operações são maiores que zero **e** a linha nova voltou como "
-        "`processado = true`"],
+        "use chaves que começam com `TESTE-` e acrescente ao filtro do `searchRows`",
+        "o destino segue com 1 linha com essa chave, as operações são maiores que zero **e** a linha nova voltou como "
+        "`processado = true`",
+        "acrescente ao filtro do `searchRows` a condição `chave_natural` contém `TESTE-` (as duas condições juntas), para "
+        "o teste nunca ler nem marcar um pendente real",
+        "A chave do aceite (`chave_do_aceite`) também começa com `TESTE-`",
+        "(operações maiores que zero; ela pode gastar menos que a 1ª): execução que não processou nada não testa nada"],
     # SPEC_MAKE_S5: as receitas com polaridade (o "nunca", o "sempre" e as travas do SQL inteiros)
     "spec-make-design/references/SUPABASE.md": [
         "Do app `supabase` entram só estes cinco módulos:",
@@ -286,6 +291,9 @@ FRASES: dict[str, list[str]] = {
         "if to_regclass('public.<auditoria>') is not null then",
         "if to_regclass('public.<destino>') is not null then",
         "pg_get_expr(d.adbin, d.adrelid) = 'false'",
+        "and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then",
+        "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then",
+        "inclusive a `chave_do_aceite`, e acrescente ao filtro do `searchRows` a condição `chave_natural` contém `TESTE-`",
         "raise exception 'Prepare o banco: a auditoria precisa dos 6 campos de [G2]"],
     "spec-make-design/references/PROTOCOLO.md": [
         'Sem acesso à web nesta conversa, escreva "não consultado".',

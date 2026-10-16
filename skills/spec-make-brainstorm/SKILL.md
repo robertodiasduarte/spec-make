@@ -113,7 +113,7 @@ etapa de ideia, faz as perguntas da rotina e confere na conta se o ERP tem app n
 - `SKILL.md`
 - `references/PROTOCOLO.md` — roteiro detalhado e exemplos de rotinas
 - `references/MCP_MAKE.md` — ferramentas e fatos medidos do MCP do Make
-- `references/SUPABASE.md` — receitas para fluxo que usa tabelas, cron ou edges do Supabase
+- `references/SUPABASE.md` — receitas para fluxo que usa o Supabase só como banco de dados (tabelas, fila e SQL do Prepare o banco)
 - `references/COPY.md` — como falar com a pessoa
 - `references/RUNTIME_COMPATIBILITY.md` — o que a skill precisa do ambiente
 - `assets/BRAINSTORM_TEMPLATE.md` — molde do documento

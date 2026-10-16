@@ -94,8 +94,10 @@ sem IA).
 - **Taxa de correção:** a view `<auditoria>_taxa_de_correcao` mostra, por pessoa e por mês, quantos aceites e quantos foram
   editados antes de aceitar. Quem aceita 100% sem editar por meses merece uma conversa. A view ignora a chave de aceite
   que começa com `TESTE-`.
-- **Teste sem sujar:** nos testes, use chaves que começam com `TESTE-`. O aceite de teste fica na auditoria (ela não se
-  apaga), mas a view da taxa de correção o ignora; o registro de teste do destino você apaga com um `delete`.
+- **Teste sem sujar:** nos testes, use chaves que começam com `TESTE-`, inclusive a `chave_do_aceite`, e acrescente ao
+  filtro do `searchRows` a condição `chave_natural` contém `TESTE-`, para o teste nunca ler nem marcar um pendente real
+  (tire essa condição quando ligar de verdade). O aceite de teste fica na auditoria (ela não se apaga), mas a view da
+  taxa de correção o ignora; o registro de teste do destino você apaga com um `delete`.
 
 ```sql
 -- Prepare o banco — <fluxo>. Cole no SQL Editor do Supabase (Project → SQL Editor → New query) e rode uma vez.
@@ -164,13 +166,21 @@ do $$ begin
   if exists (select 1 from pg_attribute a join pg_class c on c.oid = a.attrelid join pg_namespace n on n.oid = c.relnamespace
               where n.nspname = 'public' and c.relname in ('<fila>', '<destino>', '<auditoria>') and c.relkind = 'r'
                 and a.attnum > 0 and not a.attisdropped
-                and a.atttypid in ('real'::regtype, 'double precision'::regtype)) then
-    raise exception 'Prepare o banco: há coluna em real ou double precision — dinheiro é numeric(18,2)';
+                and (a.atttypid in ('real'::regtype, 'double precision'::regtype)
+                     or ((a.attname = '<valor>'
+                          or a.attname ~* '(valor|preco|saldo|total|montante|debito|credito|juros|multa|desconto|aliquota|imposto|tributo|tarifa|salario)')
+                         and format_type(a.atttypid, a.atttypmod) <> 'numeric(18,2)'))) then
+    raise exception 'Prepare o banco: há coluna de dinheiro fora de numeric(18,2), ou em real/double precision — o centavo se perde';
   end if;
   if exists (select 1 from pg_policies where schemaname = 'public' and tablename in ('<fila>', '<destino>', '<auditoria>')) then
     raise exception 'Prepare o banco: há política de RLS numa tabela do fluxo — ela pode abrir a tabela; revise';
   end if;
   if to_regclass('public.<fila>') is not null then
+    if not exists (select 1 from pg_attribute a join pg_constraint k on k.conrelid = a.attrelid and k.contype = 'p'
+                                                  and k.conkey = array[a.attnum]
+                    where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then
+      raise exception 'Prepare o banco: <fila>.id precisa ser a primary key, gerada "by default" — senão o marcador não regrava a linha';
+    end if;
     if not exists (select 1 from pg_attribute a join pg_attrdef d on d.adrelid = a.attrelid and d.adnum = a.attnum
                     where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado' and a.atttypid = 'boolean'::regtype
                       and a.attnotnull and pg_get_expr(d.adbin, d.adrelid) = 'false') then

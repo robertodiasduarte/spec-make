@@ -46,8 +46,10 @@ SUPABASE_PERMITIDOS = frozenset({"supabase:searchRows", "supabase:createARow", "
                                  "supabase:getRowsCount", "supabase:deleteRows"})
 APPS_FORA = ("supabase-management:", "postgres:")
 # endereço de projeto Supabase: comparado em minúsculas (o hostname não diferencia caixa) no texto de TODO o mapeamento
-DOMINIO_PROJETO = ".supabase" + ".co"      # em pedaços: o vocabulário privado do publish-gate barra o literal (LM-096)
-PROJETO_SUPABASE = (DOMINIO_PROJETO, "/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
+# o domínio é casado como DOMÍNIO, não como prefixo de texto: ".supabase.co" seguido de letra ("app.supabase.com") não conta.
+# Em pedaços: o vocabulário privado do publish-gate barra o literal (LM-096).
+DOMINIO_PROJETO = re.compile(r"\.supabase" + r"\.co(?![a-z0-9])")
+PROJETO_SUPABASE = ("/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
 
 # Credencial em formato conhecido, em qualquer string do blueprint (caminho de URL, cabeçalho genérico, corpo em texto):
 # OpenAI, JWT, chave privada, AWS, Stripe, Slack (token e webhook), GitHub, GitLab, Google, bot do Telegram, webhook do
@@ -356,7 +358,7 @@ def problemas_supabase(m: dict) -> list[str]:
     if nome.startswith(APPS_FORA):
         saida.append(f"o módulo {nome} abre o banco inteiro ou todos os projetos: use o app supabase ([S1])")
     texto = json.dumps(m.get("mapper") or {}, ensure_ascii=False).lower()
-    if any(t in texto for t in PROJETO_SUPABASE):
+    if DOMINIO_PROJETO.search(texto) or any(t in texto for t in PROJETO_SUPABASE):
         saida.append(f"o módulo {nome} traz o endereço de um projeto Supabase: use os módulos do app supabase ([S2])")
     return saida
 

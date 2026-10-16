@@ -95,7 +95,7 @@ ficam fora: recuse o DESIGN como pronto e proponha o caminho só com o banco.
 **[S3] Fila de pendentes.** Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make →
 `searchRows` com `processado` igual a `false` e um limite → processa → `upsertARecord` pela primary key da fila, que
 regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`). Filtro por coluna vazia, ou
-gatilho que não seja a agenda do Make: recuse o DESIGN como pronto.
+gatilho que não seja a agenda do Make nem a execução sob demanda: recuse o DESIGN como pronto.
 
 **[S4] Relógio.** Se o fluxo toca Supabase, o DESIGN declara no bloco `Relógio` como o fluxo dispara — agenda do Make
 com o intervalo, ou sob demanda — e, com agenda, soma no custo as operações paradas: disparos por mês × operações do

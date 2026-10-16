@@ -17,6 +17,8 @@ from contrato import RAIZ, bloco
 TERMOS = ("x-make-apikey", "hooks_create", "keys_list", "Database Webhook", "/functions/v1/", "/rest/v1/",
           "makeAnApiCall", "watchEvents", "pg_cron", "pg_net", "ActionSendDataAPIKeyAuth", "withSupabase",
           "security definer", "New secret key", "Webhook API Key Auth")
+# palavras soltas do kit congelado (R3@codex/R4@opus 1b): "tabelas, cron ou edges" na prosa passava pela lista de termos exatos
+PADROES = (re.compile(r"\bedges?\b", re.I), re.compile(r"\bcron\b", re.I))
 RESERVADA = "1.2" + ".0"      # montada em pedaços: este arquivo não pode ser o resíduo que ele procura
 PERMITIDOS = {"spec-make-design/SKILL.md": "S2", "spec-make-handoff/SKILL.md": "H2"}
 
@@ -51,7 +53,8 @@ def textos_publicados(raiz=RAIZ) -> dict[str, str]:
 
 
 def residuos(textos: dict[str, str]) -> list[str]:
-    return [f"{rel}: {t!r}" for rel, txt in textos.items() for t in TERMOS if t in txt]
+    achados = [f"{rel}: {t!r}" for rel, txt in textos.items() for t in TERMOS if t in txt]
+    return achados + [f"{rel}: /{p.pattern}/" for rel, txt in textos.items() for p in PADROES if p.search(txt)]
 
 
 def versao_reservada(raiz=RAIZ) -> list[str]:
@@ -59,7 +62,8 @@ def versao_reservada(raiz=RAIZ) -> list[str]:
     achados = []
     for f in sorted(raiz.rglob("*")):
         rel = f.relative_to(raiz).as_posix()
-        if not f.is_file() or f.suffix not in (".md", ".json") or rel.startswith((".git/", "dist/", "tests/")):
+        # .claude/: a pasta que a review plantou no repo público (LM-236) nunca é publicada; ela mora no worktree
+        if not f.is_file() or f.suffix not in (".md", ".json") or rel.startswith((".git/", ".claude/", "dist/", "tests/")):
             continue
         if RESERVADA in f.read_text(encoding="utf-8"):
             achados.append(rel)
@@ -90,7 +94,7 @@ class Residuos(unittest.TestCase):
                       "compartilhado/SUPABASE.md", "skills/spec-make-build/SKILL.md",
                       "skills/spec-make-build/references/PROTOCOLO.md", "skills/spec-make-build/manifest.json",
                       "skills/spec-make-design/evals/cases.json#positivos"):
-            for termo in ("watchEvents", "Database Webhook", "pg_cron"):
+            for termo in ("watchEvents", "Database Webhook", "pg_cron", "receitas de cron", "chame uma edge"):
                 with self.subTest(arquivo=chave, termo=termo):
                     mut = dict(base)
                     mut[chave] = mut[chave] + f"\nUse {termo}.\n"

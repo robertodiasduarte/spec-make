@@ -537,6 +537,14 @@ class ChecarBlueprint(unittest.TestCase):
                 ps = cb.checar(self._com_modulo(modulo, mapper))
                 self.assertTrue(any("endereço de um projeto Supabase" in p for p in ps), ps)
 
+    def test_link_do_painel_nao_e_projeto(self):
+        """R9@opus (1b): o domínio é casado como domínio — o painel (…supabase + .com) não é endereço de projeto."""
+        ok = self._com_modulo("email:ActionSendEmail", {"body": "Abra https://app." + DOMINIO + "m/project/x"})
+        self.assertEqual(cb.checar(ok), [])
+        for texto in ("https://ref." + DOMINIO + "/", "ref." + DOMINIO + "?x=1", "https://ref." + DOMINIO.upper()):
+            with self.subTest(texto=texto):
+                self.assertTrue(cb.checar(self._com_modulo("http:ActionSendData", {"url": texto})))
+
     def test_modulo_em_rota_e_em_tratador_de_erro_tambem_reprova(self):
         """R3@opus: o verificador olha a lista achatada (rotas do roteador e onerror), não só o 1º nível."""
         for onde in ("rota", "onerror"):
@@ -553,7 +561,7 @@ class ChecarBlueprint(unittest.TestCase):
         """O id da conexão do Make tem 6–8 dígitos na conta real: não é credencial escrita."""
         bp = _ler("blueprint_supabase_valido.json")
         for m in bp["flow"]:
-            m["parameters"]["__IMTCONN__"] = int("117" + "46125")
+            m["parameters"]["__IMTCONN__"] = int("4821" + "937")
         self.assertEqual(cb.checar(bp), [])
 
     def test_http_fora_de_edge_continua_igual(self):

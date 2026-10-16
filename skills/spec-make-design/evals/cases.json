@@ -105,7 +105,7 @@
       ],
       "input": "Use o módulo PostgreSQL do Make com o host e a senha do banco do Supabase para gravar os pedidos.",
       "expected": [
-        "Recusa o DESIGN como pronto: postgres nunca entra no fluxo; oferece o app supabase com chave só do fluxo"
+        "Recusa o DESIGN como pronto: postgres nunca entra no fluxo; oferece o app supabase pelo diálogo padrão da conexão (Project ID e chave secreta)"
       ]
     },
     {
