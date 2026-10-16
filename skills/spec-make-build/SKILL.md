@@ -5,21 +5,22 @@ description: "Conduz a etapa 4 de 4 do spec-make: cria na conta do Make, pelo MC
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.1.0"
+  version: "1.3.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 4: Build do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-build v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-build v1.3.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 4 de 4 — Build`
 
 ## Quick start
 
 1. Receba BRAINSTORM, DEFINE e DESIGN. Sem o DESIGN, indique a skill `spec-make-design`.
 2. Confira se a conversa tem o MCP do Make com ferramentas de gravação ([references/MCP_MAKE.md](references/MCP_MAKE.md)). Sem elas, siga **[M1]**.
-3. Confira [P1]: fluxo com módulo de IA sem inventário de prompts no DESIGN ⇒ pare antes de criar.
+3. Confira [P1]: fluxo com módulo de IA sem inventário de prompts no DESIGN ⇒ pare antes de criar. Fluxo que toca
+   Supabase: confira **[B7]** ([references/SUPABASE.md](references/SUPABASE.md)).
 4. Siga a ordem **[B1]** ([references/PROTOCOLO.md](references/PROTOCOLO.md)), avisando antes de gravar ou rodar **[B5]**.
 5. Rode o teste de aceite do DEFINE e compare com o resultado esperado.
 6. Se falhar, siga **[B3]** ([references/DIAGNOSTICO.md](references/DIAGNOSTICO.md)).
@@ -84,6 +85,14 @@ ou `hooks_update`, com o aviso [B5]. Recurso `compartilhado com N cenários`: s�
 chame `data-stores_delete`, `data-stores_update` de estrutura nem `hooks_delete` sobre ele; ofereça criar um data store
 novo só para este fluxo. Recurso ausente da ficha ou `fora do spec-make`: [B4] como sempre.
 
+**[B7] Fluxo com Supabase.** Se o DESIGN toca Supabase (app `supabase`, `supabase-management`, `postgres` ou HTTP para
+o endereço de um projeto Supabase, em qualquer caminho), confira antes de gravar: coluna `alcance` preenchida com o
+motivo, as tabelas e as operações; seção `Prepare o banco` com o SQL quando o fluxo grava no banco; do app `supabase`
+só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`; nenhum módulo `postgres` ou
+`supabase-management`, nenhum HTTP para o projeto; gatilho só pela agenda do Make ou sob demanda; bloco `Relógio` com o
+gatilho e, quando é agenda, o intervalo e a linha de operações paradas na seção `Custo`. Faltando qualquer um, não crie
+o fluxo: diga o que falta e indique "Use a skill spec-make-design." antes de qualquer `scenarios_create`.
+
 **[C1] Confidencial.** O fluxo é criado com `metadata.scenario.confidential: true`. Se o blueprint do DESIGN não
 tiver, corrija antes de criar e diga isso.
 
@@ -104,7 +113,7 @@ fluxo está na sua conta. A ficha diz o que fazer quando ele falhar."
 
 ## Validações e checklist de qualidade
 
-- [ ] Três documentos e [P1] conferidos antes de gravar
+- [ ] Três documentos, [P1] e, com Supabase, [B7] conferidos antes de gravar
 - [ ] Ordem [B1] seguida; nenhum nome de módulo inventado
 - [ ] [B5] antes de criar e antes de cada execução
 - [ ] Fluxo criado sob demanda e com `confidential: true`
@@ -142,9 +151,9 @@ criar um fluxo novo a partir do DESIGN.
 - `SKILL.md`
 - `references/PROTOCOLO.md` — a ordem [B1], chamada a chamada
 - `references/DIAGNOSTICO.md` — o roteiro [B3]
-- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md`
+- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/RECIBO_TEMPLATE.md` · `assets/FICHA_DO_FLUXO_TEMPLATE.md`
-- `scripts/checar_blueprint.py` — confere confidencial, interface e credencial escrita (Python 3.9+, sem dependências)
+- `scripts/checar_blueprint.py` — confere confidencial, interface, credencial escrita e o Supabase só como banco (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

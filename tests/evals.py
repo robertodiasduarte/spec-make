@@ -15,10 +15,16 @@ ESPERADO: dict[str, dict[str, set[str]]] = {
     "spec-make-brainstorm": {"sem-mcp": {"M1"}, "amostra-pessoal": {"COPY"}},
     "spec-make-define": {"gate-uma-execucao": {"D1"}, "gate-blueprint-validado": {"D1"}, "sem-mcp": {"M1"}},
     "spec-make-design": {"sem-chave-natural": {"G3"}, "ia-grava-direto": {"G1"}, "aceite-sem-registro": {"G2"},
-                         "ia-sem-inventario": {"P1"}, "sem-mcp": {"M1"}},
+                         "ia-sem-inventario": {"P1"}, "sem-mcp": {"M1"},
+                         # SPEC_MAKE_S5: 1 negativo por regra do banco ([S2]/[S3] são a recusa e o laço da fila)
+                         "postgres-direto": {"S1"}, "chave-sem-alcance": {"S1"},
+                         "modulo-fora-da-lista": {"S2"}, "cadastro-extra": {"S2"}, "filtro-nulo": {"S3"},
+                         "polling-sem-custo-ocioso": {"S4"},
+                         "upsert-sem-pk": {"S5"}, "valor-float": {"S5"}, "auditoria-incompleta": {"S5"},
+                         "sem-taxa-de-correcao": {"S5"}, "auditoria-editavel": {"S5"}, "fonte-sem-consulta": {"W1"}},
     "spec-make-build": {"sem-sim-gatilho": {"B2"}, "falha-3x": {"B3"}, "fluxo-alheio": {"B4"}, "sem-mcp": {"M1"},
                         "ia-sem-inventario": {"P1"}, "apaga-compartilhado": {"B6"}, "lastedit-mudou": {"B6"},
-                        "uso-novo-externo": {"B6"}},
+                        "uso-novo-externo": {"B6"}, "supabase-sem-banco": {"B7"}, "gatilho-webhook-no-design": {"B7"}},
     "spec-make-handoff": {"placeholder-sobrando": {"H4"}, "webhook-na-ficha": {"H2"}, "sem-mcp": {"M1"},
                           "arquivo-por-slice": {"H3"}, "primeira-ficha-sem-partes": {"H1"}},
 }
@@ -27,6 +33,7 @@ ESPERADO: dict[str, dict[str, set[str]]] = {
 # avaliador fresco do s3, ciclo 2 (EV4): `regras` do positivo trocada para ["H1", "H3"] passava — nenhum oráculo o lia
 POSITIVOS: dict[str, dict[str, set[str]]] = {
     "spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}},
+    "spec-make-design": {"design-supabase": {"S1", "S2", "S3", "S4", "S5", "W1"}},
 }
 
 

@@ -24,7 +24,7 @@ Se houver mais de uma organização ou equipe, pergunte uma vez qual usar e anot
 |---|---|---|
 | Brainstorm | `environment_get` · `organizations_list` · `connections_list` · `apps_recommend` | Plano e limites da conta; o que já está conectado; se existe app nativo para cada passo |
 | Define | `environment_get` · `organizations_list` | Orçamento de operações por mês contra o plano |
-| Design | `apps_recommend` · `app-modules_list` · `app-module_get` · `connections_list` · `validate_module_configuration` · `validate_blueprint_schema` · `validate_scenario_interface` | Só módulos que existem; parâmetros conferidos; blueprint validado |
+| Design | `apps_recommend` · `app-modules_list` · `app-module_get` · `connections_list` · `validate_module_configuration` · `validate_blueprint_schema` · `validate_scenario_interface` | Só módulos que existem; parâmetros conferidos; blueprint validado. A documentação pública do app (`https://apps.make.com/<app>`) é lida na web, uma vez por app ([W1]) |
 | Handoff | `environment_get` · `scenarios_get` · `hooks_list` · `data-stores_list` · `connections_list` | Ficha do fluxo para continuar depois: só leitura, 0 operações; nunca lê registros de data store |
 | Build | `credential-requests_create` · `validate_*` · `scenarios_create` · `scenarios_set-interface` · `scenarios_activate` · `scenarios_run` · `executions_get` · `executions_get-detail` · `scenarios_interface` · `scenarios_update` · `data-stores_create` · `data-store-records_list` · `scenarios_deactivate` | Criar, testar, ler a execução, ligar o gatilho com OK |
 
@@ -59,12 +59,25 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
 8. **Apps embutidos não aparecem na recomendação.** `apps_recommend` lista apps de terceiros e
    deixa de fora os embutidos do Make — data store (`datastore`), HTTP (`http`), roteador e
    iterador (`builtin`). Para guardar dado dentro do Make, por exemplo, ela sugeriu CRMs; o
-   certo era `app-modules_list(appName: "datastore", appVersion: 1)`.
+   certo era `app-modules_list(appName: "datastore", appVersion: 1)`. Para guardar linhas numa tabela de um projeto
+   Supabase, ela acha o app nativo `supabase` (medido em 15/10/2026).
 9. **Módulo que depende de outro recurso.** O `datastore:AddRecord` só mostra os campos depois
    que o data store existe (o esquema vem da estrutura dele). Valide esse módulo na etapa 4,
    depois de criar o data store.
 10. **Custo do teste.** No teste medido, cada execução gastou 1 operação (só o módulo do app
    conta; entrada e saída do fluxo sob demanda não contam). Informe sempre o custo antes de rodar.
+
+11. **App Supabase (16/10/2026).** O app `supabase` versão 1 tem 12 módulos (não existe versão 2). Os de dados são
+   `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`; os demais (aviso de mudança de tabela,
+   chamada de API e armazenamento de arquivos) ficam fora do kit. Não existem `searchRecords`, `createARecord` nem
+   `updateARecord`.
+12. **Filtro do `searchRows`.** Operadores por tipo: texto (igual, diferente, contém), número, data e verdadeiro/falso
+   (igual, diferente). Não há "é vazio": o pendente é uma coluna verdadeiro/falso. O módulo devolve várias linhas, uma por
+   passagem pelos módulos seguintes, e o limite padrão é 10.
+13. **Conexão do app Supabase.** Pede o **Project ID** e a **API Key** (a documentação do app aponta Project Settings →
+   API Keys → Secret keys), sem outros campos.
+14. **Atualizar uma linha.** Não há módulo "atualizar": o `upsertARecord` decide pela chave primária da tabela. O banco
+   confere as colunas obrigatórias da linha inteira, então quem marca uma linha como feita regrava a linha toda.
 
 ## Conexões e credenciais
 

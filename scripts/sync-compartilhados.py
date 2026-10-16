@@ -22,6 +22,7 @@ MAPA = {
     "MCP_MAKE.md": ("references", SKILLS),
     "COPY.md": ("references", SKILLS),
     "RUNTIME_COMPATIBILITY.md": ("references", SKILLS),
+    "SUPABASE.md": ("references", SKILLS),
     "checar_blueprint.py": ("scripts", ["spec-make-design", "spec-make-build"]),
 }
 

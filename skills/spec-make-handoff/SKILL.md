@@ -5,7 +5,7 @@ description: "Mantém a ficha de um fluxo do Make para continuar depois — um a
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.1.0"
+  version: "1.3.0"
   updated: "2026-10"
   fase: "transversal"
 ---
@@ -13,7 +13,7 @@ metadata:
 # spec-make — Handoff: a ficha para continuar depois
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-handoff v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-handoff v1.3.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Handoff — para continuar depois`
 
 ## Quick start
@@ -140,7 +140,7 @@ a conta, que 170102 é usado por outros fluxos e que a mudança é com a etapa 4
 
 - `SKILL.md`
 - `references/PROTOCOLO.md` — a leitura [H1] e a custódia, passo a passo
-- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md`
+- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/HANDOFF_TEMPLATE.md` · `assets/HANDOFF_EXEMPLO.md`
 - `scripts/checar_handoff.py` — confere a ficha (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`

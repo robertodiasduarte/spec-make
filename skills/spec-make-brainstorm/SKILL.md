@@ -5,14 +5,14 @@ description: "Conduz a etapa 1 de 4 do spec-make: transforma uma rotina do escri
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.1.0"
+  version: "1.3.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 1: Brainstorm do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-brainstorm v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-brainstorm v1.3.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 1 de 4 — Brainstorm`
 
 ## Quick start
@@ -113,6 +113,7 @@ etapa de ideia, faz as perguntas da rotina e confere na conta se o ERP tem app n
 - `SKILL.md`
 - `references/PROTOCOLO.md` — roteiro detalhado e exemplos de rotinas
 - `references/MCP_MAKE.md` — ferramentas e fatos medidos do MCP do Make
+- `references/SUPABASE.md` — receitas para fluxo que usa tabelas, cron ou edges do Supabase
 - `references/COPY.md` — como falar com a pessoa
 - `references/RUNTIME_COMPATIBILITY.md` — o que a skill precisa do ambiente
 - `assets/BRAINSTORM_TEMPLATE.md` — molde do documento

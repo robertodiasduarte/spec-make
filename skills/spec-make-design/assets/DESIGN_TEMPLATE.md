@@ -8,9 +8,15 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 
 ## O fluxo, módulo a módulo
 
-| # | Módulo (`app:Modulo` vN) | Rótulo no editor | Recebe | Devolve | Conexão |
-|---|---|---|---|---|---|
-| 1 | {…} | {…} | {…} | {…} | {nome da conexão · "a autorizar no build" · "não precisa"} |
+| # | Módulo (`app:Modulo` vN) | Rótulo no editor | Recebe | Devolve | Conexão | Alcance |
+|---|---|---|---|---|---|---|
+| 1 | {…} | {…} | {…} | {…} | {nome da conexão · "a autorizar no build" · "não precisa"} | {Supabase: motivo · tabelas · operações ([S1]) · "não se aplica: o fluxo não usa Supabase"} |
+
+## Fontes consultadas
+
+| App | URL | Data | Módulo e versão lidos | Divergência com a conta |
+|---|---|---|---|---|
+| {app} | https://apps.make.com/{app} | {AAAA-MM-DD} | {…} | {nenhuma · qual · "não consultado"} |
 
 ## Quando algo falha
 
@@ -25,6 +31,20 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 | [G3] Chave natural | {atendida · não se aplica (não grava)} | {chave e como evita duplicar} |
 | [G1] Aceite humano | {atendida · não se aplica (sem IA que grava)} | {forma e quem aceita} |
 | [G2] Registro do aceite | {atendida · não se aplica} | {onde e os 6 campos} |
+
+## Prepare o banco
+
+{Fluxo que toca Supabase ([S2], [S5]): o SQL para colar no SQL Editor antes da etapa 4 e a contagem do que a pessoa
+faz fora do Make: 1 colagem de SQL, 2 valores copiados do painel (Project ID e chave) e 1 conexão no Make.
+Sem Supabase: "não se aplica: o fluxo não usa Supabase".}
+
+```sql
+{SQL de SUPABASE.md com os nomes do fluxo}
+```
+
+## Relógio
+
+{Agenda do Make com o intervalo, ou sob demanda ([S4]), com o motivo. Sem Supabase: "não se aplica: o fluxo não usa Supabase".}
 
 ## Prompts de IA
 
@@ -41,6 +61,7 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 ## Custo
 
 {operações por execução} por execução · {execuções por mês} · {total}/mês de {limite}.
+Operações paradas por mês (agenda do Make): {disparos por mês} × {operações do disparo vazio} = {n} · ou 0 (sob demanda).
 
 ## Validação
 

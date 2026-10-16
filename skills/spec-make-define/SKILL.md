@@ -5,14 +5,14 @@ description: "Conduz a etapa 2 de 4 do spec-make: transforma o BRAINSTORM de um 
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.1.0"
+  version: "1.3.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 2: Define do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-define v1.1.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-define v1.3.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 2 de 4 — Define`
 
 ## Quick start
@@ -106,7 +106,7 @@ companhia aberta; esperado = razão social e situação "ATIVA"; segunda execuç
 - `references/PROTOCOLO.md` — roteiro detalhado
 - `references/VERIFY_GATE_EXECUCAO.md` — o teste de aceite por execução
 - `references/EARS.md` — a gramática dos critérios
-- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md`
+- `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/DEFINE_TEMPLATE.md`
 - `manifest.json` · `evals/cases.json`
 

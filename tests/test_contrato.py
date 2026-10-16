@@ -1,9 +1,17 @@
 """AT-002…AT-008, AT-011 e MUSTs da UX Review: cada âncora tem o conteúdo exigido e cada asserção morde um mutante."""
 from __future__ import annotations
 
+import re
 import unittest
 
 from contrato import FRASES, RAIZ, REGRAS, checar, checar_frases, checar_texto, jargao, mutantes
+
+
+def trocar(texto: str, de: str, para: str) -> tuple[int, str]:
+    """(quantas vezes `de` aparece, texto com a troca). A busca ignora a diferença entre espaço e quebra de linha: o
+    mutante não depende de onde o Markdown quebrou a linha (SPEC_MAKE_S5)."""
+    padrao = re.compile(r"\s+".join(re.escape(x) for x in de.split()))
+    return len(padrao.findall(texto)), padrao.sub(lambda _m: para, texto, count=1)
 
 
 class Contrato(unittest.TestCase):
@@ -75,6 +83,39 @@ class Contrato(unittest.TestCase):
             ("spec-make-brainstorm/SKILL.md", "Não afirme\nque um app existe", "Afirme\nque um app existe"),
             (b, "Não afirme que criou, rodou ou ligou nada.",
              "Diga que criou e rodou. (Não afirme que criou, rodou ou ligou nada só se pedirem.)"),
+            # SPEC_MAKE_S5: a polaridade de cada regra nova, com 1 edição (a busca ignora onde a linha quebra)
+            (ds, "nunca entram no fluxo. Sem isso, recuse o DESIGN", "podem entrar no fluxo. Sem isso, recuse o DESIGN"),
+            (ds, "ficam fora: recuse o DESIGN como pronto e proponha o caminho só com o banco",
+             "ficam fora: aceite o DESIGN como pronto e proponha o caminho só com o banco"),
+            (ds, "e a pessoa não faz, antes do 1º fluxo rodar, mais que 1 colagem",
+             "e a pessoa faz, antes do 1º fluxo rodar, mais que 1 colagem"),
+            (ds, "webhook de qualquer tipo, Database Webhook", "webhook com chave de API, Database Webhook"),
+            (ds, "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make: recuse",
+             "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make: aceite"),
+            (ds, "que regrava a linha inteira", "que grava só o que mudou"),
+            (ds, "Se o total passar do orçamento do DEFINE, recuse", "Se o total passar do orçamento do DEFINE, aceite"),
+            (ds, "o DESIGN declara no bloco `Relógio` como o fluxo dispara", "o DESIGN não declara como o fluxo dispara"),
+            (ds, "Chave natural que não é a `primary key` da tabela de destino do `upsertARecord`",
+             "Chave natural que é a `primary key` da tabela de destino do `upsertARecord`"),
+            (ds, "coluna de valor em `real`, `float4`, `float8` ou `double precision`, rateio sem",
+             "coluna de valor em `numeric`, rateio sem"),
+            (ds, "campo da auditoria anulável, auditoria sem o gatilho ou sem a view: recuse",
+             "campo da auditoria anulável, auditoria sem o gatilho ou sem a view: aceite"),
+            (ds, "auditoria sem o gatilho ou sem a view", "auditoria com o gatilho e com a view"),
+            (ds, "gravados antes do \"processa\" e nunca recalculados", "gravados depois do \"processa\" e recalculados"),
+            (ds, "nunca afirme uma consulta que não fez.", "afirme a consulta mesmo sem ter feito."),
+            # avaliador fresco (W1): consultar a documentação é obrigatório, para cada app
+            (ds, "consulte a documentação pública do Make", "pode consultar a documentação pública do Make"),
+            (ds, "Para cada app do fluxo, consulte", "Se quiser, consulte"),
+            (ds, "consulte a documentação pública do Make", "dispense a documentação pública do Make"),
+            (ds, "divergir de `app-modules_list`, vale a conta", "divergir de `app-modules_list`, não vale a conta"),
+            (ds, "e o DESIGN anota a divergência", "e o DESIGN não anota a divergência"),
+            (ds, "e o DESIGN preenche a coluna", "e o DESIGN não preenche a coluna"),
+            (b, "não crie o fluxo: diga o que falta", "crie o fluxo e diga depois o que falta"),
+            (b, "do app `supabase` só `searchRows`", "do app `supabase` também `watchEvents` e `searchRows`"),
+            (b, "gatilho só pela agenda do Make ou sob demanda", "gatilho por webhook ou pela agenda do Make"),
+            (b, "nenhum módulo `postgres` ou `supabase-management`, nenhum HTTP para o projeto",
+             "o módulo `postgres` ou `supabase-management` e o HTTP para o projeto são aceitos"),
             # SPEC_MAKE_HANDOFF (s3): H2, B6 (as 2 polaridades) e M1 do handoff
             (h, "Nunca chame `scenarios_create`", "Pode chamar `scenarios_create`"),
             (b, 'siga só depois do "sim" da pessoa', 'siga mesmo sem o "sim" da pessoa'),
@@ -125,8 +166,8 @@ class Contrato(unittest.TestCase):
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
                 texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")
-                self.assertEqual(texto.count(de), 1, "trecho do mutante não achado no texto real")
-                mut = texto.replace(de, para)
+                n, mut = trocar(texto, de, para)
+                self.assertEqual(n, 1, "trecho do mutante não achado (ou achado mais de uma vez) no texto real")
                 erros = [e for r in REGRAS if r.arquivo == arq for e in checar_texto(r, mut)]
                 self.assertTrue(erros, "regra invertida passou")
 
@@ -175,8 +216,9 @@ class Contrato(unittest.TestCase):
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
                 texto = (RAIZ / "skills" / arq).read_text(encoding="utf-8")
-                self.assertEqual(texto.count(de), 1, "trecho do mutante não achado no texto real")
-                self.assertTrue(checar_frases(arq, texto.replace(de, para)), "regra invertida passou")
+                n, mut = trocar(texto, de, para)
+                self.assertEqual(n, 1, "trecho do mutante não achado (ou achado mais de uma vez) no texto real")
+                self.assertTrue(checar_frases(arq, mut), "regra invertida passou")
 
     def test_ancora_ausente_reprova(self):
         r = REGRAS[0]

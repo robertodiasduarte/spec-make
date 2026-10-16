@@ -1,6 +1,6 @@
 {
   "name": "spec-make-design",
-  "version": "1.1.0",
+  "version": "1.3.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
@@ -11,6 +11,7 @@
     "references/GOVERNANCA_DO_FLUXO.md",
     "references/PROMPTS_DE_IA.md",
     "references/MCP_MAKE.md",
+    "references/SUPABASE.md",
     "references/COPY.md",
     "references/RUNTIME_COMPATIBILITY.md",
     "assets/DESIGN_TEMPLATE.md",
@@ -24,7 +25,9 @@
     "Diretiva de erro por módulo com pergunta de negócio",
     "[G1] aceite humano, [G2] registro do aceite, [G3] chave natural",
     "[P1] inventário de prompts",
-    "Blueprint com [C1] validado e conferido pelo script"
+    "Blueprint com [C1] validado e conferido pelo script",
+    "[W1] documentação pública do Make consultada uma vez por app, com URL e data",
+    "Fluxo que toca Supabase só como banco: [S1] alcance da conexão, [S2] só os 5 módulos do banco e no máximo 1 colagem de SQL + 2 valores + 1 conexão, [S3] laço da fila (searchRows com processado igual a false, marcador que regrava a linha inteira), [S4] agenda do Make e operações paradas, [S5] SQL do Prepare o banco (primary key natural, numeric(18,2), RLS, auditoria só de acréscimo com 6 campos obrigatórios, view da taxa de correção)"
   ],
   "coverage": {
     "consulta_normativa": "nao aplicavel",
@@ -44,7 +47,10 @@
     "Comportamento idêntico em todos os agentes e modelos",
     "Que o conector do Make no ChatGPT expõe as ferramentas de gravação",
     "Funcionamento no plano Free do Make",
-    "O verificador de blueprint pega credencial escrita pelo NOME do campo, cabeçalho ou parâmetro (lista MARCADORES/NOMES_DE_PAR no script) e pelo FORMATO conhecido (lista TOKEN: OpenAI, Stripe, Slack, GitHub, GitLab, Google, AWS, JWT, Telegram, Discord, chave privada), em texto, número ou lista. Nome com palavra de senha ou segredo em qualquer posição (senha_certificado, X-Senha-Certificado, api_password, secret_key) conta a partir de 1 caractere; nos outros nomes, e quando outra palavra do nome descreve a senha em vez de guardá-la (password_type, secret_encoding, token_expires_in, token_url), valor fixo com menos de 6 caracteres não conta (evita reprovar 'true', 'json', 'v1'). Palavra de senha fundida a outra numa palavra só (senhacertificado), segredo sob nome neutro e formato desconhecido não são detectados — a defesa principal continua sendo a conexão do Make ([B1]). Senha só de símbolos misturada a uma fórmula ('!@#$%{{1.x}}') também não é detectada: dentro de valor com fórmula, a pontuação não conta, para não reprovar valor todo mapeado ('{{1.a}}-{{1.b}}')."
+    "O verificador de blueprint pega credencial escrita pelo NOME do campo, cabeçalho ou parâmetro (lista MARCADORES/NOMES_DE_PAR no script) e pelo FORMATO conhecido (lista TOKEN: OpenAI, Stripe, Slack, GitHub, GitLab, Google, AWS, JWT, Telegram, Discord, chave privada), em texto, número ou lista. Nome com palavra de senha ou segredo em qualquer posição (senha_certificado, X-Senha-Certificado, api_password, secret_key) conta a partir de 1 caractere; nos outros nomes, e quando outra palavra do nome descreve a senha em vez de guardá-la (password_type, secret_encoding, token_expires_in, token_url), valor fixo com menos de 6 caracteres não conta (evita reprovar 'true', 'json', 'v1'). Palavra de senha fundida a outra numa palavra só (senhacertificado), segredo sob nome neutro e formato desconhecido não são detectados — a defesa principal continua sendo a conexão do Make ([B1]). Senha só de símbolos misturada a uma fórmula ('!@#$%{{1.x}}') também não é detectada: dentro de valor com fórmula, a pontuação não conta, para não reprovar valor todo mapeado ('{{1.a}}-{{1.b}}').",
+    "Que o 'Upsert a Record' do app Supabase decide pela primary key foi medido no app v1 em 15/10/2026; outra versão do app pode mudar",
+    "HTTP para domínio próprio do Supabase (sem .supabase.co) e endereço montado por pedaços entre módulos não são reconhecidos pelo verificador de blueprint",
+    "Vazar a chave secreta que o fluxo usa atinge tudo que a usa no projeto (ela ignora o RLS); o kit declara o alcance, não isola a chave"
   ],
   "author": "Roberto Dias Duarte",
   "license": "MIT",

@@ -36,10 +36,17 @@ ETAPAS = [("spec-make-brainstorm", 1, "Brainstorm", "Use a skill spec-make-defin
           ("spec-make-design", 3, "Design", "Use a skill spec-make-build."),
           ("spec-make-build", 4, "Build", "Pronto: o fluxo está na sua conta.")]
 
+# SPEC_MAKE_SUPABASE (AT-001): a condição com que toda âncora [S*] do design começa
+COND = "Se o fluxo toca Supabase"
+
 REGRAS: list[Regra] = [
     Regra("B1", _skill("spec-make-build", "references/PROTOCOLO.md"), at="AT-002",
           contem=['"on-demand"', "confidential: true", "credential-requests_create",
-                  "esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat."],
+                  "esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat.",
+                  # SPEC_MAKE_S5: o banco preparado vem antes das validações; o webhook não existe mais no kit
+                  "Fluxo que toca Supabase: confirme com a pessoa que o SQL do `Prepare o banco` rodou sem erro no SQL "
+                  "Editor; o teste do passo 10 prova o resto.",
+                  "(operações maiores que zero; ela pode gastar menos que a 1ª)"],
           em_ordem=["environment_get", "credential-requests_create", "validate_module_configuration",
                     "validate_blueprint_schema", "scenarios_create", "scenarios_set-interface",
                     "scenarios_activate", "scenarios_run", "executions_get-detail"]),
@@ -144,11 +151,74 @@ REGRAS: list[Regra] = [
           contem=["pessoa identificada antes da gravação",
                   "Sem esse passo, recuse o DESIGN como pronto e diga o que falta."]),
     Regra("G2", _skill("spec-make-design"), at="AT-007",
-          contem=["fora do histórico", "modelo", "versão do prompt", "sugestão original", "quem aceitou",
+          contem=["fora do histórico", "planilha ou data store",
+                  # SPEC_MAKE_SUPABASE AT-006: com Supabase, a auditoria só de acréscimo é a 1ª opção
+                  "quando o fluxo já usa Supabase, a 1ª opção é uma tabela de auditoria só de acréscimo", "modelo", "versão do prompt", "sugestão original", "quem aceitou",
                   "(UTC)", "se editou", "Sem esse registro, recuse o DESIGN como pronto."]),
     Regra("G3", _skill("spec-make-design"), at="AT-011",
           contem=["chave natural", "já existe ⇒ não grava de novo",
+                  "consultar antes de gravar, ou gravar substituindo pela chave",
+                  "Quando o destino é uma tabela do Supabase, a chave existe nela como restrição ([S5]).",
                   "Sem a chave, recuse o DESIGN como pronto e peça a chave."]),
+    # SPEC_MAKE_S5: toda âncora S* começa pela condição e prende a recusa INTEIRA, com a palavra de polaridade que vem
+    # antes (R2@opus da review do DESIGN: "e a pessoa não faz … mais que", "que não é", "sem o gatilho ou sem a view"
+    # passavam quando só o final da frase era prendido)
+    Regra("S1", _skill("spec-make-design"), at="AT-002",
+          contem=[COND, "o diálogo padrão do app no Make",
+                  '`alcance` com o motivo ("o app Supabase do Make só conecta com chave secreta; ela ignora o RLS"), as '
+                  "tabelas e as operações.",
+                  "Se o fluxo toca Supabase (app `supabase`, `supabase-management`, `postgres` ou HTTP para o endereço de "
+                  "um projeto Supabase, em qualquer caminho), a conexão Supabase usa o diálogo padrão do app no Make "
+                  "(Project ID e chave secreta, copiados do painel do Supabase) e o DESIGN preenche a coluna `alcance` "
+                  "com o motivo (\"o app Supabase do Make só conecta com chave secreta; ela ignora o RLS\"), as tabelas "
+                  "e as operações.",
+                  "`postgres` (conexão direta) e `supabase-management` nunca entram no fluxo.",
+                  "Sem isso, recuse o DESIGN como pronto e diga o que falta."]),
+    Regra("S2", _skill("spec-make-design"), at="AT-002",
+          contem=[COND, "do app `supabase` entram só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e "
+                  "`deleteRows`",
+                  "e a pessoa não faz, antes do 1º fluxo rodar, mais que 1 colagem de SQL, copiar o Project ID e a chave "
+                  "do painel e criar 1 conexão no Make.",
+                  "Edge function, webhook de qualquer tipo, Database Webhook, `pg_cron`, `supabase:watchEvents`, "
+                  "`supabase:makeAnApiCall` e módulo HTTP para o endereço de um projeto Supabase ficam fora: recuse o "
+                  "DESIGN como pronto e proponha o caminho só com o banco."]),
+    Regra("S3", _skill("spec-make-design"), at="AT-004",
+          contem=[COND, "`processado` igual a `false`", "regrava a linha inteira",
+                  "Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make → `searchRows` com "
+                  "`processado` igual a `false` e um limite → processa → `upsertARecord` pela primary key da fila, que "
+                  "regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`).",
+                  "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make: recuse o DESIGN como pronto."]),
+    Regra("S4", _skill("spec-make-design"), at="AT-004",
+          contem=[COND, "agenda do Make com o intervalo, ou sob demanda", "disparos por mês × operações do disparo vazio",
+                  "Se o fluxo toca Supabase, o DESIGN declara no bloco `Relógio` como o fluxo dispara — agenda do Make "
+                  "com o intervalo, ou sob demanda — e, com agenda, soma no custo as operações paradas: disparos por mês "
+                  "× operações do disparo vazio.",
+                  "Se o total passar do orçamento do DEFINE, recuse o DESIGN como pronto e ofereça um intervalo maior."]),
+    Regra("S5", _skill("spec-make-design"), at="AT-005",
+          contem=[COND, "a chave natural como `primary key` da tabela de destino que o `upsertARecord` grava (a fila, que "
+                  "aceita a chave repetida, tem o `id` como `primary key` e o marcador a grava por ele)",
+                  "`numeric(18,2)`", "os 6 campos de [G2] `not null`", "a view da taxa de correção",
+                  'Os 6 campos vêm do passo de aceite, gravados antes do "processa" e nunca recalculados, para a repetição '
+                  "do mesmo aceite ser idêntica.",
+                  "Chave natural que não é a `primary key` da tabela de destino do `upsertARecord`, coluna de valor em "
+                  "`real`, `float4`, `float8` ou `double precision`, rateio sem a regra do centavo residual, campo da "
+                  "auditoria anulável, auditoria sem o gatilho ou sem a view: recuse o DESIGN como pronto e nomeie a "
+                  "coluna, o campo ou o rateio que falta corrigir."]),
+    Regra("W1", _skill("spec-make-design"), at="AT-007",
+          contem=["uma vez", "a URL, a data, o módulo e a versão", "vale a conta",
+                  "Para cada app do fluxo, consulte a documentação pública do Make (`https://apps.make.com/<app>`) uma "
+                  "vez e anote em `Fontes consultadas` a URL, a data, o módulo e a versão.",
+                  "Se ela divergir de `app-modules_list`, vale a conta, e o DESIGN anota a divergência.",
+                  'Sem acesso à web, escreva "não consultado"; nunca afirme uma consulta que não fez.']),
+    Regra("B7", _skill("spec-make-build"), at="AT-008",
+          contem=["Se o DESIGN toca Supabase", "coluna `alcance` preenchida com o motivo, as tabelas e as operações",
+                  "seção `Prepare o banco` com o SQL quando o fluxo grava no banco",
+                  "do app `supabase` só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`",
+                  "nenhum módulo `postgres` ou `supabase-management`, nenhum HTTP para o projeto",
+                  "gatilho só pela agenda do Make ou sob demanda; bloco `Relógio` com o gatilho e, quando é agenda, o "
+                  "intervalo e a linha de operações paradas na seção `Custo`.",
+                  'Faltando qualquer um, não crie o fluxo: diga o que falta e indique "Use a skill spec-make-design." '
+                  "antes de qualquer `scenarios_create`."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
           contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
                   "no destino. Recuse como incompleto o teste que só confere uma execução",
@@ -195,7 +265,31 @@ FRASES: dict[str, list[str]] = {
         "Fluxo que grava sem a segunda execução: recuse como incompleto.",
         "Amostra com dado pessoal real: troque por dado inventado ou público."],
     "spec-make-build/references/PROTOCOLO.md": [
-        "a contagem não pode mudar e a 2ª execução tem de ter processado o item"],
+        "a contagem não pode mudar e a 2ª execução tem de ter processado o item",
+        "Execução que não processou nada também gasta 1 operação: com fila, confira que a linha nova voltou como "
+        "`processado = true`.",
+        "Use chaves de teste que começam com `TESTE-`",
+        "a contagem do destino não muda, as operações são maiores que zero **e** a linha nova voltou como "
+        "`processado = true`"],
+    # SPEC_MAKE_S5: as receitas com polaridade (o "nunca", o "sempre" e as travas do SQL inteiros)
+    "spec-make-design/references/SUPABASE.md": [
+        "Do app `supabase` entram só estes cinco módulos:",
+        "- `postgres` (conexão direta com a senha do banco): abre o banco inteiro e esbarra na restrição de rede do projeto;",
+        "**Dinheiro é sempre `numeric(18,2)`**, nunca `real` nem `float`",
+        "nunca recalcule a sugestão da IA nem use \"agora\" no campo `quando` na hora de gravar a auditoria",
+        "Marcar só `id` e `processado` falha em \"coluna obrigatória vazia\"",
+        "revoke all on public.<auditoria> from anon, authenticated;",
+        "if tg_op = 'UPDATE' and new is not distinct from old then return new; end if;",
+        "with (security_invoker = true)",
+        "where chave_do_aceite not like 'TESTE-%' group by 1, 2;",
+        "if to_regclass('public.<fila>') is not null then",
+        "if to_regclass('public.<auditoria>') is not null then",
+        "if to_regclass('public.<destino>') is not null then",
+        "pg_get_expr(d.adbin, d.adrelid) = 'false'",
+        "raise exception 'Prepare o banco: a auditoria precisa dos 6 campos de [G2]"],
+    "spec-make-design/references/PROTOCOLO.md": [
+        'Sem acesso à web nesta conversa, escreva "não consultado".',
+        "Nunca escreva o valor da chave no DESIGN."],
     "spec-make-build/references/DIAGNOSTICO.md": [
         "Correções só no fluxo que esta conversa criou ([B4])."],
     # SPEC_MAKE_HANDOFF, review pós-build R2@opus: o handoff não desarma a conferência de lastEdit da [B6]

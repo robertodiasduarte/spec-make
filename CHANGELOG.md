@@ -1,5 +1,26 @@
 # Changelog
 
+## v1.3.0 — 2026-10
+
+A numeração salta da 1.1.0 para a 1.3.0.
+
+- Fluxo que usa o Supabase só como banco de dados: tudo mora no Make, sem nada para cadastrar fora dele além de colar 1
+  SQL, copiar o Project ID e a chave do painel e criar 1 conexão. A etapa 3 passa a desenhar com 5 regras novas.
+  - A conexão é a do app Supabase do Make, e o desenho diz quais tabelas e operações ela alcança. Conexão direta ao
+    banco (`postgres`) e o app `supabase-management` ficam de fora.
+  - Do app entram só os cinco módulos de dados: buscar linhas, criar uma linha, gravar ou atualizar pela chave, contar e
+    apagar. Aviso automático de tabela, chamada a função do projeto e tarefa agendada dentro do banco ficam de fora.
+  - O fluxo que lê uma fila usa a agenda do Make: busca os pendentes (coluna verdadeiro ou falso), faz, e marca a linha
+    inteira como feita. O desenho soma as operações gastas mesmo quando não há nada novo.
+  - O desenho entrega o SQL para colar no SQL Editor: a chave natural como chave primária, dinheiro com duas casas
+    decimais, RLS ligado e, quando há IA, a tabela de registro do aceite que não pode ser alterada nem apagada (com os 6
+    campos obrigatórios) e a taxa de correção por pessoa e por mês.
+- A etapa 3 consulta a documentação pública do Make uma vez por app e anota o endereço e a data no desenho.
+- A etapa 4 para antes de criar o fluxo quando o desenho com Supabase não traz o que precisa; aceita que a 2ª execução
+  do teste gaste menos que a 1ª e confere que o item foi processado; testa com chaves que começam com `TESTE-`.
+- O verificador de blueprint passa a recusar arquivo sem a lista de módulos e, no Supabase, tudo que não seja módulo de
+  dados do app, inclusive o endereço de um projeto Supabase em qualquer módulo e em qualquer caixa de letra.
+
 ## v1.1.0 — 2026-10
 
 - Skill nova `spec-make-handoff`: guarda a ficha do fluxo para continuar depois — um arquivo por fluxo, com os números

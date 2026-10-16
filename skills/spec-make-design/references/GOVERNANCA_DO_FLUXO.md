@@ -15,6 +15,7 @@ CRM).
 | Chave natural | chave de acesso da nota · id do e-mail · CNPJ · id da transação do extrato |
 | Regra | Já existe ⇒ não grava de novo |
 | Como | Consultar pela chave antes de gravar (filtro "não encontrado") **ou** gravar substituindo pela chave (data store "Adicionar ou substituir") |
+| Destino é um banco (Supabase) | A chave existe no banco como restrição: a `primary key` da tabela que o "Upsert a Record" grava ([S5], SQL em SUPABASE.md) |
 
 **Por quê:** o mesmo item volta — e-mail reaberto, linha reprocessada, nova tentativa depois de falha. Sem a chave, o
 escritório descobre a duplicata na conciliação, meses depois.
@@ -46,7 +47,7 @@ cliente, do fisco ou de um perito.
 **Quando se aplica:** há IA com sugestão aceita ([G1]).
 
 **O que o DESIGN declara:** onde fica o registro (planilha ou data store da própria pessoa, fora do histórico do
-Make) e os seis campos:
+Make; quando o fluxo já usa Supabase, a 1ª opção é uma tabela de auditoria só de acréscimo, com o SQL de SUPABASE.md) e os seis campos:
 
 | Campo | Exemplo |
 |---|---|

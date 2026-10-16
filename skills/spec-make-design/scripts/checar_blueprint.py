@@ -7,13 +7,22 @@ Uso:
 Sai 0 quando não há problema e 1 quando há (cada problema numa linha). Sai 2 quando o arquivo
 não é um JSON legível. Não acessa a rede nem a conta do Make: confere só o texto do blueprint.
 
-O que confere (as três coisas que os validadores do MCP do Make não pegam):
+O que confere (o que os validadores do MCP do Make não pegam):
+  0. o blueprint tem `flow`: uma lista com pelo menos um módulo (objeto com `module` em texto não vazio; sem ele, nada
+     seria conferido e a saída seria "OK");
   1. metadata.scenario.confidential é true;
   2. fluxo sob demanda com entrada (scenario-service:StartSubscenario) declara os campos no módulo 1 e NÃO
      traz a chave `interface` no blueprint (o validador do Make a recusa; ela é gravada com scenarios_set-interface);
   3. não há credencial escrita no blueprint: chave, token, senha, cabeçalho Authorization, chave ou usuário:senha
      na URL, inclusive dentro de corpo JSON ou de formulário escrito como texto e dentro de fórmula {{…}}. O nome
-     exato "key" como chave de objeto (data store) não é credencial; em cabeçalho, query ou corpo em texto, é.
+     exato "key" como chave de objeto (data store) não é credencial; em cabeçalho, query ou corpo em texto, é;
+  4. o Supabase entra só como banco ([S1] e [S2] da skill de design): do app `supabase` passam apenas `searchRows`,
+     `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows` (lista PERMITIDA: módulo novo do app reprova);
+     `supabase-management` e `postgres` reprovam; e qualquer outro módulo cujo mapeamento traga o endereço de um
+     projeto Supabase (`.supabase.co`, `/functions/v1/`, `/rest/v1/`, `/graphql/v1`, `/storage/v1/`, `/auth/v1/`,
+     sem diferenciar maiúsculas de minúsculas, inclusive dentro de fórmula) reprova. A conferência olha os módulos de
+     todas as rotas do roteador e dos tratadores de erro. Endereço montado por pedaços entre módulos e domínio próprio
+     do Supabase (sem `.supabase.co`) não são reconhecidos.
 
 Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN), em texto ou número. Um segredo com
 nome neutro e formato desconhecido não é detectado: a defesa principal é a conexão do Make, nunca o texto do blueprint.
@@ -32,6 +41,12 @@ import sys
 from pathlib import Path
 
 ENTRADA = "scenario-service:StartSubscenario"
+# lista PERMITIDA (LM-142): módulo novo do app supabase nasce reprovado
+SUPABASE_PERMITIDOS = frozenset({"supabase:searchRows", "supabase:createARow", "supabase:upsertARecord",
+                                 "supabase:getRowsCount", "supabase:deleteRows"})
+APPS_FORA = ("supabase-management:", "postgres:")
+# endereço de projeto Supabase: comparado em minúsculas (o hostname não diferencia caixa) no texto de TODO o mapeamento
+PROJETO_SUPABASE = (".supabase.co", "/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
 
 # Credencial em formato conhecido, em qualquer string do blueprint (caminho de URL, cabeçalho genérico, corpo em texto):
 # OpenAI, JWT, chave privada, AWS, Stripe, Slack (token e webhook), GitHub, GitLab, Google, bot do Telegram, webhook do
@@ -327,6 +342,24 @@ def _modulos(flow: list) -> list[dict]:
     return saida
 
 
+def problemas_supabase(m: dict) -> list[str]:
+    """O Supabase entra só como banco: lista permitida do app, nada de supabase-management/postgres, nada de endereço
+    de projeto fora do app (SPEC_MAKE_S5, [S1] e [S2])."""
+    nome = str(m.get("module") or "")
+    if nome.startswith("supabase:"):
+        if nome in SUPABASE_PERMITIDOS:
+            return []
+        return [f"o módulo {nome} não está entre os do banco (searchRows, createARow, upsertARecord, getRowsCount, "
+                "deleteRows): o fluxo usa o Supabase só como banco ([S2])"]
+    saida = []
+    if nome.startswith(APPS_FORA):
+        saida.append(f"o módulo {nome} abre o banco inteiro ou todos os projetos: use o app supabase ([S1])")
+    texto = json.dumps(m.get("mapper") or {}, ensure_ascii=False).lower()
+    if any(t in texto for t in PROJETO_SUPABASE):
+        saida.append(f"o módulo {nome} traz o endereço de um projeto Supabase: use os módulos do app supabase ([S2])")
+    return saida
+
+
 def checar(bp: dict) -> list[str]:
     problemas: list[str] = []
     if not isinstance(bp, dict):
@@ -338,7 +371,12 @@ def checar(bp: dict) -> list[str]:
             "metadata.scenario.confidential precisa ser true: os dados do escritório não ficam no histórico do Make"
         )
 
-    modulos = _modulos(bp.get("flow") or [])
+    fluxo = bp.get("flow")
+    tem_modulo = isinstance(fluxo, list) and any(
+        isinstance(m, dict) and isinstance(m.get("module"), str) and m["module"].strip() for m in fluxo)
+    if not tem_modulo:
+        problemas.append("o blueprint não tem flow (lista de módulos): nada foi conferido; exporte o blueprint de novo")
+    modulos = _modulos(fluxo if isinstance(fluxo, list) else [])
     if "interface" in bp:
         problemas.append(
             "o blueprint traz a chave interface: o validador do Make a recusa; grave a interface com "
@@ -352,6 +390,7 @@ def checar(bp: dict) -> list[str]:
                     f"o módulo de entrada pede o campo {c.get('name')!r}, que é credencial: ela viria pelo chat e pela "
                     "entrada da execução; use a conexão do Make (R1@opus, rodada 6)"
                 )
+        problemas += problemas_supabase(m)
         if m.get("module") == ENTRADA and not ((m.get("metadata") or {}).get("interface")):
             problemas.append(
                 "o módulo de entrada (StartSubscenario) não declara os campos em metadata.interface: sem eles a "

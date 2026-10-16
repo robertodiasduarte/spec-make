@@ -1,0 +1,60 @@
+{
+  "name": "Teste — módulo do app supabase fora da lista",
+  "flow": [
+    {
+      "id": 1,
+      "module": "supabase:searchRows",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": 456,
+        "limit": 50
+      },
+      "mapper": {
+        "table": "pedidos_fila",
+        "limit": "50"
+      },
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "supabase:makeAnApiCall",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": 456
+      },
+      "mapper": {
+        "url": "/rest/v1/pedidos_destino",
+        "method": "POST"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "instant": false,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": true,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}

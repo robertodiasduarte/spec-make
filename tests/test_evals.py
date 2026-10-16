@@ -95,10 +95,11 @@ class Evals(unittest.TestCase):
         self.assertEqual(problemas(real), [])
 
     def test_positivo_do_handoff(self):
-        """AT-010: o positivo `handoff-boletos` cita H1, H2 e H3 — oráculo separado do mapa dos negativos, que continua
-        com os 23."""
-        self.assertEqual(POSITIVOS, {"spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}}})
-        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 23)
+        """AT-010: o positivo `handoff-boletos` cita H1, H2 e H3 — oráculo separado do mapa dos negativos. SPEC_MAKE_S5:
+        + o positivo `design-supabase` (S1–S5, W1) e 14 negativos (12 do design, 2 do build) ⇒ 37."""
+        self.assertEqual(POSITIVOS, {"spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}},
+                                     "spec-make-design": {"design-supabase": {"S1", "S2", "S3", "S4", "S5", "W1"}}})
+        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 37)
         self.assertEqual(problemas_positivos(_reais()), [])
 
     def test_positivo_reprova_mutantes(self):

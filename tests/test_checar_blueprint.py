@@ -451,6 +451,114 @@ class ChecarBlueprint(unittest.TestCase):
         bp["flow"].insert(0, {"id": 99, "module": "builtin:BasicRouter", "version": 1, "routes": [{"flow": [entrada]}]})
         self.assertTrue(any("interface" in p for p in cb.checar(bp)))
 
+    # SPEC_MAKE_SUPABASE AT-003: flow obrigatório; edge só por ActionSendDataAPIKeyAuth com a chave (lista de PERMISSÃO)
+    def test_sem_flow_reprova(self):
+        sem = _ler("blueprint_sem_flow.json")
+        casos = {"sem flow": sem, "flow texto": {**sem, "flow": "oops"}, "flow vazio": {**sem, "flow": []},
+                 "flow sem módulo": {**sem, "flow": [1, "x"]},
+                 # avaliador fresco, ciclo 1 (AT do flow): item que é objeto mas não tem `module` não é módulo
+                 "flow com objeto vazio": {**_ler("blueprint_valido.json"), "flow": [{}]},
+                 "flow só com designer": {"name": "x", "flow": [{"designer": {"x": 0}}],
+                                          "metadata": {"scenario": {"confidential": True}}},
+                 "flow com module vazio": {**sem, "flow": [{"module": "  "}]}}
+        for nome, bp in casos.items():
+            with self.subTest(caso=nome):
+                self.assertTrue(any("flow" in p for p in cb.checar(bp)), nome)
+
+    def test_flow_sem_module_reprova_pela_linha_de_comando(self):
+        """Os 2 casos do avaliador pela CLI: sai 1 com uma linha PROBLEMA que nomeia `flow`."""
+        import tempfile
+        casos = {"flow com objeto vazio": {**_ler("blueprint_valido.json"), "flow": [{}]},
+                 "flow só com designer": {"name": "x", "flow": [{"designer": {"x": 0}}],
+                                          "metadata": {"scenario": {"confidential": True}}}}
+        for nome, bp in casos.items():
+            with self.subTest(caso=nome), tempfile.TemporaryDirectory() as d:
+                arq = Path(d) / "bp.json"
+                arq.write_text(json.dumps(bp), encoding="utf-8")
+                r = subprocess.run([sys.executable, "-I", str(SCRIPT), str(arq)],
+                                   capture_output=True, text=True)
+                self.assertEqual(r.returncode, 1, r.stdout)
+                self.assertTrue(any(l.startswith("PROBLEMA") and "flow" in l for l in r.stdout.splitlines()), r.stdout)
+
+    # SPEC_MAKE_S5 AT-003: o Supabase entra só como banco — lista PERMITIDA do app, nada de supabase-management/postgres,
+    # nada de endereço de projeto fora do app (R2@codex, R9@opus, A2@fable: caixa, /graphql/v1 e mapeamento inteiro)
+    PERMITIDOS = ("searchRows", "createARow", "upsertARecord", "getRowsCount", "deleteRows")
+    FORA_DA_LISTA = ("watchEvents", "makeAnApiCall", "uploadAFile", "getABucket", "deleteABucket", "createABucket",
+                     "listBuckets", "moduloNovoDoApp")   # os 7 do app v1 (DEFINE: 1 caso por módulo) + um que ainda não existe
+
+    @staticmethod
+    def _com_modulo(nome: str, mapper: dict | None = None, onde: str = "flow") -> dict:
+        bp = _ler("blueprint_valido.json")
+        m = {"id": 9, "module": nome, "version": 1, "parameters": {}, "mapper": mapper or {}}
+        if onde == "flow":
+            bp["flow"].insert(2, m)
+        elif onde == "rota":
+            bp["flow"].insert(2, {"id": 8, "module": "builtin:BasicRouter", "version": 1,
+                                  "routes": [{"flow": [{"id": 7, "module": "util:SetVariable", "mapper": {}}]},
+                                             {"flow": [m]}]})
+        elif onde == "onerror":
+            bp["flow"][1]["onerror"] = [m]
+        return bp
+
+    def test_cada_modulo_do_app_fora_da_lista_reprova(self):
+        for nome in self.FORA_DA_LISTA:
+            with self.subTest(modulo=nome):
+                ps = cb.checar(self._com_modulo(f"supabase:{nome}"))
+                self.assertTrue(any(nome in p and "só como banco" in p for p in ps), ps)
+
+    def test_os_5_modulos_do_banco_passam(self):
+        for nome in self.PERMITIDOS:
+            with self.subTest(modulo=nome):
+                self.assertEqual(cb.checar(self._com_modulo(f"supabase:{nome}", {"table": "pedidos"})), [])
+
+    def test_supabase_management_e_postgres_reprovam(self):
+        for nome in ("supabase-management:runAQuery", "postgres:ExecuteQuery"):
+            with self.subTest(modulo=nome):
+                ps = cb.checar(self._com_modulo(nome))
+                self.assertTrue(any(nome in p for p in ps), ps)
+
+    def test_endereco_de_projeto_supabase_reprova_em_qualquer_modulo(self):
+        """Com ou sem credencial, em qualquer módulo fora do app supabase, em qualquer caixa, em fórmula e em
+        /graphql/v1 (nenhum módulo HTTP escapa)."""
+        casos = {
+            "ActionSendData /functions/v1/": ("http:ActionSendData", {"url": "https://x.example/functions/v1/eco"}),
+            "ActionSendData /rest/v1/": ("http:ActionSendData", {"url": "https://x.example/rest/v1/tabela"}),
+            "/graphql/v1": ("http:ActionSendData", {"url": "https://x.example/graphql/v1"}),
+            "domínio em maiúsculas": ("http:ActionSendData", {"url": "https://REF.SUPABASE.CO/"}),
+            "URL por fórmula": ("http:ActionSendData", {"url": "{{1.base}}/rest/v1/tabela"}),
+            "ActionGetFile": ("http:ActionGetFile", {"url": "https://x.example/storage/v1/object/a"}),
+            "APIKeyAuth": ("http:ActionSendDataAPIKeyAuth", {"url": "https://x.example/auth/v1/user"}),
+            "endereço num SetVariable": ("util:SetVariable", {"value": "https://ref.supabase.co/rest/v1/t"}),
+            "endereço no corpo": ("http:ActionSendData", {"url": "https://api.example.com", "data": "ref.Supabase.Co"}),
+        }
+        for nome, (modulo, mapper) in casos.items():
+            with self.subTest(caso=nome):
+                ps = cb.checar(self._com_modulo(modulo, mapper))
+                self.assertTrue(any("endereço de um projeto Supabase" in p for p in ps), ps)
+
+    def test_modulo_em_rota_e_em_tratador_de_erro_tambem_reprova(self):
+        """R3@opus: o verificador olha a lista achatada (rotas do roteador e onerror), não só o 1º nível."""
+        for onde in ("rota", "onerror"):
+            for nome, mapper in (("supabase:makeAnApiCall", {}), ("http:ActionSendData", {"url": "https://a.supabase.co/x"})):
+                with self.subTest(onde=onde, modulo=nome):
+                    self.assertTrue(cb.checar(self._com_modulo(nome, mapper, onde)))
+
+    def test_fixtures_do_supabase(self):
+        self.assertEqual(cb.checar(_ler("blueprint_supabase_valido.json")), [])
+        self.assertTrue(any("makeAnApiCall" in p for p in cb.checar(_ler("blueprint_supabase_fora_da_lista.json"))))
+        self.assertTrue(any("endereço de um projeto Supabase" in p for p in cb.checar(_ler("blueprint_http_projeto.json"))))
+
+    def test_conexao_com_id_real_nao_e_credencial(self):
+        """O id da conexão do Make tem 6–8 dígitos na conta real: não é credencial escrita."""
+        bp = _ler("blueprint_supabase_valido.json")
+        for m in bp["flow"]:
+            m["parameters"]["__IMTCONN__"] = int("117" + "46125")
+        self.assertEqual(cb.checar(bp), [])
+
+    def test_http_fora_de_edge_continua_igual(self):
+        """Módulo HTTP para outra API (sem /functions/v1/) segue a regra antiga: só reprova com credencial escrita."""
+        self.assertEqual(cb.checar(_com_http({})), [])
+
     def test_cli_codigos_de_saida(self):
         ok = subprocess.run([sys.executable, "-I", str(SCRIPT), str(FIX / "blueprint_valido.json")], capture_output=True)
         ruim = subprocess.run([sys.executable, "-I", str(SCRIPT), str(FIX / "blueprint_sem_confidencial.json")], capture_output=True)

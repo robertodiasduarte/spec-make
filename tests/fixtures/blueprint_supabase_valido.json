@@ -1,0 +1,84 @@
+{
+  "name": "Teste — fluxo Supabase só como banco",
+  "flow": [
+    {
+      "id": 1,
+      "module": "supabase:searchRows",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": 456,
+        "limit": 50
+      },
+      "mapper": {
+        "table": "pedidos_fila",
+        "limit": "50"
+      },
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 2,
+      "module": "supabase:upsertARecord",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": 456
+      },
+      "mapper": {
+        "table": "pedidos_destino",
+        "chave_natural": "{{1.chave_natural}}",
+        "valor": "{{1.valor}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 300,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "supabase:upsertARecord",
+      "version": 1,
+      "parameters": {
+        "__IMTCONN__": 456
+      },
+      "mapper": {
+        "table": "pedidos_fila",
+        "id": "{{1.id}}",
+        "chave_natural": "{{1.chave_natural}}",
+        "valor": "{{1.valor}}",
+        "processado": "true",
+        "processado_em": "{{now}}",
+        "criado_em": "{{1.criado_em}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 600,
+          "y": 0
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "version": 1,
+    "instant": false,
+    "scenario": {
+      "roundtrips": 1,
+      "maxErrors": 3,
+      "autoCommit": true,
+      "autoCommitTriggerLast": true,
+      "sequential": false,
+      "confidential": true,
+      "dataloss": false,
+      "dlq": false,
+      "freshVariables": false
+    },
+    "designer": {
+      "orphans": []
+    }
+  }
+}
