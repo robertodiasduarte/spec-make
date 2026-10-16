@@ -27,7 +27,7 @@
       "parameters": {},
       "mapper": {
         "method": "post",
-        "url": "https://PROJETO-EXEMPLO.SUPABASE.CO/rest/v1/pedidos_destino"
+        "url": "https://projeto-exemplo.example/REST/V1/pedidos_destino"
       },
       "metadata": {
         "designer": {

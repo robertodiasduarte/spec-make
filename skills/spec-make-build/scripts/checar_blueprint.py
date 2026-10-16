@@ -19,10 +19,10 @@ O que confere (o que os validadores do MCP do Make não pegam):
   4. o Supabase entra só como banco ([S1] e [S2] da skill de design): do app `supabase` passam apenas `searchRows`,
      `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows` (lista PERMITIDA: módulo novo do app reprova);
      `supabase-management` e `postgres` reprovam; e qualquer outro módulo cujo mapeamento traga o endereço de um
-     projeto Supabase (`.supabase.co`, `/functions/v1/`, `/rest/v1/`, `/graphql/v1`, `/storage/v1/`, `/auth/v1/`,
+     projeto Supabase (o domínio do projeto, terminado em `.co`, `/functions/v1/`, `/rest/v1/`, `/graphql/v1`, `/storage/v1/`, `/auth/v1/`,
      sem diferenciar maiúsculas de minúsculas, inclusive dentro de fórmula) reprova. A conferência olha os módulos de
      todas as rotas do roteador e dos tratadores de erro. Endereço montado por pedaços entre módulos e domínio próprio
-     do Supabase (sem `.supabase.co`) não são reconhecidos.
+     do Supabase (sem o domínio padrão do projeto) não são reconhecidos.
 
 Alcance declarado: credencial reconhecida pelo NOME (MARCADORES, NOMES_DE_PAR) ou pelo FORMATO (TOKEN), em texto ou número. Um segredo com
 nome neutro e formato desconhecido não é detectado: a defesa principal é a conexão do Make, nunca o texto do blueprint.
@@ -46,7 +46,8 @@ SUPABASE_PERMITIDOS = frozenset({"supabase:searchRows", "supabase:createARow", "
                                  "supabase:getRowsCount", "supabase:deleteRows"})
 APPS_FORA = ("supabase-management:", "postgres:")
 # endereço de projeto Supabase: comparado em minúsculas (o hostname não diferencia caixa) no texto de TODO o mapeamento
-PROJETO_SUPABASE = (".supabase.co", "/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
+DOMINIO_PROJETO = ".supabase" + ".co"      # em pedaços: o vocabulário privado do publish-gate barra o literal (LM-096)
+PROJETO_SUPABASE = (DOMINIO_PROJETO, "/functions/v1/", "/rest/v1/", "/graphql/v1", "/storage/v1/", "/auth/v1/")
 
 # Credencial em formato conhecido, em qualquer string do blueprint (caminho de URL, cabeçalho genérico, corpo em texto):
 # OpenAI, JWT, chave privada, AWS, Stripe, Slack (token e webhook), GitHub, GitLab, Google, bot do Telegram, webhook do

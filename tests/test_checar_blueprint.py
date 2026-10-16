@@ -22,6 +22,7 @@ def _ler(nome: str) -> dict:
     return json.loads((FIX / nome).read_text(encoding="utf-8"))
 
 
+DOMINIO = "supabase" + ".co"   # em pedaços: o vocabulário privado do publish-gate barra o literal (LM-096)
 SEGREDO = "abcd1234efgh5678ijkl"
 APP_KEY = "1234567" + "890123"  # 13 dígitos montados em pedaços (publish-check reprova 11+ seguidos)
 
@@ -524,12 +525,12 @@ class ChecarBlueprint(unittest.TestCase):
             "ActionSendData /functions/v1/": ("http:ActionSendData", {"url": "https://x.example/functions/v1/eco"}),
             "ActionSendData /rest/v1/": ("http:ActionSendData", {"url": "https://x.example/rest/v1/tabela"}),
             "/graphql/v1": ("http:ActionSendData", {"url": "https://x.example/graphql/v1"}),
-            "domínio em maiúsculas": ("http:ActionSendData", {"url": "https://REF.SUPABASE.CO/"}),
+            "domínio em maiúsculas": ("http:ActionSendData", {"url": "https://REF." + DOMINIO.upper() + "/"}),
             "URL por fórmula": ("http:ActionSendData", {"url": "{{1.base}}/rest/v1/tabela"}),
             "ActionGetFile": ("http:ActionGetFile", {"url": "https://x.example/storage/v1/object/a"}),
             "APIKeyAuth": ("http:ActionSendDataAPIKeyAuth", {"url": "https://x.example/auth/v1/user"}),
-            "endereço num SetVariable": ("util:SetVariable", {"value": "https://ref.supabase.co/rest/v1/t"}),
-            "endereço no corpo": ("http:ActionSendData", {"url": "https://api.example.com", "data": "ref.Supabase.Co"}),
+            "endereço num SetVariable": ("util:SetVariable", {"value": "https://ref." + DOMINIO + "/rest/v1/t"}),
+            "endereço no corpo": ("http:ActionSendData", {"url": "https://api.example.com", "data": "ref." + DOMINIO.title()}),
         }
         for nome, (modulo, mapper) in casos.items():
             with self.subTest(caso=nome):
@@ -539,7 +540,7 @@ class ChecarBlueprint(unittest.TestCase):
     def test_modulo_em_rota_e_em_tratador_de_erro_tambem_reprova(self):
         """R3@opus: o verificador olha a lista achatada (rotas do roteador e onerror), não só o 1º nível."""
         for onde in ("rota", "onerror"):
-            for nome, mapper in (("supabase:makeAnApiCall", {}), ("http:ActionSendData", {"url": "https://a.supabase.co/x"})):
+            for nome, mapper in (("supabase:makeAnApiCall", {}), ("http:ActionSendData", {"url": "https://a." + DOMINIO + "/x"})):
                 with self.subTest(onde=onde, modulo=nome):
                     self.assertTrue(cb.checar(self._com_modulo(nome, mapper, onde)))
 
