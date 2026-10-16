@@ -5,14 +5,14 @@ description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um flux
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.0"
+  version: "1.3.1"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 3: Design do fluxo
 
 Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-design v1.3.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-design v1.3.1 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 `spec-make · Etapa 3 de 4 — Design`
 
 ## Quick start
@@ -94,8 +94,11 @@ ficam fora: recuse o DESIGN como pronto e proponha o caminho só com o banco.
 
 **[S3] Fila de pendentes.** Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make →
 `searchRows` com `processado` igual a `false` e um limite → processa → `upsertARecord` pela primary key da fila, que
-regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`). Filtro por coluna vazia, ou
-gatilho que não seja a agenda do Make nem a execução sob demanda: recuse o DESIGN como pronto.
+regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`). No blueprint, o valor do filtro
+de verdade/falso vai em texto (`"false"`, nunca o booleano `false`: o Make ignora a condição e a busca lê qualquer linha).
+Sem pendente, a busca devolve 1 pacote vazio: o módulo seguinte leva o filtro "`{{id da busca.<coluna>}}` existe", senão
+ele roda com campos vazios e falha. Filtro por coluna vazia, ou gatilho que não seja a agenda do Make nem a execução sob
+demanda: recuse o DESIGN como pronto.
 
 **[S4] Relógio.** Se o fluxo toca Supabase, o DESIGN declara no bloco `Relógio` como o fluxo dispara — agenda do Make
 com o intervalo, ou sob demanda — e, com agenda, soma no custo as operações paradas: disparos por mês × operações do
@@ -165,7 +168,7 @@ Buscar CNPJ, data store "Adicionar ou substituir registro" com a chave = CNPJ ([
 
 **Caso positivo com Supabase (sintético).** Lançamentos novos entram numa tabela e o fluxo os leva ao destino: agenda do
 Make a cada 15 minutos ([S4], 2.880 operações paradas por mês) → `supabase:searchRows` na fila com `processado` igual a
-`false` e limite 50 ([S3]) → `supabase:upsertARecord` no destino, com a chave natural como `primary key` ([S5]) →
+`false` e limite 50, com o filtro "o `id` existe" no módulo seguinte ([S3]) → `supabase:upsertARecord` no destino, com a chave natural como `primary key` ([S5]) →
 `supabase:upsertARecord` na fila, regravando a linha inteira com `processado = true`. Conexão com Project ID e chave
 secreta, alcance = 2 tabelas, ler e gravar ([S1]). Antes do 1º fluxo rodar, a pessoa cola 1 SQL, copia 2 valores do
 painel e cria 1 conexão ([S2]).

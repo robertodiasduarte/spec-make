@@ -47,8 +47,11 @@ marca. Em 4 passos, nesta ordem:
 
 1. **Agenda do Make** (ou sob demanda) dispara o fluxo.
 2. **`searchRows`** na fila, filtro `processado` *Equals* `false`, com **limite** (o padrão do módulo é 10). O módulo não
-   filtra "coluna vazia": por isso o pendente é uma coluna verdadeiro/falso que nasce `false`.
-3. **Processa** cada linha que voltou (cada linha é uma passagem pelos módulos seguintes).
+   filtra "coluna vazia": por isso o pendente é uma coluna verdadeiro/falso que nasce `false`. No blueprint, o valor do
+   filtro vai **em texto** (`"b": "false"`): com o booleano `false` o Make ignora a condição e a busca lê qualquer linha.
+3. **Processa** cada linha que voltou (cada linha é uma passagem pelos módulos seguintes). Sem pendente, o `searchRows`
+   devolve **1 pacote vazio** (não zero): o 1º módulo depois da busca leva o filtro "`{{<id da busca>.id}}` existe",
+   senão ele roda com campos vazios, falha e o fluxo termina em erro. Com o filtro, a busca vazia gasta 1 operação.
 4. **`upsertARecord`** na fila, pela chave primária (`id`), **regravando a linha inteira**: mapeie de volta todas as colunas
    que o `searchRows` leu e mude só `processado` para `true` e `processado_em` para agora.
 

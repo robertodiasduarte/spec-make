@@ -78,6 +78,12 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    API Keys → Secret keys), sem outros campos.
 14. **Atualizar uma linha.** Não há módulo "atualizar": o `upsertARecord` decide pela chave primária da tabela. O banco
    confere as colunas obrigatórias da linha inteira, então quem marca uma linha como feita regrava a linha toda.
+15. **Filtro verdadeiro/falso no blueprint (16/10/2026).** Na condição do `searchRows`, o valor vai em texto
+   (`"b": "false"`). Com o booleano `false` o Make ignora a condição: a busca lê qualquer linha (medido: as 3 execuções
+   leram 2 linhas e gastaram 7 operações, a fila nunca esvaziou).
+16. **Busca sem resultado (16/10/2026).** O `searchRows` sem linha devolve 1 pacote vazio, não zero. O módulo seguinte
+   roda com campos vazios (medido: gravação com campo obrigatório vazio falhou e a execução terminou em erro). Um filtro
+   "`{{<id da busca>.id}}` existe" no 1º módulo depois da busca para o fluxo ali: a execução gasta 1 operação.
 
 ## Conexões e credenciais
 

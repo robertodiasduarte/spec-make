@@ -11,7 +11,16 @@
       },
       "mapper": {
         "table": "pedidos_fila",
-        "limit": "50"
+        "limit": "50",
+        "search": [
+          [
+            {
+              "a": "processado",
+              "o": "boolean:eq.",
+              "b": "false"
+            }
+          ]
+        ]
       },
       "metadata": {
         "designer": {
@@ -37,6 +46,17 @@
           "x": 300,
           "y": 0
         }
+      },
+      "filter": {
+        "name": "Só se achou pendente",
+        "conditions": [
+          [
+            {
+              "a": "{{1.id}}",
+              "o": "exist"
+            }
+          ]
+        ]
       }
     },
     {

@@ -187,6 +187,11 @@ REGRAS: list[Regra] = [
                   "Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make → `searchRows` com "
                   "`processado` igual a `false` e um limite → processa → `upsertARecord` pela primary key da fila, que "
                   "regrava a linha inteira (as colunas lidas mais `processado = true` e `processado_em`).",
+                  # 1.3.1 (teste de ponta a ponta de 16/10/2026): valor em texto e filtro "existe" depois da busca
+                  "No blueprint, o valor do filtro de verdade/falso vai em texto (`\"false\"`, nunca o booleano `false`: "
+                  "o Make ignora a condição e a busca lê qualquer linha).",
+                  "Sem pendente, a busca devolve 1 pacote vazio: o módulo seguinte leva o filtro \"`{{id da busca.<coluna>}}` "
+                  "existe\", senão ele roda com campos vazios e falha.",
                   "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make nem a execução sob demanda: recuse o "
                   "DESIGN como pronto."]),
     Regra("S4", _skill("spec-make-design"), at="AT-004",
@@ -274,6 +279,9 @@ FRASES: dict[str, list[str]] = {
         "`processado = true`",
         "acrescente ao filtro do `searchRows` a condição `chave_natural` igual a `TESTE-1` (as duas condições juntas), para "
         "o teste nunca ler nem marcar um pendente real",
+        # 1.3.1: a 3ª execução, com a fila vazia, prova o filtro e o pacote vazio
+        "Com fila, rode também uma 3ª execução com a fila vazia: ela termina em sucesso e gasta exatamente 1 operação.",
+        "Faça ainda a **3ª execução com a fila vazia**: ela termina em sucesso e gasta exatamente 1 operação",
         # R2@opus (rodada 2): o passo 10 inteiro, que a linha "Gatilho real" não repete
         "a 2ª execução tem de ter processado o item (operações maiores que zero; ela pode gastar menos que a 1ª). "
         "Execução que não processou nada também gasta 1 operação",
@@ -301,6 +309,8 @@ FRASES: dict[str, list[str]] = {
         "escreva aqui o nome de CADA coluna de dinheiro do fluxo, entre aspas e com vírgula",
         "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'id' and a.attidentity = 'd') then",
         "a condição `chave_natural` *Equals* `TESTE-1`, para o teste nunca ler nem marcar um pendente real",
+        "No blueprint, o valor do\n   filtro vai **em texto** (`\"b\": \"false\"`): com o booleano `false` o Make ignora a condição",
+        "devolve **1 pacote vazio** (não zero): o 1º módulo depois da busca leva o filtro",
         "if not exists (select 1 from pg_attribute a\n                    where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",
         "raise exception 'Prepare o banco: <fila>.processado_em (timestamptz) não existe",
         "raise exception 'Prepare o banco: a auditoria precisa dos 6 campos de [G2]"],

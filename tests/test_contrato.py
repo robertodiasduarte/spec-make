@@ -163,6 +163,10 @@ class Contrato(unittest.TestCase):
             (h, "Se a conversa não tiver o MCP do Make, avise em uma frase, escreva",
              "Se a conversa não tiver o MCP do Make, escreva"),
             (h, 'avise em uma frase, escreva "sem o conector" na\nlinha "Gerada" da ficha e preencha', "preencha"),
+            # 1.3.1 (S3): valor do filtro em texto e filtro "existe" depois da busca, na âncora do design
+            ("spec-make-design/SKILL.md", 'vai em texto (`"false"`, nunca o booleano `false`:',
+             'vai em booleano (`false`, nunca o texto `"false"`:'),
+            ("spec-make-design/SKILL.md", "Sem pendente, a busca devolve 1 pacote vazio:", "Sem pendente, a busca devolve nada:"),
         ]
         for arq, de, para in casos:
             with self.subTest(arquivo=arq, de=de[:40]):
@@ -222,6 +226,17 @@ class Contrato(unittest.TestCase):
                  # R2@codex (rodada 2): a conferência da fila preexistente sem a coluna do marcador
                  ("spec-make-design/references/SUPABASE.md", "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado_em'",
                   "where a.attrelid = 'public.<fila>'::regclass and a.attname = 'processado'"),
+                 # 1.3.1: o teste de ponta a ponta achou o filtro booleano e o pacote vazio
+                 ("spec-make-build/references/PROTOCOLO.md",
+                  "Faça ainda a **3ª execução com a fila vazia**: ela termina em sucesso e gasta exatamente 1 operação",
+                  "Faça ainda a **3ª execução com a fila cheia**: ela termina em sucesso e gasta exatamente 1 operação"),
+                 ("spec-make-build/references/PROTOCOLO.md",
+                  "Com fila, rode também uma 3ª execução com a fila vazia: ela termina em sucesso e gasta exatamente 1 operação.",
+                  "Com fila, não precisa de 3ª execução."),
+                 ("spec-make-design/references/SUPABASE.md", "com o booleano `false` o Make ignora a condição",
+                  "com o booleano `false` o Make aplica a condição"),
+                 ("spec-make-design/references/SUPABASE.md", "devolve **1 pacote vazio** (não zero)",
+                  "devolve **nenhum pacote** (zero)"),
                  # R1@codex (rodada 2): o filtro de teste é a chave exata, não "contém"
                  ("spec-make-design/references/SUPABASE.md", "a condição `chave_natural` *Equals* `TESTE-1`",
                   "a condição `chave_natural` contém `TESTE-`"),

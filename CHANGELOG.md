@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.3.1 — 2026-10
+
+- Duas correções do fluxo que lê uma fila no Supabase, achadas no 1º teste de ponta a ponta com o kit publicado:
+  - O valor do filtro de verdade ou falso vai em texto no blueprint (`"false"`). Com o booleano, o Make ignora a condição
+    e a busca lê qualquer linha, então a fila nunca esvazia.
+  - Sem pendente, a busca devolve 1 pacote vazio. O módulo seguinte leva o filtro "o `id` existe"; sem ele, roda com
+    campos vazios e a execução termina em erro.
+- A etapa 4 passa a rodar uma 3ª execução com a fila vazia, que tem de terminar em sucesso gastando exatamente 1
+  operação: é a prova de que o filtro vale e de que nada roda depois de uma busca vazia.
+- O verificador de blueprint passa a recusar o filtro de verdade ou falso com valor booleano e o módulo logo depois da
+  busca sem o filtro "existe".
+
 ## v1.3.0 — 2026-10
 
 A numeração salta da 1.1.0 para a 1.3.0.

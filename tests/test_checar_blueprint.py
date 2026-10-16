@@ -510,7 +510,10 @@ class ChecarBlueprint(unittest.TestCase):
     def test_os_5_modulos_do_banco_passam(self):
         for nome in self.PERMITIDOS:
             with self.subTest(modulo=nome):
-                self.assertEqual(cb.checar(self._com_modulo(f"supabase:{nome}", {"table": "pedidos"})), [])
+                bp = self._com_modulo(f"supabase:{nome}", {"table": "pedidos"})
+                if nome == "searchRows":      # o módulo depois da busca leva o filtro "existe" (pacote vazio, 16/10/2026)
+                    bp["flow"][3]["filter"] = {"name": "x", "conditions": [[{"a": "{{9.id}}", "o": "exist"}]]}
+                self.assertEqual(cb.checar(bp), [])
 
     def test_supabase_management_e_postgres_reprovam(self):
         for nome in ("supabase-management:runAQuery", "postgres:ExecuteQuery"):
@@ -556,6 +559,31 @@ class ChecarBlueprint(unittest.TestCase):
         self.assertEqual(cb.checar(_ler("blueprint_supabase_valido.json")), [])
         self.assertTrue(any("makeAnApiCall" in p for p in cb.checar(_ler("blueprint_supabase_fora_da_lista.json"))))
         self.assertTrue(any("endereço de um projeto Supabase" in p for p in cb.checar(_ler("blueprint_http_projeto.json"))))
+
+    def test_busca_do_supabase_booleano_e_pacote_vazio(self):
+        """Teste de ponta a ponta de 16/10/2026: valor booleano no filtro e módulo sem 'existe' depois da busca reprovam."""
+        import copy
+        ok = _ler("blueprint_supabase_valido.json")
+        self.assertEqual(cb.checar(ok), [])
+        bool_ = copy.deepcopy(ok)
+        bool_["flow"][0]["mapper"]["search"][0][0]["b"] = False
+        self.assertTrue(any("booleano" in p for p in cb.checar(bool_)))
+        sem_filtro = copy.deepcopy(ok)
+        del sem_filtro["flow"][1]["filter"]
+        self.assertTrue(any("pacote vazio" in p for p in cb.checar(sem_filtro)))
+        outro_id = copy.deepcopy(ok)
+        outro_id["flow"][1]["filter"]["conditions"][0][0]["a"] = "{{9.id}}"
+        self.assertTrue(any("pacote vazio" in p for p in cb.checar(outro_id)), "existe sobre o id de OUTRO módulo não vale")
+        igual = copy.deepcopy(ok)
+        igual["flow"][1]["filter"]["conditions"][0][0]["o"] = "text:equal"
+        self.assertTrue(any("pacote vazio" in p for p in cb.checar(igual)), "só o operador 'exist' vale")
+        roteador = copy.deepcopy(ok)
+        roteador["flow"].insert(1, {"id": 7, "module": "builtin:BasicRouter", "version": 1, "mapper": {}, "routes": []})
+        del roteador["flow"][2]["filter"]
+        self.assertFalse(any("pacote vazio" in p for p in cb.checar(roteador)), "roteador trata o pacote vazio por conta própria")
+        ultimo = copy.deepcopy(ok)
+        ultimo["flow"] = ultimo["flow"][:1]
+        self.assertEqual(cb.checar(ultimo), [])
 
     def test_conexao_com_id_real_nao_e_credencial(self):
         """O id da conexão do Make tem 6–8 dígitos na conta real: não é credencial escrita."""

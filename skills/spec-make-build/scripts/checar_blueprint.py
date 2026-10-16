@@ -363,6 +363,37 @@ def problemas_supabase(m: dict) -> list[str]:
     return saida
 
 
+def problemas_busca_supabase(fluxo: list) -> list[str]:
+    """Duas armadilhas medidas na 1.3.0 do kit (teste de ponta a ponta de 16/10/2026): (1) o valor do filtro de
+    verdade/falso do `searchRows` tem de ir em texto, o booleano faz o Make ignorar a condição; (2) sem pendente a busca
+    devolve 1 pacote vazio, então o módulo seguinte precisa do filtro "existe" sobre o id da busca."""
+    saida: list[str] = []
+    for i, m in enumerate(fluxo):
+        if not isinstance(m, dict) or m.get("module") != "supabase:searchRows":
+            continue
+        for grupo in (m.get("mapper") or {}).get("search") or []:
+            for cond in grupo if isinstance(grupo, list) else []:
+                if isinstance(cond, dict) and str(cond.get("o", "")).startswith("boolean:") \
+                        and isinstance(cond.get("b"), bool):
+                    saida.append(
+                        f"o searchRows (módulo {m.get('id')}) filtra {cond.get('a')!r} com o booleano {cond.get('b')!r}: "
+                        'escreva o valor em texto ("true" ou "false"), senão o Make ignora a condição e a busca lê qualquer linha')
+        if i + 1 >= len(fluxo) or not isinstance(fluxo[i + 1], dict):
+            continue
+        seguinte = fluxo[i + 1]
+        if str(seguinte.get("module", "")).startswith("builtin:") and not str(seguinte.get("module")).endswith(
+                ("SetVariable", "SetVariables")):
+            continue                      # roteador, agregador e iterador tratam o pacote vazio por conta própria
+        marca = "{{" + str(m.get("id")) + "."
+        existe = any(isinstance(c, dict) and c.get("o") == "exist" and marca in str(c.get("a", ""))
+                     for g in ((seguinte.get("filter") or {}).get("conditions") or []) if isinstance(g, list) for c in g)
+        if not existe:
+            saida.append(
+                f"o módulo {seguinte.get('id')} vem logo depois do searchRows (módulo {m.get('id')}) sem o filtro "
+                f'"{marca}id}}}} existe": com a fila vazia a busca devolve 1 pacote vazio e este módulo roda com campos vazios')
+    return saida
+
+
 def checar(bp: dict) -> list[str]:
     problemas: list[str] = []
     if not isinstance(bp, dict):
@@ -380,6 +411,7 @@ def checar(bp: dict) -> list[str]:
     if not tem_modulo:
         problemas.append("o blueprint não tem flow (lista de módulos): nada foi conferido; exporte o blueprint de novo")
     modulos = _modulos(fluxo if isinstance(fluxo, list) else [])
+    problemas += problemas_busca_supabase(fluxo if isinstance(fluxo, list) else [])
     if "interface" in bp:
         problemas.append(
             "o blueprint traz a chave interface: o validador do Make a recusa; grave a interface com "
