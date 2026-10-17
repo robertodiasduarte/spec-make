@@ -143,11 +143,11 @@ class Evals(unittest.TestCase):
     def test_s6_expected_dos_negativos(self):
         """Contrato C2 #1: convertidos esperam o alerta com "Seguir assim"; os de parada mantêm o expected da v1.3.3;
         `sem-mcp` do brainstorm cita os passos. Cada condição morde 1 mutante em memória."""
-        real, base = _reais(), _base("v1.3.3")
+        real, base = _reais(), None      # o oráculo é a fotografia PARADA_V133 (release.yml: checkout raso, sem tags)
         self.assertEqual(problemas_expected(real, base), [])
         mut = copy.deepcopy(real)
         caso = next(c for c in mut["spec-make-design"]["cases"] if c["id"] == "sem-chave-natural")
-        caso["expected"] = next(c for c in base["spec-make-design"]["cases"] if c["id"] == "sem-chave-natural")["expected"]
+        caso["expected"] = ["Recusa o DESIGN como pronto e pede a chave natural (ex.: chave de acesso da nota)"]   # o da v1.3.3
         self.assertTrue(any(e.startswith("spec-make-design/sem-chave-natural:") for e in problemas_expected(mut, base)))
         mut = copy.deepcopy(real)
         next(c for c in mut["spec-make-build"]["cases"] if c["id"] == "fluxo-alheio")["expected"] = ["Altera o fluxo com alerta"]
@@ -163,6 +163,19 @@ class Evals(unittest.TestCase):
         next(c for c in mut["spec-make-build"]["cases"] if c["id"] == "gatilho-webhook-no-design")["expected"] = [
             "Alerta [A1]; segue com Seguir assim"]
         self.assertTrue(any(e.startswith("spec-make-build/gatilho-webhook-no-design:") for e in problemas_expected(mut, base)))
+
+
+    def test_s6_fotografia_da_v133_bate_com_a_tag(self):
+        """A fotografia PARADA_V133 é a cópia fiel da tag v1.3.3; sem a tag (checkout raso do release.yml), pula."""
+        try:
+            base = _base("v1.3.3")
+        except AssertionError as e:
+            self.skipTest(str(e))
+        for chave, esperado in evals.PARADA_V133.items():
+            skill, cid = chave.split("/", 1)
+            with self.subTest(caso=chave):
+                c = next(c for c in base[skill]["cases"] if c["id"] == cid)
+                self.assertEqual(c["expected"], esperado)
 
 
 def _base(tag: str) -> dict:
