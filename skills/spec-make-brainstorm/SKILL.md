@@ -88,8 +88,8 @@ encerre nem peça para voltar depois. A resposta termina com uma única pergunta
 
 **[N1] Módulo oficial primeiro.** Para cada passo do fluxo, procure primeiro o módulo do próprio app no Make
 (`apps_recommend`, depois `app-modules_list` e `app-module_get`) e só depois considere o módulo HTTP genérico
-(`http:*`). HTTP só entra com o motivo escrito no documento: "o app <X> não tem módulo para <operação> — conferido em
-`app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
+(`http:*`). HTTP só entra com o motivo escrito no documento, uma linha por módulo, com o número dele: "módulo <n>: o app
+<X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
 endereço, cabeçalho e autenticação montados à mão, e o módulo oficial já traz a conexão e os campos. Os apps embutidos do
 Make (data store, roteador, entrada sob demanda) não contam como HTTP. Com o Supabase, HTTP fica fora do alcance ([X2]).
 

@@ -12,7 +12,7 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 |---|---|---|---|---|---|---|
 | 1 | {…} | {…} | {…} | {…} | {nome da conexão · "a autorizar no build" · "não precisa"} | {Supabase: motivo · tabelas · operações ([S1]) · "não se aplica: o fluxo não usa Supabase"} |
 
-{Módulo `http:*` ([N1]): escreva aqui "o app <X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>" · ou "nenhum módulo HTTP"}
+{Uma linha por módulo `http:*` ([N1]): "módulo <n>: o app <X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>" · ou "nenhum módulo HTTP"}
 
 ## Fontes consultadas
 

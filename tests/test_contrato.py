@@ -170,8 +170,11 @@ class Contrato(unittest.TestCase):
             # 1.3.3 (avaliador, ciclo 2): B7 manda parar quando o verificador reprova; S5 manda o DESIGN dizer onde se lê a view
             ("spec-make-build/SKILL.md", "ou 2 (não leu o arquivo: nada foi conferido): não crie o\nfluxo",
              "ou 2 (não leu o arquivo: nada foi conferido): crie o fluxo"),
-            ("spec-make-build/SKILL.md", "menos o aviso de HTTP ([N1]) de módulo\nque tem no DESIGN a linha de motivo",
-             "inclusive o aviso de HTTP ([N1]) de módulo que tem no DESIGN a linha de motivo"),
+            # rodada 1b: o [N1] com motivo do módulo não alerta; confidencial e interface se corrigem; o Quick start cita o [X1]
+            ("spec-make-build/SKILL.md", "linha de motivo do\n[N1] com o número dele não vira alerta",
+             "linha de motivo do [N1] com o número dele vira alerta"),
+            ("spec-make-build/SKILL.md", "confidencial desligado e chave `interface` no blueprint você corrige sozinho e avisa",
+             "confidencial desligado e chave `interface` no blueprint viram alerta [A1]"),
             ("spec-make-design/SKILL.md", "O DESIGN diz que a pessoa lê a view da taxa de correção no\nSQL Editor do Supabase",
              "O DESIGN não diz onde a pessoa lê a view da taxa de correção no\nSQL Editor do Supabase"),
             # 1.3.1 (S3): valor do filtro em texto e filtro "existe" depois da busca, na âncora do design
@@ -255,6 +258,9 @@ class Contrato(unittest.TestCase):
                  # R1@codex (rodada 2): o filtro de teste é a chave exata, não "contém"
                  ("spec-make-design/references/SUPABASE.md", "a condição `chave_natural` *Equals* `TESTE-1`",
                   "a condição `chave_natural` contém `TESTE-`"),
+                 # rodada 1b (R5@opus): o Quick start do build cita os bloqueios [X1]
+                 ("spec-make-build/SKILL.md", "está em **[B8]** e nos bloqueios [X1] ([B2], [B4], [B6]); o resto vira alerta.",
+                  "está em **[B8]**; o resto vira alerta."),
                  ("spec-make-build/references/DIAGNOSTICO.md", "Correções só no fluxo que esta conversa criou ([B4]).",
                   "Correções em qualquer fluxo da conta."),
                  ("spec-make-handoff/references/PROTOCOLO.md", "Nunca troque o `lastEdit` da ficha",
@@ -342,7 +348,8 @@ class Contrato(unittest.TestCase):
                   "spec-make-define": "📍 Etapa 2 de 4 · Define — passo {k} de {K}: {p} · depois: Design",
                   "spec-make-design": "📍 Etapa 3 de 4 · Design — passo {k} de {K}: {p} · depois: Build",
                   "spec-make-build": "📍 Etapa 4 de 4 · Build — passo {k} de {K}: {p} · depois: fim",
-                  "spec-make-handoff": "📍 Handoff (fora das etapas) — passo {k} de {K}: {p} · depois: Design"}
+                  # rodada 1c (A1@fable): o destino do handoff varia; mede com o mais longo (Brainstorm)
+                  "spec-make-handoff": "📍 Handoff (fora das etapas) — passo {k} de {K}: {p} · depois: Brainstorm"}
         linhas = {}
         for l in texto.splitlines():
             cel = [x.strip() for x in l.strip().strip("|").split("|")]

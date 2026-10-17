@@ -85,7 +85,10 @@ EXCECOES: list[tuple[str, str, str]] = [
     ("spec-make-design/references/PROTOCOLO.md", "o validador do Make a recusa", "fato medido do Make"),
     ("spec-make-design/SKILL.md", "gatilho que recusa alterar", "descreve o gatilho SQL da auditoria, não a skill"),
     ("spec-make-handoff/SKILL.md", "testar a recusa do fluxo de boletos", "fala da pessoa no exemplo: o fluxo de boletos tem a recusa"),
-    ("HANDOFF_EXEMPLO.md", "recusa", "exemplo: o fluxo de boletos tem o passo de recusa do boleto"),
+    # rodada 1c (A2@fable): trechos exatos do exemplo dos boletos, nunca "recusa" solto no arquivo inteiro
+    ("HANDOFF_EXEMPLO.md", "Testar a recusa pelo link (parte 2/2)", "exemplo: o fluxo de boletos tem o passo de recusa"),
+    ("HANDOFF_EXEMPLO.md", "testar a recusa pelo link.", "exemplo: o fluxo de boletos tem o passo de recusa"),
+    ("HANDOFF_EXEMPLO.md", "rodar o teste de recusa na parte 6600102", "exemplo: o fluxo de boletos tem o passo de recusa"),
 ]
 
 
@@ -126,7 +129,8 @@ class Residuos(unittest.TestCase):
         casos = [("skills/spec-make-define/SKILL.md", "\nA skill recusa o teste.\n"),
                  ("skills/spec-make-build/references/PROTOCOLO.md", "\nSe faltar, pare e diga o que falta.\n"),
                  ("skills/spec-make-design/references/PROTOCOLO.md", "\nSem a chave, volte à etapa 2.\n"),
-                 ("compartilhado/CONDUCAO.md", "\nSem o documento, não crie nada.\n")]
+                 ("compartilhado/CONDUCAO.md", "\nSem o documento, não crie nada.\n"),
+                 ("skills/spec-make-handoff/assets/HANDOFF_EXEMPLO.md", "\nA skill recusa a ficha sem id.\n")]
         with tempfile.TemporaryDirectory() as d:
             r = Path(d)
             shutil.copytree(RAIZ / "skills", r / "skills")

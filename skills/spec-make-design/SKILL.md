@@ -29,7 +29,8 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
    Se o fluxo toca Supabase, aplique também **[S1]** a **[S5]** ([references/SUPABASE.md](references/SUPABASE.md)).
 6. Se houver módulo de IA, ou o fluxo for acionado pelo assistente, registre o inventário de prompts e skills **[P1]**
    ([references/PROMPTS_E_SKILLS.md](references/PROMPTS_E_SKILLS.md)).
-7. Monte o blueprint com **[C1]**, valide pelo MCP e confira com `scripts/checar_blueprint.py`.
+7. Monte o blueprint com **[C1]**, valide pelo MCP e confira com `scripts/checar_blueprint.py`: sai 1 (ERRO), corrija;
+   sai 3 (AVISO), corrija ou faça o alerta [A1] de cada aviso, menos o [N1] do módulo que já tem a linha de motivo.
 8. Entregue `DESIGN_<FLUXO>.md` usando [assets/DESIGN_TEMPLATE.md](assets/DESIGN_TEMPLATE.md) e feche com **[E1]**.
 
 ## Quando usar / Quando não usar
@@ -139,8 +140,8 @@ contrato, a etapa 4 escreve um prompt provisório que ninguém conferiu.
 
 **[N1] Módulo oficial primeiro.** Para cada passo do fluxo, procure primeiro o módulo do próprio app no Make
 (`apps_recommend`, depois `app-modules_list` e `app-module_get`) e só depois considere o módulo HTTP genérico
-(`http:*`). HTTP só entra com o motivo escrito no documento: "o app <X> não tem módulo para <operação> — conferido em
-`app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
+(`http:*`). HTTP só entra com o motivo escrito no documento, uma linha por módulo, com o número dele: "módulo <n>: o app
+<X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
 endereço, cabeçalho e autenticação montados à mão, e o módulo oficial já traz a conexão e os campos. Os apps embutidos do
 Make (data store, roteador, entrada sob demanda) não contam como HTTP. Com o Supabase, HTTP fica fora do alcance ([X2]).
 
@@ -166,7 +167,8 @@ BRAINSTORM, o DEFINE e este DESIGN e diga: Use a skill spec-make-build."
 - [ ] `Fontes consultadas` com URL e data de cada app, ou "não consultado" [W1]
 - [ ] Inventário [P1] de prompts e skills quando há módulo de IA ou o fluxo é acionado pelo assistente
 - [ ] `confidential: true`; fluxo sob demanda com entrada: campos no módulo 1, bloco "Interface" no DESIGN e nenhuma chave `interface` no blueprint
-- [ ] Três validações do MCP sem erro e `checar_blueprint.py` OK
+- [ ] Três validações do MCP sem erro (ou o alerta da validação aceito) e `checar_blueprint.py` sem ERRO; cada AVISO
+  corrigido, coberto pela linha de motivo do [N1] daquele módulo, ou com o alerta aceito
 - [ ] Operações por execução dentro do orçamento do DEFINE
 - [ ] Seção `Alertas aceitos` preenchida (ou "nenhum") e fecho [K5] com a frase da próxima etapa
 

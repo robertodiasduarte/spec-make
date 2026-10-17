@@ -46,6 +46,9 @@ REGRAS: list[Regra] = [
                   # SPEC_MAKE_S5: o banco preparado vem antes das validações; o webhook não existe mais no kit
                   "Fluxo que toca Supabase: confirme com a pessoa que o SQL do `Prepare o banco` rodou sem erro no SQL "
                   "Editor; o teste do passo 10 prova o resto.",
+                  # rodada 1b (R1@codex): sem a seção (alerta do [B7] aceito), o 2b não exige o SQL
+                  "Sem a seção no DESIGN (alerta do [B7] aceito), diga que o banco pode não ter as travas e siga para o "
+                  "passo 3.",
                   "(operações maiores que zero; ela pode gastar menos que a 1ª)"],
           em_ordem=["environment_get", "credential-requests_create", "validate_module_configuration",
                     "validate_blueprint_schema", "scenarios_create", "scenarios_set-interface",
@@ -270,8 +273,11 @@ REGRAS: list[Regra] = [
                   "spec-make-design.\".",
                   "(2) `scripts/checar_blueprint.py` sai 1 (ERRO) ou 2 (não leu o arquivo: nada foi conferido): não crie o "
                   "fluxo; diga o problema e indique a mesma skill.",
-                  "Saída 3 (AVISO): cada aviso vira alerta [A1], menos o aviso de HTTP ([N1]) de módulo que tem no DESIGN a "
-                  "linha de motivo do [N1] — o design já decidiu.",
+                  # rodada 1b (R3@opus): confidencial e interface se corrigem sozinhos; [N1] com motivo do módulo não alerta
+                  "Saída 3 (AVISO): confidencial desligado e chave `interface` no blueprint você corrige sozinho e avisa "
+                  "([C1]; a interface vai por `scenarios_set-interface`)",
+                  "o aviso de HTTP ([N1]) de módulo que tem no DESIGN a linha de motivo do [N1] com o número dele não vira "
+                  "alerta — o design já decidiu; cada outro aviso vira alerta [A1].",
                   "Rode o verificador em todo fluxo; se o ambiente não executa código, faça a mesma conferência lendo."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
           contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
@@ -327,6 +333,8 @@ for _nome, _n, _rot, _prox in ETAPAS:
 
 # SPEC_MAKE_S6 AT-008: [N1] igual nas 3 skills que escolhem módulo
 N1 = ["Para cada passo do fluxo, procure primeiro o módulo do próprio app no Make",
+      # rodada 1b (R4@opus): o motivo nomeia o módulo, para o build casar o aviso do verificador com a linha certa
+      "HTTP só entra com o motivo escrito no documento, uma linha por módulo, com o número dele",
       "e só depois considere o módulo HTTP genérico",
       "HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede endereço, cabeçalho e "
       "autenticação montados à mão, e o módulo oficial já traz a conexão e os campos.",
@@ -374,8 +382,11 @@ REGRAS += [
                   "no recibo e na seção `Alertas aceitos` da ficha do fluxo, e o handoff os mantém em \"Falta\" até alguém "
                   "corrigir."]),
     Regra("A3", CONDUCAO, at="AT-004",
-          contem=["Sem o documento que a etapa precisa (o BRAINSTORM na etapa 2, o DEFINE na 3, o DESIGN na 4): alerta [A1] "
-                  "— a etapa vai trabalhar sem o que a anterior decidiu e conferiu na conta."]),
+          # rodada 1b (R6@opus): cada documento que falta, e o teste de aceite sempre na versão curta
+          contem=["Sem um documento que a etapa precisa (o BRAINSTORM na etapa 2; o BRAINSTORM e o DEFINE na 3; os três na "
+                  "4): alerta [A1] — a etapa vai trabalhar sem o que a anterior decidiu e conferiu na conta.",
+                  '"Corrigir agora" é o comando pronto da primeira etapa que falta',
+                  "e sempre a amostra e o resultado esperado do teste de aceite"]),
     Regra("X1", CONDUCAO, at="AT-005",
           contem=["Estes três não viram alerta e nenhuma confirmação os libera; diga o que fazer no lugar, na mesma mensagem, "
                   "sem culpar a pessoa:",
@@ -415,9 +426,14 @@ FRASES: dict[str, list[str]] = {
     "spec-make-build/SKILL.md": [
         # SPEC_MAKE_S6 AT-006 (contrato C2 #4): o build repete os alertas aceitos no recibo e na ficha
         "Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+        # rodada 1b (R5@opus): o resumo do Quick start não pode dizer que só o [B8] para
+        "O que para o build está em **[B8]** e nos bloqueios [X1] ([B2], [B4], [B6]); o resto vira alerta.",
         "Recibo com operações gastas e os alertas aceitos que ficaram pendentes ([A2])",
         "a ficha os repete na seção `Alertas aceitos` ([A2]).",
         "Sem algum dos três documentos, siga o [A3].",
+        # rodada 1b (A2@fable): DEFINE sem teste aceito no Define — o build monta o mínimo; sem amostra, alerta
+        "DEFINE sem teste de aceite (alerta do [D1] aceito na etapa 2): monte um teste mínimo com a amostra do BRAINSTORM",
+        "sem amostra nenhuma: alerta [A1] — o fluxo nunca rodou com dado de verdade",
         "além do que o [B3] corrige: alerta [A1] — corrigir aqui deixa o DESIGN desatualizado",
         "alerta [A1] — o Make interrompe a execução quando a cota acaba.",
         "9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill `spec-make-handoff`, "
@@ -601,6 +617,7 @@ ITENS_AT004: dict[str, tuple[str, str]] = {
     "ia-grava-direto": (D, "**A pessoa quer a IA gravando direto:** alerta [A1]"),
     "desenho-errado": (B, "além do que o [B3] corrige: alerta [A1]"),
     "plano-sem-operacoes": (B, "alerta [A1] — o Make interrompe a execução quando a cota acaba."),
+    "define-sem-teste": (B, "sem amostra nenhuma: alerta [A1] — o fluxo nunca rodou com dado de verdade"),
 }
 
 

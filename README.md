@@ -50,12 +50,14 @@ teste não prova o que devia, o custo passa do plano), ela mostra o risco, recom
 "Corrigir agora" e "Seguir assim e registrar o alerta". O que você aceitou fica registrado no documento da etapa e na
 ficha do fluxo.
 
-Também vale sempre:
+O fluxo nasce confidencial (o Make não guarda os dados de cada passo no histórico): se o desenho vier sem isso, a
+etapa 4 corrige sozinha e avisa.
+
+O que a skill recomenda e só deixa de fazer com a sua escolha, registrada como alerta:
 
 - O teste de aceite é uma execução de verdade, não uma validação de texto.
-- O fluxo nasce confidencial: o Make não guarda os dados de cada passo no histórico.
 - O módulo oficial de cada app vem antes da chamada HTTP genérica.
-- Quem retoma um fluxo só altera o que a ficha diz ser dele, depois de conferir na conta que nada mudou desde a ficha.
+- Quem retoma um fluxo confere na conta, antes de alterar, se nada mudou desde a ficha.
 
 ## Instalação
 

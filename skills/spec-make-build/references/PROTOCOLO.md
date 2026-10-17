@@ -11,7 +11,8 @@ se você disser sim. Antes de cada gravação eu aviso o que vai acontecer."
 2. `connections_list` — conferir as conexões do DESIGN. Para cada uma que falta: `credential-requests_create` (app e
    módulos do DESIGN), mandar o link, esperar a pessoa autorizar e conferir de novo. Nunca peça chave no chat.
    2b. Fluxo que toca Supabase: confirme com a pessoa que o SQL do `Prepare o banco` rodou sem erro no SQL Editor; o
-   teste do passo 10 prova o resto.
+   teste do passo 10 prova o resto. Sem a seção no DESIGN (alerta do [B7] aceito), diga que o banco pode não ter as
+   travas e siga para o passo 3.
 3. `validate_module_configuration` (por módulo) e `validate_blueprint_schema` — o blueprint final, já com as conexões.
    Rode também `scripts/checar_blueprint.py`: o verificador roda em todo fluxo; o que fazer com cada saída (0, 1, 2 e 3)
    está no [B8] do SKILL.md.

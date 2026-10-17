@@ -43,6 +43,18 @@ def sem_n1(achados: list[str]) -> list[str]:
     return [x for x in achados if "([N1])" not in x]
 
 
+def sem_erro(classificar) -> list[str]:
+    """Casos que TÊM de sair como ERRO e não saíram, pelo `classificar` recebido (o real ou um mutante): fixtures de
+    credencial e do Supabase fora do alcance, o Authorization gerado e o campo de credencial no módulo de entrada."""
+    casos = {n: _ler(n) for n in ("blueprint_com_credencial.json", "blueprint_header_bearer.json", "blueprint_chave_na_url.json",
+                                  "blueprint_sem_flow.json", "blueprint_supabase_fora_da_lista.json", "blueprint_http_projeto.json")}
+    casos["authorization gerado"] = _com_http({"headers": [{"name": "Authorization", "value": "Bearer " + SEGREDO}]})
+    entrada = _ler("blueprint_valido.json")
+    entrada["flow"][0]["metadata"]["interface"].append({"name": "api_token", "type": "text"})
+    casos["entrada com campo de credencial"] = entrada
+    return [n for n, bp in casos.items() if not classificar(bp)[0]]
+
+
 def _com_datastore(chave: str) -> dict:
     bp = _ler("blueprint_valido.json")
     bp["flow"].insert(2, {"id": 5, "module": "datastore:AddRecord", "version": 1, "parameters": {"datastore": 12345},
@@ -634,13 +646,23 @@ class ChecarBlueprint(unittest.TestCase):
         self.assertTrue(any("([N1])" in a for a in cb.classificar(bp)[1]))
 
     def test_s6_credencial_e_supabase_fora_do_alcance_sao_erro(self):
-        """SPEC_MAKE_S6 AT-007: credencial e Supabase fora do alcance nunca descem para AVISO."""
-        for nome in ("blueprint_com_credencial.json", "blueprint_header_bearer.json", "blueprint_chave_na_url.json",
-                     "blueprint_sem_flow.json", "blueprint_supabase_fora_da_lista.json", "blueprint_http_projeto.json"):
-            with self.subTest(fixture=nome):
-                self.assertNotEqual(cb.classificar(_ler(nome))[0], [], f"{nome}: sem ERRO")
-        erros, _ = cb.classificar(_com_http({"headers": [{"name": "Authorization", "value": "Bearer " + SEGREDO}]}))
-        self.assertTrue(any("credencial" in e for e in erros))
+        """SPEC_MAKE_S6 AT-007: credencial (inclusive o campo de credencial na entrada) e Supabase fora do alcance nunca
+        descem para AVISO."""
+        self.assertEqual(sem_erro(cb.classificar), [])
+
+    def test_s6_credencial_rebaixada_a_aviso_reprova(self):
+        """Mutante (AT-007; rodada 1c R5@opus/R2@codex): o classificar que move a credencial para AVISO é reprovado PELA
+        conferência de severidade (sem_erro), não por uma asserção sobre o próprio mutante."""
+        def rebaixa(bp):
+            e, a = cb.classificar(bp)
+            return [], e + a
+
+        def so_entrada(bp):               # rebaixa só o campo de credencial do módulo de entrada (R4@opus)
+            e, a = cb.classificar(bp)
+            m = "o módulo de entrada pede o campo"
+            return [x for x in e if m not in x], a + [x for x in e if m in x]
+        self.assertTrue(sem_erro(rebaixa))
+        self.assertEqual(sem_erro(so_entrada), ["entrada com campo de credencial"])
 
     def test_s6_severidade_pela_linha_de_comando(self):
         """SPEC_MAKE_S6 AT-007/AT-008 (R10@opus): exit 1 com ERRO, 3 só com AVISO, 0 limpo, 2 ilegível — por fixture e
@@ -683,19 +705,6 @@ class ChecarBlueprint(unittest.TestCase):
                     if rc == 3:
                         self.assertIn("AVISO: ", r.stdout)
                         self.assertNotIn("ERRO: ", r.stdout)
-
-    def test_s6_credencial_rebaixada_a_aviso_reprova(self):
-        """Mutante (AT-007): mover a credencial para AVISO tem de ser pego pela checagem de severidade."""
-        original = cb.classificar
-        def rebaixa(bp):
-            e, a = original(bp)
-            return [], e + a
-        try:
-            cb.classificar = rebaixa
-            self.assertEqual(cb.classificar(_ler("blueprint_com_credencial.json"))[0], [])
-        finally:
-            cb.classificar = original
-        self.assertNotEqual(cb.classificar(_ler("blueprint_com_credencial.json"))[0], [])
 
     def test_cli_codigos_de_saida(self):
         ok = subprocess.run([sys.executable, "-I", str(SCRIPT), str(FIX / "blueprint_valido.json")], capture_output=True)

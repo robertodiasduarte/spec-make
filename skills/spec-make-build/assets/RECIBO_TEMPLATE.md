@@ -7,7 +7,7 @@
 | Item | Valor |
 |---|---|
 | Fluxo | {nome} · id {n} · {link do fluxo no Make} |
-| Execução do teste | {id} · {sucesso} · {n} operações |
+| Execução do teste | {id} · {sucesso} · {n} operações · {ou "sem teste de aceite" (alerta aceito)} |
 | Segunda execução (mesma amostra) | {id} · registros no destino antes {n} e depois {n} · {ou "não se aplica: o fluxo não grava"} |
 | Operações gastas no teste | {n} de {limite do plano} no mês |
 | Agendamento agora | sob demanda (só roda quando você pede) |

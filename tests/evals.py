@@ -132,6 +132,12 @@ PARADA: dict[str, set[str]] = {
 }
 
 
+# Parada nova do s6 (o expected mudou em relação à v1.3.3, então o oráculo são as palavras que ele TEM de ter)
+PARADA_NOVA: dict[tuple[str, str], tuple[str, ...]] = {
+    ("spec-make-build", "gatilho-webhook-no-design"): ("Para antes do scenarios_create", "sem alerta", "fora do alcance"),
+}
+
+
 def problemas_expected(ev_por_skill: dict[str, dict], ev_base: dict[str, dict]) -> list[str]:
     """Erros do `expected`, 1 por caso e sempre com `<skill>/<id>`: convertido sem "Seguir assim" ou com "recus";
     parada com `expected` diferente do da base (v1.3.3); `brainstorm/sem-mcp` sem "passos"."""
@@ -153,6 +159,18 @@ def problemas_expected(ev_por_skill: dict[str, dict], ev_base: dict[str, dict]) 
                 erros.append(f"{skill}/{cid}: ausente na base")
             elif (atual.get(cid) or {}).get("expected") != base[cid].get("expected"):
                 erros.append(f"{skill}/{cid}: expected de parada mudou em relação à base")
+    # rodada 1c (R2@opus, R3@codex): TODO negativo que não para (convertido ou não: fonte-sem-consulta, ia-sem-inventario…)
+    # não espera recusa; o gatilho fora da agenda para pelo [B8], sem alerta
+    for skill in ESPERADO:
+        for cid, c in casos(ev_por_skill, skill).items():
+            if c.get("type") != "negative_control" or cid in PARADA.get(skill, set()) or (skill, cid) in PARADA_NOVA:
+                continue
+            if "recus" in " ".join(c.get("expected") or []).lower():
+                erros.append(f"{skill}/{cid}: expected ainda com recusa")
+    for (skill, cid), deve in PARADA_NOVA.items():
+        exp = " ".join(casos(ev_por_skill, skill).get(cid, {}).get("expected") or [])
+        if any(d not in exp for d in deve) or "Seguir assim" in exp:
+            erros.append(f"{skill}/{cid}: expected de parada sem {deve} (ou com 'Seguir assim')")
     sem_mcp = " ".join(casos(ev_por_skill, "spec-make-brainstorm").get("sem-mcp", {}).get("expected") or [])
     if "passos" not in sem_mcp:
         erros.append("spec-make-brainstorm/sem-mcp: expected sem os passos para ligar o conector")

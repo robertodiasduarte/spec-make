@@ -21,7 +21,7 @@ ou "fim"; a linha tem até 80 caracteres.
 | spec-make-define | 7 | leitura do brainstorm · requisitos · critérios de aceite · teste de aceite · orçamento · pendências · documento |
 | spec-make-design | 8 | módulos na conta · desenho · quando algo falha · governança · prompts e skills · blueprint · custo · documento |
 | spec-make-build | 8 | conferência · conexões · prompts · criar o fluxo · teste de aceite · resultado · gatilho · skills e fichas |
-| spec-make-handoff | 7 | abertura · ficha anterior · leitura da conta · ficha · prompt de retomada · conferência · entrega |
+| spec-make-handoff | 7 | abertura · ficha anterior · ler a conta · ficha · retomada · conferência · entrega |
 
 **[K2] Glossário.** Na primeira vez que um destes termos aparecer na conversa, explique-o em uma frase, entre parênteses
 ou depois de travessão, nunca num parágrafo:
@@ -77,10 +77,11 @@ teste que não prova, depois documentação incompleta.
 lista os alertas aceitos das anteriores logo no começo da conversa; a etapa 4 os repete no recibo e na seção `Alertas
 aceitos` da ficha do fluxo, e o handoff os mantém em "Falta" até alguém corrigir.
 
-**[A3] Documento da etapa anterior ausente.** Sem o documento que a etapa precisa (o BRAINSTORM na etapa 2, o DEFINE na
-3, o DESIGN na 4): alerta [A1] — a etapa vai trabalhar sem o que a anterior decidiu e conferiu na conta. "Corrigir
-agora" é o comando pronto da etapa que falta; "Seguir assim" faz, nesta conversa, a versão curta da etapa que falta (as
-perguntas mínimas dela) antes de seguir.
+**[A3] Documento da etapa anterior ausente.** Sem um documento que a etapa precisa (o BRAINSTORM na etapa 2; o
+BRAINSTORM e o DEFINE na 3; os três na 4): alerta [A1] — a etapa vai trabalhar sem o que a anterior decidiu e conferiu
+na conta. "Corrigir agora" é o comando pronto da primeira etapa que falta; "Seguir assim" faz, nesta conversa, a versão
+curta de cada etapa que falta (as perguntas mínimas dela, e sempre a amostra e o resultado esperado do teste de aceite)
+antes de seguir.
 
 **[X1] Bloqueios.** Estes três não viram alerta e nenhuma confirmação os libera; diga o que fazer no lugar, na mesma
 mensagem, sem culpar a pessoa:

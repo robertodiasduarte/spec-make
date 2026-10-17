@@ -155,6 +155,14 @@ class Evals(unittest.TestCase):
         mut = copy.deepcopy(real)
         next(c for c in mut["spec-make-brainstorm"]["cases"] if c["id"] == "sem-mcp")["expected"] = ["Avisa"]
         self.assertTrue(any(e.startswith("spec-make-brainstorm/sem-mcp:") for e in problemas_expected(mut, base)))
+        # rodada 1c: fonte-sem-consulta (W1) de volta a recusar; gatilho-webhook-no-design virando alerta
+        mut = copy.deepcopy(real)
+        next(c for c in mut["spec-make-design"]["cases"] if c["id"] == "fonte-sem-consulta")["expected"] = ["Recusa o DESIGN"]
+        self.assertTrue(any(e.startswith("spec-make-design/fonte-sem-consulta:") for e in problemas_expected(mut, base)))
+        mut = copy.deepcopy(real)
+        next(c for c in mut["spec-make-build"]["cases"] if c["id"] == "gatilho-webhook-no-design")["expected"] = [
+            "Alerta [A1]; segue com Seguir assim"]
+        self.assertTrue(any(e.startswith("spec-make-build/gatilho-webhook-no-design:") for e in problemas_expected(mut, base)))
 
 
 def _base(tag: str) -> dict:

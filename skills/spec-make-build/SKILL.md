@@ -22,7 +22,7 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
    das etapas anteriores ([A2]).
 2. Confira se a conversa tem o MCP do Make com ferramentas de gravação ([references/MCP_MAKE.md](references/MCP_MAKE.md)). Sem elas, siga **[M1]**.
 3. Confira **[P1]** e **[N1]**; com Supabase, **[B7]** ([references/SUPABASE.md](references/SUPABASE.md)). O que para o
-   build está em **[B8]**; o resto vira alerta.
+   build está em **[B8]** e nos bloqueios [X1] ([B2], [B4], [B6]); o resto vira alerta.
 4. Siga a ordem **[B1]** ([references/PROTOCOLO.md](references/PROTOCOLO.md)), avisando antes de gravar ou rodar **[B5]**.
 5. Rode o teste de aceite do DEFINE e compare com o resultado esperado.
 6. Se falhar, siga **[B3]** ([references/DIAGNOSTICO.md](references/DIAGNOSTICO.md)).
@@ -53,7 +53,9 @@ pronto. Não mexe em fluxo, data store ou conexão que esta conversa não criou.
 2. **Ordem [B1].** Siga PROTOCOLO.md: conta → conexões → validação → criar → interface → ativar → rodar → ler.
 3. **Aviso [B5]** antes de criar e antes de cada execução.
 4. **Prompts.** [P1]: gere os prompts do inventário e coloque o texto no módulo de IA antes de criar o fluxo.
-5. **Teste de aceite.** Rode como o DEFINE manda. Fluxo que grava: rode a mesma amostra uma segunda vez e confira
+5. **Teste de aceite.** Rode como o DEFINE manda. DEFINE sem teste de aceite (alerta do [D1] aceito na etapa 2): monte
+   um teste mínimo com a amostra do BRAINSTORM e o resultado esperado que a pessoa disser, e rode; sem amostra nenhuma:
+   alerta [A1] — o fluxo nunca rodou com dado de verdade; com "Seguir assim", o recibo diz "sem teste de aceite". Fluxo que grava: rode a mesma amostra uma segunda vez e confira
    que a contagem de registros não mudou.
 6. **Resultado.** Compare valor a valor com o esperado e mostre em linguagem de escritório ("a razão social apareceu
    na tabela de clientes: …").
@@ -103,8 +105,9 @@ com Supabase que usa do app `supabase` algo além de `searchRows`, `createARow`,
 `deleteRows`, ou módulo `postgres` ou `supabase-management`, ou HTTP para o projeto, ou gatilho que não seja a agenda do
 Make nem sob demanda: fica fora do alcance do kit ([X2]); diga o que falta e indique "Use a skill spec-make-design.".
 (2) `scripts/checar_blueprint.py` sai 1 (ERRO) ou 2 (não leu o arquivo: nada foi conferido): não crie o fluxo; diga o
-problema e indique a mesma skill. Saída 3 (AVISO): cada aviso vira alerta [A1], menos o aviso de HTTP ([N1]) de módulo
-que tem no DESIGN a linha de motivo do [N1] — o design já decidiu. Rode o verificador em todo fluxo; se o ambiente não
+problema e indique a mesma skill. Saída 3 (AVISO): confidencial desligado e chave `interface` no blueprint você corrige sozinho e avisa ([C1]; a
+interface vai por `scenarios_set-interface`); o aviso de HTTP ([N1]) de módulo que tem no DESIGN a linha de motivo do
+[N1] com o número dele não vira alerta — o design já decidiu; cada outro aviso vira alerta [A1]. Rode o verificador em todo fluxo; se o ambiente não
 executa código, faça a mesma conferência lendo.
 
 **[C1] Confidencial.** O fluxo é criado com `metadata.scenario.confidential: true`. Se o blueprint do DESIGN não
@@ -123,8 +126,8 @@ conferência, e sem o aceite a IA grava sozinha.
 
 **[N1] Módulo oficial primeiro.** Para cada passo do fluxo, procure primeiro o módulo do próprio app no Make
 (`apps_recommend`, depois `app-modules_list` e `app-module_get`) e só depois considere o módulo HTTP genérico
-(`http:*`). HTTP só entra com o motivo escrito no documento: "o app <X> não tem módulo para <operação> — conferido em
-`app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
+(`http:*`). HTTP só entra com o motivo escrito no documento, uma linha por módulo, com o número dele: "módulo <n>: o app
+<X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>". HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede
 endereço, cabeçalho e autenticação montados à mão, e o módulo oficial já traz a conexão e os campos. Os apps embutidos do
 Make (data store, roteador, entrada sob demanda) não contam como HTTP. Com o Supabase, HTTP fica fora do alcance ([X2]).
 
