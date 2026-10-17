@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-brainstorm",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -28,7 +28,8 @@
       "expected": [
         "Avisa em uma frase que o conector não está na conversa",
         "Marca apps, conexões e plano como 'a confirmar na conta'",
-        "Não afirma que um app existe na conta"
+        "Não afirma que um app existe na conta",
+        "Mostra como ligar o conector em passos numerados e segue no papel"
       ]
     },
     {

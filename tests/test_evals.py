@@ -10,7 +10,9 @@ from pathlib import Path
 
 from contrato import REGRAS
 import evals
-from evals import ESPERADO, POSITIVOS, problemas, problemas_positivos
+import subprocess
+
+from evals import ESPERADO, POSITIVOS, problemas, problemas_expected, problemas_positivos
 
 RAIZ = Path(__file__).resolve().parents[1]
 EXIGIDOS = {
@@ -99,7 +101,7 @@ class Evals(unittest.TestCase):
         + o positivo `design-supabase` (S1–S5, W1) e 14 negativos (12 do design, 2 do build) ⇒ 37."""
         self.assertEqual(POSITIVOS, {"spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}},
                                      "spec-make-design": {"design-supabase": {"S1", "S2", "S3", "S4", "S5", "W1"}}})
-        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 37)
+        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 38)   # SPEC_MAKE_S6: + http-com-nativo (N1)
         self.assertEqual(problemas_positivos(_reais()), [])
 
     def test_positivo_reprova_mutantes(self):
@@ -136,6 +138,34 @@ class Evals(unittest.TestCase):
         with mock.patch.dict(evals.POSITIVOS[sk], {cid: {"H1", "B6", "H3"}}):
             erros = problemas_positivos(ev)
         self.assertIn(f"{sk}/{cid}: âncora B6 sem regra em {sk}", erros)
+
+
+    def test_s6_expected_dos_negativos(self):
+        """Contrato C2 #1: convertidos esperam o alerta com "Seguir assim"; os de parada mantêm o expected da v1.3.3;
+        `sem-mcp` do brainstorm cita os passos. Cada condição morde 1 mutante em memória."""
+        real, base = _reais(), _base("v1.3.3")
+        self.assertEqual(problemas_expected(real, base), [])
+        mut = copy.deepcopy(real)
+        caso = next(c for c in mut["spec-make-design"]["cases"] if c["id"] == "sem-chave-natural")
+        caso["expected"] = next(c for c in base["spec-make-design"]["cases"] if c["id"] == "sem-chave-natural")["expected"]
+        self.assertTrue(any(e.startswith("spec-make-design/sem-chave-natural:") for e in problemas_expected(mut, base)))
+        mut = copy.deepcopy(real)
+        next(c for c in mut["spec-make-build"]["cases"] if c["id"] == "fluxo-alheio")["expected"] = ["Altera o fluxo com alerta"]
+        self.assertTrue(any(e.startswith("spec-make-build/fluxo-alheio:") for e in problemas_expected(mut, base)))
+        mut = copy.deepcopy(real)
+        next(c for c in mut["spec-make-brainstorm"]["cases"] if c["id"] == "sem-mcp")["expected"] = ["Avisa"]
+        self.assertTrue(any(e.startswith("spec-make-brainstorm/sem-mcp:") for e in problemas_expected(mut, base)))
+
+
+def _base(tag: str) -> dict:
+    """cases.json de cada skill na tag (git show): o oráculo dos negativos de parada."""
+    saida = {}
+    for s in ESPERADO:
+        r = subprocess.run(["git", "-C", str(RAIZ), "show", f"{tag}:skills/{s}/evals/cases.json"], capture_output=True, text=True)
+        if r.returncode != 0:
+            raise AssertionError(f"tag {tag} ausente no repo (git fetch --tags): {r.stderr.strip()}")
+        saida[s] = json.loads(r.stdout)
+    return saida
 
 
 def _reais() -> dict:

@@ -21,10 +21,14 @@ ESPERADO: dict[str, dict[str, set[str]]] = {
                          "modulo-fora-da-lista": {"S2"}, "cadastro-extra": {"S2"}, "filtro-nulo": {"S3"},
                          "polling-sem-custo-ocioso": {"S4"},
                          "upsert-sem-pk": {"S5"}, "valor-float": {"S5"}, "auditoria-incompleta": {"S5"},
-                         "sem-taxa-de-correcao": {"S5"}, "auditoria-editavel": {"S5"}, "fonte-sem-consulta": {"W1"}},
+                         "sem-taxa-de-correcao": {"S5"}, "auditoria-editavel": {"S5"}, "fonte-sem-consulta": {"W1"},
+                         # SPEC_MAKE_S6 AT-008: módulo oficial antes de HTTP
+                         "http-com-nativo": {"N1"}},
     "spec-make-build": {"sem-sim-gatilho": {"B2"}, "falha-3x": {"B3"}, "fluxo-alheio": {"B4"}, "sem-mcp": {"M1"},
                         "ia-sem-inventario": {"P1"}, "apaga-compartilhado": {"B6"}, "lastedit-mudou": {"B6"},
-                        "uso-novo-externo": {"B6"}, "supabase-sem-banco": {"B7"}, "gatilho-webhook-no-design": {"B7"}},
+                        "uso-novo-externo": {"B6"}, "supabase-sem-banco": {"B7"},
+                        # SPEC_MAKE_S6: o gatilho fora da agenda para pelo [B8] (fora do alcance), sem alerta
+                        "gatilho-webhook-no-design": {"B8"}},
     "spec-make-handoff": {"placeholder-sobrando": {"H4"}, "webhook-na-ficha": {"H2"}, "sem-mcp": {"M1"},
                           "arquivo-por-slice": {"H3"}, "primeira-ficha-sem-partes": {"H1"}},
 }
@@ -108,3 +112,49 @@ def problemas_positivos(ev_por_skill: dict[str, dict]) -> list[str]:
                     if not ancora_da_skill(skill, a):
                         erros.append(f"{skill}/{cid}: âncora {a} sem regra em {skill}")
     return erros
+
+
+# SPEC_MAKE_S6 (contrato C2 #1): o `expected` dos negativos também é oráculo — o mapa acima só lia `regras`.
+# Convertidos: esperam o alerta com a escolha "Seguir assim", nunca recusa. Parada: `expected` igual ao da tag v1.3.3.
+CONVERTIDOS: dict[str, set[str]] = {
+    "spec-make-define": {"gate-uma-execucao", "gate-blueprint-validado"},
+    "spec-make-design": {"sem-chave-natural", "ia-grava-direto", "aceite-sem-registro", "chave-sem-alcance", "filtro-nulo",
+                         "polling-sem-custo-ocioso", "upsert-sem-pk", "valor-float", "auditoria-incompleta",
+                         "sem-taxa-de-correcao", "auditoria-editavel", "http-com-nativo"},
+    "spec-make-build": {"falha-3x", "ia-sem-inventario", "lastedit-mudou", "supabase-sem-banco"},
+    "spec-make-handoff": {"placeholder-sobrando"},
+}
+PARADA: dict[str, set[str]] = {
+    "spec-make-brainstorm": {"amostra-pessoal"},
+    "spec-make-design": {"postgres-direto", "modulo-fora-da-lista", "cadastro-extra"},
+    "spec-make-build": {"sem-sim-gatilho", "fluxo-alheio", "apaga-compartilhado", "uso-novo-externo"},
+    "spec-make-handoff": {"webhook-na-ficha"},
+}
+
+
+def problemas_expected(ev_por_skill: dict[str, dict], ev_base: dict[str, dict]) -> list[str]:
+    """Erros do `expected`, 1 por caso e sempre com `<skill>/<id>`: convertido sem "Seguir assim" ou com "recus";
+    parada com `expected` diferente do da base (v1.3.3); `brainstorm/sem-mcp` sem "passos"."""
+    erros: list[str] = []
+    def casos(ev, skill):
+        return {c.get("id"): c for c in (ev.get(skill) or {}).get("cases", [])}
+    for skill, ids in CONVERTIDOS.items():
+        atual = casos(ev_por_skill, skill)
+        for cid in sorted(ids):
+            exp = " ".join(atual.get(cid, {}).get("expected") or [])
+            if "Seguir assim" not in exp:
+                erros.append(f"{skill}/{cid}: expected sem 'Seguir assim'")
+            if "recus" in exp.lower():
+                erros.append(f"{skill}/{cid}: expected ainda com recusa")
+    for skill, ids in PARADA.items():
+        atual, base = casos(ev_por_skill, skill), casos(ev_base, skill)
+        for cid in sorted(ids):
+            if cid not in base:
+                erros.append(f"{skill}/{cid}: ausente na base")
+            elif (atual.get(cid) or {}).get("expected") != base[cid].get("expected"):
+                erros.append(f"{skill}/{cid}: expected de parada mudou em relação à base")
+    sem_mcp = " ".join(casos(ev_por_skill, "spec-make-brainstorm").get("sem-mcp", {}).get("expected") or [])
+    if "passos" not in sem_mcp:
+        erros.append("spec-make-brainstorm/sem-mcp: expected sem os passos para ligar o conector")
+    return erros
+

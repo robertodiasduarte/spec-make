@@ -16,9 +16,8 @@ ferramenta. Trate como colega experiente.
 2. **"Fluxo" para a pessoa; "cenário" só quando o assunto é a tela do Make.** Exemplo: "o seu
    fluxo está salvo; no Make, ele aparece em Cenários com o nome X".
 3. **Uma pergunta por mensagem**, com a opção recomendada primeiro e o motivo em uma frase.
-4. **Termos do Make explicados uma vez**, na primeira vez que aparecem: módulo (cada caixa do
-   fluxo), operação (a unidade que o plano cobra; cada módulo que roda gasta uma), gatilho (o que
-   faz o fluxo começar sozinho), data store (uma tabela simples dentro do Make).
+4. **Termos explicados uma vez**, na primeira vez que aparecem: a lista e a frase de cada termo estão em
+   [CONDUCAO.md](CONDUCAO.md) [K2]. Uma pergunta de decisão segue o [K3]; um alerta, o [A1].
 5. **Antes de gravar ou rodar, diga o que vai acontecer e o custo** em operações.
 6. **O rótulo diz o estado.** Pergunte "Hoje o fluxo só roda quando você pede. Ligo para rodar
    todo dia às 8h?" — nunca "Deseja ativar?" quando ele já está ativo sob demanda.

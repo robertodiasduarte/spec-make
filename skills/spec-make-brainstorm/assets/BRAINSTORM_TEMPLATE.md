@@ -61,6 +61,10 @@
 
 - {itens que dependem da conta ou de resposta pendente}
 
+## Alertas aceitos
+
+{nenhum — ou uma linha por alerta aceito ([A2] de CONDUCAO.md): - ⚠️ AAAA-MM-DD · [regra] · o que falta · risco: 1 linha}
+
 ## Próxima etapa
 
 Abra uma conversa nova, anexe este arquivo e diga: Use a skill spec-make-define.

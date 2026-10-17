@@ -34,6 +34,10 @@
 
 - {o que falta, em ordem, começando por verbo}
 
+## Alertas aceitos
+
+{nenhum — ou uma linha por alerta aceito ([A2] de CONDUCAO.md): - ⚠️ AAAA-MM-DD · [regra] · o que falta · risco: 1 linha — continua em "Falta" até alguém corrigir}
+
 ## Casos e testes em aberto
 
 - {caso não coberto · teste que ainda não rodou}

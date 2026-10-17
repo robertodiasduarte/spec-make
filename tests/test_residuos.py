@@ -72,7 +72,83 @@ def versao_reservada(raiz=RAIZ) -> list[str]:
     return achados
 
 
+# SPEC_MAKE_S6 AT-004 (contrato C2 #2): o que antes parava a etapa vira alerta. A forma da recusa varia ("recuse",
+# "A skill recusa", "pare e", "volte à") — regex, nunca lista fechada de frases (LM-359). Permitido só nos blocos que
+# param de verdade e numa lista NOMEADA de exceções, cada uma com motivo.
+RECUSA = re.compile(r"recus\w*|\bpare\b|\bvolte\b|não crie", re.I)
+BLOCOS_QUE_PARAM = {"spec-make-build/SKILL.md": ("B8", "B2", "B4", "B6"), "spec-make-handoff/SKILL.md": ("H4", "H2")}
+BLOCOS_CONDUCAO = ("X1",)
+EXCECOES: list[tuple[str, str, str]] = [
+    ("MCP_MAKE.md", "`validate_blueprint_schema` a recusa", "fato medido do Make: o validador recusa a chave interface"),
+    ("MCP_MAKE.md", "`scenarios_run` recusa fluxo inativo", "fato medido do Make: rodar exige o fluxo ativo"),
+    ("DIAGNOSTICO.md", "o validador recusa", "fato medido do Make (mesmo do MCP_MAKE.md)"),
+    ("spec-make-design/references/PROTOCOLO.md", "o validador do Make a recusa", "fato medido do Make"),
+    ("spec-make-design/SKILL.md", "gatilho que recusa alterar", "descreve o gatilho SQL da auditoria, não a skill"),
+    ("spec-make-handoff/SKILL.md", "testar a recusa do fluxo de boletos", "fala da pessoa no exemplo: o fluxo de boletos tem a recusa"),
+    ("HANDOFF_EXEMPLO.md", "recusa", "exemplo: o fluxo de boletos tem o passo de recusa do boleto"),
+]
+
+
+def recusas_fora_de_bloco(raiz=RAIZ) -> list[str]:
+    """Ocorrências da regex fora dos blocos que param e das exceções nomeadas, em skills/**/*.md e compartilhado/*.md
+    (menos SUPABASE.md, onde "recusa" descreve o gatilho do banco)."""
+    achados = []
+    arquivos = sorted((raiz / "skills").rglob("*.md")) + sorted((raiz / "compartilhado").glob("*.md"))
+    for f in arquivos:
+        if f.name == "SUPABASE.md":
+            continue
+        rel = f.relative_to(raiz).as_posix()
+        texto = f.read_text(encoding="utf-8")
+        ancoras = BLOCOS_QUE_PARAM.get(rel.removeprefix("skills/"), ()) + (BLOCOS_CONDUCAO if f.name == "CONDUCAO.md" else ())
+        for a in ancoras:
+            texto = sem_bloco(texto, a)
+        for n, linha in enumerate(texto.splitlines(), 1):
+            if not RECUSA.search(linha):
+                continue
+            if any(rel.endswith(arq) and trecho in linha for arq, trecho, _ in EXCECOES):
+                continue
+            achados.append(f"{rel}:{n}: {linha.strip()[:100]}")
+    return achados
+
+
+PROMPT_BUILDER_ANTIGO = "sdd-" + "prompt-builder"   # montado em pedaços: este arquivo não pode ser o resíduo que procura
+
+
 class Residuos(unittest.TestCase):
+    def test_s6_nenhuma_recusa_fora_dos_blocos_que_param(self):
+        self.assertEqual(recusas_fora_de_bloco(), [])
+
+    def test_s6_recusa_inserida_reprova(self):
+        """Mutantes do contrato C2 #2: as formas que a lista fechada não pegava, cada uma num arquivo diferente."""
+        import shutil
+        import tempfile
+        from pathlib import Path
+        casos = [("skills/spec-make-define/SKILL.md", "\nA skill recusa o teste.\n"),
+                 ("skills/spec-make-build/references/PROTOCOLO.md", "\nSe faltar, pare e diga o que falta.\n"),
+                 ("skills/spec-make-design/references/PROTOCOLO.md", "\nSem a chave, volte à etapa 2.\n"),
+                 ("compartilhado/CONDUCAO.md", "\nSem o documento, não crie nada.\n")]
+        with tempfile.TemporaryDirectory() as d:
+            r = Path(d)
+            shutil.copytree(RAIZ / "skills", r / "skills")
+            shutil.copytree(RAIZ / "compartilhado", r / "compartilhado")
+            self.assertEqual(recusas_fora_de_bloco(r), [])
+            for arq, extra in casos:
+                with self.subTest(arquivo=arq):
+                    alvo = r / arq
+                    original = alvo.read_text(encoding="utf-8")
+                    alvo.write_text(original + extra, encoding="utf-8")
+                    self.assertTrue(any(a.startswith(arq) for a in recusas_fora_de_bloco(r)), "recusa inserida passou")
+                    alvo.write_text(original, encoding="utf-8")
+
+    def test_s6_texto_publicado_sem_o_builder_antigo(self):
+        """AT-009: o nome antigo do builder fora de todo texto publicado (skills, compartilhado, README, CHANGELOG,
+        manifests e casos positivos); mutante em memória reprova."""
+        t = textos_publicados()
+        self.assertEqual([k for k, v in t.items() if PROMPT_BUILDER_ANTIGO in v], [])
+        mut = dict(t)
+        mut["README.md"] = mut["README.md"] + f"\nInstale a {PROMPT_BUILDER_ANTIGO}.\n"
+        self.assertEqual([k for k, v in mut.items() if PROMPT_BUILDER_ANTIGO in v], ["README.md"])
+
     def test_texto_publicado_sem_resquicio_do_kit_congelado(self):
         self.assertEqual(residuos(textos_publicados()), [])
 

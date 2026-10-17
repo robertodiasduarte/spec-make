@@ -174,5 +174,57 @@ class Template(unittest.TestCase):
                 self.assertTrue(checar_template(mut), f"mutante passou: {nome}")
 
 
+
+# SPEC_MAKE_S6 AT-006: a seção dos alertas aceitos (título sem emoji: o SKILL.md cita a mesma string) com "nenhum"
+TEMPLATES_ALERTAS = ["spec-make-brainstorm/assets/BRAINSTORM_TEMPLATE.md", "spec-make-define/assets/DEFINE_TEMPLATE.md",
+                     "spec-make-design/assets/DESIGN_TEMPLATE.md", "spec-make-build/assets/FICHA_DO_FLUXO_TEMPLATE.md",
+                     "spec-make-handoff/assets/HANDOFF_TEMPLATE.md", "spec-make-handoff/assets/HANDOFF_EXEMPLO.md"]
+TITULO_ALERTAS = "## Alertas aceitos"
+
+
+def problemas_alertas(textos: dict[str, str]) -> list[str]:
+    erros = []
+    for arq in TEMPLATES_ALERTAS:
+        corpo = secao(textos[arq], TITULO_ALERTAS)
+        if corpo is None:
+            erros.append(f"{arq}: falta a seção {TITULO_ALERTAS!r}")
+        elif "nenhum" not in corpo:
+            erros.append(f"{arq}: a seção {TITULO_ALERTAS!r} não prevê \"nenhum\"")
+    recibo = textos["spec-make-build/assets/RECIBO_TEMPLATE.md"]
+    linha = next((l for l in recibo.splitlines() if "Alertas aceitos" in l), "")
+    if "nenhum" not in linha:
+        erros.append("RECIBO_TEMPLATE.md: sem a linha 'Alertas aceitos' com \"nenhum\"")
+    define = secao(textos["spec-make-define/assets/DEFINE_TEMPLATE.md"], "## Critérios de aceite") or ""
+    linhas = tabela(define)
+    if not linhas or linhas[0][-1] != "Em outras palavras" or any("Em outras palavras:" not in l[-1] for l in linhas[2:]):
+        erros.append("DEFINE_TEMPLATE.md: critério sem a coluna 'Em outras palavras' preenchida em cada linha")
+    return erros
+
+
+def _textos_alertas() -> dict[str, str]:
+    arqs = TEMPLATES_ALERTAS + ["spec-make-build/assets/RECIBO_TEMPLATE.md"]
+    return {a: (RAIZ / "skills" / a).read_text(encoding="utf-8") for a in arqs}
+
+
+class AlertasNosTemplates(unittest.TestCase):
+    def test_s6_alertas_aceitos_e_em_outras_palavras(self):
+        self.assertEqual(problemas_alertas(_textos_alertas()), [])
+
+    def test_s6_mutantes_reprovam(self):
+        real = _textos_alertas()
+        mutantes = {
+            "título com emoji": ("spec-make-design/assets/DESIGN_TEMPLATE.md", lambda t: t.replace(TITULO_ALERTAS + "\n", "## ⚠️ Alertas aceitos\n", 1)),
+            "sem a seção no handoff": ("spec-make-handoff/assets/HANDOFF_TEMPLATE.md", lambda t: t.replace(TITULO_ALERTAS + "\n", "## Alertas\n", 1)),
+            "exemplo sem nenhum": ("spec-make-handoff/assets/HANDOFF_EXEMPLO.md", lambda t: t.replace(TITULO_ALERTAS + "\n\nnenhum\n", TITULO_ALERTAS + "\n\n- algo\n", 1)),
+            "recibo sem a linha": ("spec-make-build/assets/RECIBO_TEMPLATE.md", lambda t: "\n".join(l for l in t.splitlines() if "Alertas aceitos" not in l)),
+            "define sem em outras palavras": ("spec-make-define/assets/DEFINE_TEMPLATE.md", lambda t: t.replace(" | Em outras palavras: {…} |", " | {…} |", 1)),
+        }
+        for nome, (arq, mutar) in mutantes.items():
+            with self.subTest(mutante=nome):
+                mut = dict(real)
+                mut[arq] = mutar(real[arq])
+                self.assertNotEqual(mut[arq], real[arq], "o mutante não mudou nada")
+                self.assertTrue(problemas_alertas(mut), "mutante passou")
+
 if __name__ == "__main__":
     unittest.main()

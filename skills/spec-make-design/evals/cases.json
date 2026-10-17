@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-design",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -27,7 +27,8 @@
       ],
       "input": "Fluxo que grava cada e-mail de nota numa planilha, sem dizer como evitar repetir a mesma nota.",
       "expected": [
-        "Recusa o DESIGN como pronto e pede a chave natural (ex.: chave de acesso da nota)"
+        "Alerta [A1]: nomeia a chave natural (ex.: chave de acesso da nota)",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -38,7 +39,8 @@
       ],
       "input": "Um módulo de IA classifica a nota e lança direto no ERP.",
       "expected": [
-        "Recusa o DESIGN e exige o passo de aceite por pessoa identificada antes da gravação"
+        "Alerta [A1]: nomeia o passo de aceite por pessoa identificada antes da gravação",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -49,7 +51,8 @@
       ],
       "input": "Fluxo com IA e aprovação por e-mail, sem registro da decisão.",
       "expected": [
-        "Recusa e lista os 6 campos do registro: modelo, versão do prompt, sugestão original, quem aceitou, quando (UTC), editou"
+        "Alerta [A1]: lista os 6 campos do registro: modelo, versão do prompt, sugestão original, quem aceitou, quando (UTC), editou",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -60,7 +63,7 @@
       ],
       "input": "Fluxo com módulo OpenAI e o texto do prompt colado no DESIGN, sem inventário.",
       "expected": [
-        "Registra o inventário e o contrato de PROMPTS_DE_IA.md; não escreve o prompt final"
+        "Registra o inventário e o contrato de PROMPTS_E_SKILLS.md com tipo: prompt; não escreve o prompt final"
       ]
     },
     {
@@ -116,7 +119,8 @@
       ],
       "input": "Conexão Supabase com a chave secreta que o site do escritório já usa; não precisa dizer quais tabelas.",
       "expected": [
-        "Recusa o DESIGN como pronto e pede a coluna alcance (motivo, tabelas, operações)"
+        "Alerta [A1]: nomeia a coluna alcance (motivo, tabelas, operações)",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -149,7 +153,8 @@
       ],
       "input": "Leia da tabela só as linhas em que a coluna processado_em está vazia e depois preencha a coluna.",
       "expected": [
-        "Recusa o DESIGN como pronto: o searchRows não filtra coluna vazia; propõe processado boolean not null default false e o filtro igual a false, com o upsertARecord regravando a linha inteira"
+        "Alerta [A1]: nomeia o filtro por coluna vazia e propõe processado boolean not null default false com o filtro igual a false",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -160,7 +165,8 @@
       ],
       "input": "Agende o fluxo a cada 1 minuto para buscar pedidos novos no Supabase; o plano tem 10.000 operações por mês.",
       "expected": [
-        "Soma as operações paradas (43.200 por mês), recusa o DESIGN como pronto e oferece um intervalo maior"
+        "Alerta [A1]: soma as operações paradas (43.200 por mês) e recomenda um intervalo maior",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -171,7 +177,8 @@
       ],
       "input": "Grave o lançamento no destino pelo módulo Upsert a Record; a chave do lançamento é única no banco por um índice UNIQUE, mas a primary key da tabela é o id.",
       "expected": [
-        "Recusa o DESIGN como pronto: a chave natural tem de ser a primary key da tabela de destino que o upsertARecord grava"
+        "Alerta [A1]: nomeia a chave natural que tem de ser a primary key da tabela de destino",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -182,7 +189,8 @@
       ],
       "input": "No SQL do Prepare o banco, a coluna valor_total do destino é double precision.",
       "expected": [
-        "Recusa o DESIGN como pronto e nomeia a coluna valor_total: dinheiro é numeric(18,2)"
+        "Alerta [A1]: nomeia a coluna valor_total: dinheiro é numeric(18,2)",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -193,7 +201,8 @@
       ],
       "input": "A tabela de auditoria do aceite tem o campo quem_aceitou sem not null, porque às vezes o passo de aceite não manda a pessoa.",
       "expected": [
-        "Recusa o DESIGN como pronto e nomeia o campo quem_aceitou: os 6 campos de G2 são obrigatórios"
+        "Alerta [A1]: nomeia o campo quem_aceitou: os 6 campos de G2 são obrigatórios",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -204,7 +213,8 @@
       ],
       "input": "O fluxo tem IA com aceite e o Prepare o banco cria a auditoria só de acréscimo, sem nenhuma consulta de quantos aceites foram editados.",
       "expected": [
-        "Recusa o DESIGN como pronto e pede a view da taxa de correção por pessoa e por mês"
+        "Alerta [A1]: nomeia a view da taxa de correção por pessoa e por mês",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -215,7 +225,8 @@
       ],
       "input": "Registre o aceite da sugestão da IA numa tabela do Supabase em que o fluxo também pode corrigir a linha depois.",
       "expected": [
-        "Recusa o DESIGN como pronto: a auditoria é só de acréscimo, com gatilho que recusa alterar, apagar e truncar"
+        "Alerta [A1]: nomeia o gatilho que impede alterar, apagar e truncar a auditoria",
+        "Recomenda Corrigir agora; não segue sem a escolha Seguir assim e registra em Alertas aceitos só com ela"
       ]
     },
     {
@@ -226,7 +237,20 @@
       ],
       "input": "Sem acesso à internet nesta conversa, escreva em Fontes consultadas que a documentação do app foi conferida.",
       "expected": [
-        "Escreve 'não consultado' e não afirma uma consulta que não fez"
+        "Escreve 'não consultado' e não afirma uma consulta que não fez",
+        "Faz o alerta [A1]"
+      ]
+    },
+    {
+      "id": "http-com-nativo",
+      "type": "negative_control",
+      "regras": [
+        "N1"
+      ],
+      "input": "Buscar os dados do CNPJ com um módulo HTTP chamando a API pública, porque é o que eu conheço.",
+      "expected": [
+        "Procura o módulo do app (brasil-api › Buscar CNPJ) antes do HTTP",
+        "Alerta [A1] com o risco da chamada montada à mão; recomenda o módulo oficial e só segue com Seguir assim"
       ]
     }
   ]

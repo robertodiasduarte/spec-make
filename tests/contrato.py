@@ -59,8 +59,13 @@ REGRAS: list[Regra] = [
                   "Qualquer outra resposta, ou nenhuma, mantém o fluxo sob demanda, sem agenda nem webhook ligados"]),
     Regra("B3", _skill("spec-make-build", "references/DIAGNOSTICO.md"), at="AT-004",
           contem=["o que aconteceu", "o que eu já fiz", "o que você faz agora", "operações",
-                  "**Teto: 3 tentativas** de correção para o mesmo teste: o teste roda no máximo 4 vezes",
-                  "ainda falhar, pare: não corrija nem rode de novo, deixe o fluxo sob demanda"],
+                  # SPEC_MAKE_S6: depois da 3ª correção, alerta; "Seguir assim" libera mais 1 (R8@opus: sem teto fixo junto)
+                  "**Teto: 3 tentativas** de correção para o mesmo teste sem perguntar: o teste roda até 4 vezes antes do "
+                  "alerta",
+                  "Se a execução depois da 3ª correção ainda falhar: alerta [A1] — cada nova tentativa gasta operações e o "
+                  "problema pode estar no desenho; recomende parar e entregar o resumo.",
+                  'Sem a escolha de "Seguir assim", não corrija nem rode de novo, deixe o fluxo sob demanda e entregue o resumo',
+                  'cada "Seguir assim" libera mais 1 correção.'],
           em_ordem=["**interface**", "**módulo**", "**conexão**", "**mapeamento**"]),
     Regra("B4", _skill("spec-make-build"), at="AT-004",
           contem=["Só o que você criou.** Nunca chame `scenarios_update`, `scenarios_delete`",
@@ -71,19 +76,27 @@ REGRAS: list[Regra] = [
           contem=["O fluxo é criado com `metadata.scenario.confidential: true`. Se"]),
     Regra("C1", _skill("spec-make-design"), at="AT-005",
           contem=["Todo blueprint sai com `metadata.scenario.confidential: true`. O"]),
-    Regra("P1", _skill("spec-make-design"), at="AT-007",
-          contem=["inventário de prompts", "sdd-prompt-builder",
-                  "Fluxo com módulo de IA e sem esse inventário: recuse o DESIGN como pronto e diga o que falta."]),
+    # SPEC_MAKE_S6 AT-009: builders by RDD e alerta no lugar da recusa
+    Regra("P1", _skill("spec-make-design"), at="AT-009",
+          contem=["registre cada prompt no inventário de PROMPTS_E_SKILLS.md com `tipo: prompt`.",
+                  "Se o fluxo é sob demanda com interface e a pessoa vai acioná-lo pelo assistente, ou ela pede uma skill em "
+                  "volta do fluxo, registre também uma linha `tipo: skill`.",
+                  "a etapa 4 gera cada prompt com a skill `prompt-builder-by-rdd` e cada skill com a skill "
+                  "`skill-builder-by-rdd`, a partir desse contrato.",
+                  "Fluxo com módulo de IA e sem esse inventário: alerta [A1] — sem o contrato, a etapa 4 escreve um prompt "
+                  "provisório que ninguém conferiu."]),
     # SPEC_MAKE_HANDOFF (s3): custódia pela ficha na build — lastEdit e usos relidos ANTES de gravar (A2 da review do DESIGN)
     # avaliador fresco do s3, ciclo 1: a conferência do lastEdit e a regra do compartilhado, com a polaridade inteira
     # ("se for diferente, diga … e siga só depois do sim"; "compartilhado: só ler … — nunca chame") — trechos soltos
     # passavam com a regra invertida
     Regra("B6", _skill("spec-make-build"), at="AT-003",
           contem=["contam como criados por esta conversa para [B4] — e só eles",
-                  "editado no Make depois da ficha", 'siga só depois do "sim" da pessoa',
+                  # SPEC_MAKE_S6: o "sim" vira o alerta [A1] com a escolha "Seguir assim"
+                  "editado no Make depois da ficha",
                   "Primeiro leia `scenarios_get` de cada parte e compare o `lastEdit` com o da ficha: se for diferente, "
-                  'diga em 1 frase os dois horários ("editado no Make depois da ficha") e siga só depois do "sim" da '
-                  "pessoa.",
+                  'diga em 1 frase os dois horários ("editado no Make depois da ficha") e faça o alerta [A1]: a mudança '
+                  'pode apagar o que alguém fez no Make depois da ficha; siga só depois de a pessoa escolher "Seguir assim '
+                  'e registrar o alerta".',
                   "releia `data-stores_list` e `hooks_list` e recalcule a custódia",
                   "Só então chame `scenarios_update`, `scenarios_set-interface`, `data-stores_update` ou `hooks_update`, "
                   "com o aviso [B5].",
@@ -102,7 +115,7 @@ REGRAS: list[Regra] = [
     # "Pronto: o fluxo está na sua conta." solto é achado no texto de reserva ("Sem a skill de handoff instalada…")
     Regra("E1", _skill("spec-make-build"), at="AT-006",
           contem=["`HANDOFF_<FLUXO>.md`", "o handoff, como continuar depois",
-                  "O fecho entrega o recibo e dois arquivos, `FICHA_DO_FLUXO_<FLUXO>.md` e `HANDOFF_<FLUXO>.md`, pede para "
+                  "O fecho segue [K5] e entrega o recibo e dois arquivos, `FICHA_DO_FLUXO_<FLUXO>.md` e `HANDOFF_<FLUXO>.md`, pede para "
                   'salvar os dois e diz: "Pronto: o fluxo está na sua conta. A ficha diz o que fazer quando ele falhar; o '
                   'handoff, como continuar depois."']),
     # skill de handoff: fora de ETAPAS (não é etapa — a 1ª linha não diz "Etapa N de 4")
@@ -141,25 +154,43 @@ REGRAS: list[Regra] = [
                   'spec-make-build." quando só implementa; a etapa em que a conversa parou, se parou no meio)'],
           em_ordem=["qual skill abrir", "quais arquivos anexar", "onde paramos", "último teste", "próxima ação"]),
     Regra("H4", _skill("spec-make-handoff"), at="AT-004",
-          contem=["checar_handoff.py", "URL de webhook", "11 ou mais dígitos", "sem id"]),
-    Regra("E1", _skill("spec-make-handoff"), at="AT-007",
-          contem=["spec-make · Handoff — para continuar depois", "Use a skill spec-make-"]),
-    Regra("P1", _skill("spec-make-build"), at="AT-007",
-          contem=["sem inventário", "[G1]", "[G2]",
-                  "sem inventário de prompts no DESIGN: pare antes do `scenarios_create`, diga o que falta"]),
+          contem=["checar_handoff.py", "URL de webhook", "11 ou mais dígitos", "sem id",
+                  # SPEC_MAKE_S6 AT-007: ERRO (ou 2) não entrega; AVISO vira alerta
+                  "Saiu 1 (ERRO: URL de webhook ou sequência de 11 ou mais dígitos) ou 2 (a ficha não pôde ser lida): não "
+                  "entregue — apague o trecho ou grave a ficha de novo e confira outra vez ([X1]).",
+                  "Saiu 3 (AVISO: seção faltando, trecho de modelo, recurso sem id): alerta [A1] para cada aviso — a próxima "
+                  "conversa pode retomar pelo recurso errado."]),
+    Regra("E1", _skill("spec-make-handoff"), at="AT-001",
+          contem=["Toda resposta abre com o mapa de posição ([K1] de references/CONDUCAO.md), que começa",
+                  'por "Handoff (fora das etapas)"; a primeira resposta traz antes a linha de versão.', "O fecho segue [K5]",
+                  "Use a skill spec-make-"]),
+    Regra("P1", _skill("spec-make-build"), at="AT-009",
+          contem=["gere cada linha `tipo: prompt` com a skill `prompt-builder-by-rdd`",
+                  "gere cada linha `tipo: skill` com a skill `skill-builder-by-rdd` só depois do teste aprovado, quando o "
+                  "cenário já existe com a interface gravada e a ferramenta MCP dele tem nome",
+                  "(`https://github.com/robertodiasduarte/skills-by-rdd/releases/latest/download/<builder>.zip`) e siga",
+                  "para prompt, escreva um prompt provisório pelo contrato, com alerta [A1]",
+                  "para skill, siga sem ela, com alerta [A1].",
+                  "Fluxo com módulo de IA e sem inventário de prompts e skills no DESIGN, ou IA que grava sem o aceite humano "
+                  "[G1] ou sem o registro do aceite [G2]: alerta [A1] antes do `scenarios_create` — sem o contrato o prompt "
+                  "sai sem conferência, e sem o aceite a IA grava sozinha."]),
     Regra("G1", _skill("spec-make-design"), at="AT-007",
           contem=["pessoa identificada antes da gravação",
-                  "Sem esse passo, recuse o DESIGN como pronto e diga o que falta."]),
+                  "Sem esse passo: alerta [A1] — a IA grava lançamento, documento ou cadastro sem que ninguém responda por "
+                  "ele."]),
     Regra("G2", _skill("spec-make-design"), at="AT-007",
           contem=["fora do histórico", "planilha ou data store",
                   # SPEC_MAKE_SUPABASE AT-006: com Supabase, a auditoria só de acréscimo é a 1ª opção
                   "quando o fluxo já usa Supabase, a 1ª opção é uma tabela de auditoria só de acréscimo", "modelo", "versão do prompt", "sugestão original", "quem aceitou",
-                  "(UTC)", "se editou", "Sem esse registro, recuse o DESIGN como pronto."]),
+                  "(UTC)", "se editou",
+                  "Sem esse registro: alerta [A1] — não há como provar quem aceitou cada sugestão nem medir quanto a IA "
+                  "erra."]),
     Regra("G3", _skill("spec-make-design"), at="AT-011",
           contem=["chave natural", "já existe ⇒ não grava de novo",
                   "consultar antes de gravar, ou gravar substituindo pela chave",
                   "Quando o destino é uma tabela do Supabase, a chave existe nela como restrição ([S5]).",
-                  "Sem a chave, recuse o DESIGN como pronto e peça a chave."]),
+                  "Sem a chave: alerta [A1] — o mesmo item processado de novo (e-mail reaberto, nova tentativa) vira "
+                  "registro duplicado."]),
     # SPEC_MAKE_S5: toda âncora S* começa pela condição e prende a recusa INTEIRA, com a palavra de polaridade que vem
     # antes (R2@opus da review do DESIGN: "e a pessoa não faz … mais que", "que não é", "sem o gatilho ou sem a view"
     # passavam quando só o final da frase era prendido)
@@ -172,16 +203,17 @@ REGRAS: list[Regra] = [
                   "(Project ID e chave secreta, copiados do painel do Supabase) e o DESIGN preenche a coluna `alcance` "
                   "com o motivo (\"o app Supabase do Make só conecta com chave secreta; ela ignora o RLS\"), as tabelas "
                   "e as operações.",
-                  "`postgres` (conexão direta) e `supabase-management` nunca entram no fluxo.",
-                  "Sem isso, recuse o DESIGN como pronto e diga o que falta."]),
+                  # SPEC_MAKE_S6: postgres/supabase-management fora do alcance ([X2]); alcance vazio é alerta
+                  "`postgres` (conexão direta) e `supabase-management` ficam fora do alcance do kit ([X2]).",
+                  "Sem o alcance: alerta [A1] — quem mexer no fluxo depois não sabe o que a chave secreta alcança."]),
     Regra("S2", _skill("spec-make-design"), at="AT-002",
           contem=[COND, "do app `supabase` entram só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e "
                   "`deleteRows`",
                   "e a pessoa não faz, antes do 1º fluxo rodar, mais que 1 colagem de SQL, copiar o Project ID e a chave "
                   "do painel e criar 1 conexão no Make.",
                   "Edge function, webhook de qualquer tipo, Database Webhook, `pg_cron`, `supabase:watchEvents`, "
-                  "`supabase:makeAnApiCall` e módulo HTTP para o endereço de um projeto Supabase ficam fora: recuse o "
-                  "DESIGN como pronto e proponha o caminho só com o banco."]),
+                  "`supabase:makeAnApiCall` e módulo HTTP para o endereço de um projeto Supabase ficam fora do alcance do "
+                  "kit ([X2]): diga isso e proponha o caminho só com o banco, sem perguntar."]),
     Regra("S3", _skill("spec-make-design"), at="AT-004",
           contem=[COND, "`processado` igual a `false`", "regrava a linha inteira",
                   "Se o fluxo toca Supabase e lê uma fila, o DESIGN desenha o laço agenda do Make → `searchRows` com "
@@ -192,14 +224,16 @@ REGRAS: list[Regra] = [
                   "o Make ignora a condição e a busca lê qualquer linha).",
                   "Sem pendente, a busca devolve 1 pacote vazio: o módulo seguinte leva o filtro \"`{{id da busca.<coluna>}}` "
                   "existe\", senão ele roda com campos vazios e falha.",
-                  "Filtro por coluna vazia, ou gatilho que não seja a agenda do Make nem a execução sob demanda: recuse o "
-                  "DESIGN como pronto."]),
+                  "Gatilho que não seja a agenda do Make nem a execução sob demanda fica fora do alcance do kit ([X2]).",
+                  "Filtro por coluna vazia: alerta [A1] — o Make não filtra coluna vazia, e a busca lê a fila inteira de novo "
+                  "a cada disparo."]),
     Regra("S4", _skill("spec-make-design"), at="AT-004",
           contem=[COND, "agenda do Make com o intervalo, ou sob demanda", "disparos por mês × operações do disparo vazio",
                   "Se o fluxo toca Supabase, o DESIGN declara no bloco `Relógio` como o fluxo dispara — agenda do Make "
                   "com o intervalo, ou sob demanda — e, com agenda, soma no custo as operações paradas: disparos por mês "
                   "× operações do disparo vazio.",
-                  "Se o total passar do orçamento do DEFINE, recuse o DESIGN como pronto e ofereça um intervalo maior."]),
+                  "Se o total passar do orçamento do DEFINE: alerta [A1] — o plano acaba antes do fim do mês e o fluxo para; "
+                  "recomende um intervalo maior."]),
     Regra("S5", _skill("spec-make-design"), at="AT-005",
           contem=[COND, "a chave natural como `primary key` da tabela de destino que o `upsertARecord` grava (a fila, que "
                   "aceita a chave repetida, tem o `id` como `primary key` e o marcador a grava por ele)",
@@ -211,34 +245,67 @@ REGRAS: list[Regra] = [
                   "do mesmo aceite ser idêntica.",
                   "Chave natural que não é a `primary key` da tabela de destino do `upsertARecord`, coluna de valor em "
                   "`real`, `float4`, `float8` ou `double precision`, rateio sem a regra do centavo residual, campo da "
-                  "auditoria anulável, auditoria sem o gatilho ou sem a view: recuse o DESIGN como pronto e nomeie a "
-                  "coluna, o campo ou o rateio que falta corrigir."]),
+                  "auditoria anulável, auditoria sem o gatilho ou sem a view: alerta [A1] — nomeie a coluna, o campo ou o "
+                  "rateio; o risco é duplicar lançamento, arredondar dinheiro errado ou perder a prova do aceite."]),
     Regra("W1", _skill("spec-make-design"), at="AT-007",
           contem=["uma vez", "a URL, a data, o módulo e a versão", "vale a conta",
                   "Para cada app do fluxo, consulte a documentação pública do Make (`https://apps.make.com/<app>`) uma "
                   "vez e anote em `Fontes consultadas` a URL, a data, o módulo e a versão.",
                   "Se ela divergir de `app-modules_list`, vale a conta, e o DESIGN anota a divergência.",
-                  'Sem acesso à web, escreva "não consultado"; nunca afirme uma consulta que não fez.']),
-    Regra("B7", _skill("spec-make-build"), at="AT-008",
+                  'Sem acesso à web, escreva "não consultado" — nunca afirme uma consulta que não fez — e faça o alerta '
+                  "[A1]: o módulo pode ter mudado desde a documentação que você conhece."]),
+    # SPEC_MAKE_S6: o que falta de documentação vira alerta ([B7]); o fora do alcance e o ERRO do verificador param ([B8])
+    Regra("B7", _skill("spec-make-build"), at="AT-004",
           contem=["Se o DESIGN toca Supabase", "coluna `alcance` preenchida com o motivo, as tabelas e as operações",
                   "seção `Prepare o banco` com o SQL quando o fluxo grava no banco",
-                  "do app `supabase` só `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`",
-                  "nenhum módulo `postgres` ou `supabase-management`, nenhum HTTP para o projeto",
-                  "gatilho só pela agenda do Make ou sob demanda; bloco `Relógio` com o gatilho e, quando é agenda, o "
-                  "intervalo e a linha de operações paradas na seção `Custo`.",
-                  'Faltando qualquer um, não crie o fluxo: diga o que falta e indique "Use a skill spec-make-design." '
-                  "antes de qualquer `scenarios_create`.",
-                  # 1.3.3 (avaliador, ciclo 2): o verificador do blueprint manda parar o build
-                  "Rode também `scripts/checar_blueprint.py` sobre o blueprint do DESIGN: se ele reprovar, não crie o "
-                  "fluxo; diga o problema e indique a mesma skill."]),
+                  "bloco `Relógio` com o gatilho e, quando é agenda, o intervalo e a linha de operações paradas na seção "
+                  "`Custo`.",
+                  "Faltando algum: alerta [A1] antes de qualquer `scenarios_create` — sem eles, ninguém sabe o que a chave "
+                  "alcança, o banco pode não ter as travas e o custo parado não foi somado."]),
+    Regra("B8", _skill("spec-make-build"), at="AT-005",
+          contem=["Pare antes de qualquer `scenarios_create`, sem alerta nem pergunta, em dois casos.",
+                  "do app `supabase` algo além de `searchRows`, `createARow`, `upsertARecord`, `getRowsCount` e `deleteRows`",
+                  "ou módulo `postgres` ou `supabase-management`, ou HTTP para o projeto, ou gatilho que não seja a agenda do "
+                  "Make nem sob demanda: fica fora do alcance do kit ([X2]); diga o que falta e indique \"Use a skill "
+                  "spec-make-design.\".",
+                  "(2) `scripts/checar_blueprint.py` sai 1 (ERRO) ou 2 (não leu o arquivo: nada foi conferido): não crie o "
+                  "fluxo; diga o problema e indique a mesma skill.",
+                  "Saída 3 (AVISO): cada aviso vira alerta [A1], menos o aviso de HTTP ([N1]) de módulo que tem no DESIGN a "
+                  "linha de motivo do [N1] — o design já decidiu.",
+                  "Rode o verificador em todo fluxo; se o ambiente não executa código, faça a mesma conferência lendo."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
           contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
-                  "no destino. Recuse como incompleto o teste que só confere uma execução",
-                  ', e recuse "blueprint validado" como teste de aceite']),
+                  # SPEC_MAKE_S6 (varredura de polaridade numa cópia): o trecho curto aparece 2× no bloco; tirar o "sem" de
+                  # 1 deles passava
+                  "Ele traz: a amostra (sem dado pessoal real), o resultado esperado escrito com valores",
+                  # SPEC_MAKE_S6: o gate de execução continua; a falta dele vira alerta
+                  'Teste que só confere uma execução de um fluxo que grava, ou "blueprint validado" como teste de aceite: '
+                  "alerta [A1] — os validadores do Make já aprovaram blueprint que falhou na primeira execução, e sem a 2ª "
+                  "execução um fluxo que duplica registros passa no teste"]),
+    Regra("D2", _skill("spec-make-define"), at="AT-004",
+          contem=["Dê nota de 0 a 3 para problema, quem usa, objetivos, aceite e escopo.",
+                  "Nota abaixo de 12 de 15, ou `A CONFIRMAR:` ainda aberto na entrega: alerta [A1] — a etapa 3 vai desenhar "
+                  "sobre uma suposição, e o teste pode aprovar o fluxo errado.",
+                  "Orçamento acima de 80% do plano: alerta [A1] — o plano pode acabar antes do fim do mês."]),
+    Regra("D3", _skill("spec-make-define"), at="AT-003",
+          contem=["Cada critério sai com a frase de escritório, a forma EARS e, logo abaixo, `Em outras palavras: <frase do "
+                  "dia a dia>`.",
+                  "Na primeira vez, ensine o EARS em 3 linhas com um critério do próprio fluxo da pessoa"]),
+    Regra("E2", _skill("spec-make-brainstorm"), at="AT-001",
+          contem=["Na primeira resposta, depois da linha de versão e do mapa, explique em 4 a 6 linhas",
+                  "o que é o spec-make, as 4 etapas e o handoff, o que a pessoa recebe no fim",
+                  "conta no Make, o conector do Make com as ferramentas que gravam e uma amostra sem dado pessoal real.",
+                  "`environment_get` (conta e equipe), as ferramentas `scenarios_create`, `scenarios_activate` e "
+                  "`scenarios_run`, e `connections_list`",
+                  "Faltando algum, diga como resolver em passos numerados (references/PROTOCOLO.md) e siga a conversa; nunca "
+                  "encerre nem peça para voltar depois.",
+                  "A resposta termina com uma única pergunta: qual rotina a pessoa quer automatizar."]),
 ]
 # [M1] com a polaridade inteira em cada etapa (R3@opus, rodada 6)
 M1 = {"spec-make-brainstorm": ['como "a confirmar na conta". Não afirme que um app existe ou que uma conexão está pronta '
-                               'sem ter consultado.'],
+                               'sem ter consultado.',
+                               # SPEC_MAKE_S6 AT-002: sem o conector, os passos para ligá-lo
+                               "Mostre também como ligar o conector, em passos numerados ([E2])."],
       "spec-make-define": ['ficam "a confirmar na conta" se o BRAINSTORM não os trouxer.'],
       "spec-make-design": ['marque cada um como "a confirmar na conta" e não declare o blueprint validado.'],
       "spec-make-build": ["a confirmar na conta", "e as operações. Não afirme que criou, rodou ou ligou nada.",
@@ -251,31 +318,128 @@ M1["spec-make-handoff"] = ['"a confirmar na conta" em cada estado. Não afirme `
 REGRAS.append(Regra("M1", _skill("spec-make-handoff"), at="AT-009", contem=M1["spec-make-handoff"]))
 for _nome, _n, _rot, _prox in ETAPAS:
     REGRAS.append(Regra("M1", _skill(_nome), at="AT-006", contem=M1[_nome]))
-    REGRAS.append(Regra("E1", _skill(_nome), at="UX MUST 4",
-                        contem=[f"spec-make · Etapa {_n} de 4 — {_rot}", _prox]))
+    # SPEC_MAKE_S6 AT-001: o mapa de posição em toda resposta substitui a linha "spec-make · Etapa n de 4 — X"
+    REGRAS.append(Regra("E1", _skill(_nome), at="AT-001",
+                        contem=["Toda resposta abre com o mapa de posição ([K1] de references/CONDUCAO.md), que começa por",
+                                f'"Etapa {_n} de 4 · {_rot}"; a primeira resposta traz antes a linha de versão.',
+                                "O fecho segue [K5]", _prox]))
 
+
+# SPEC_MAKE_S6 AT-008: [N1] igual nas 3 skills que escolhem módulo
+N1 = ["Para cada passo do fluxo, procure primeiro o módulo do próprio app no Make",
+      "e só depois considere o módulo HTTP genérico",
+      "HTTP sem esse motivo, ou com módulo oficial disponível: alerta [A1] — a chamada HTTP pede endereço, cabeçalho e "
+      "autenticação montados à mão, e o módulo oficial já traz a conexão e os campos.",
+      "Com o Supabase, HTTP fica fora do alcance ([X2])."]
+for _nome in ("spec-make-brainstorm", "spec-make-design", "spec-make-build"):
+    REGRAS.append(Regra("N1", _skill(_nome), at="AT-008", contem=N1))
+
+# SPEC_MAKE_S6: compartilhado/CONDUCAO.md, prendido pela cópia do brainstorm (test_compartilhados garante as 5 iguais)
+CONDUCAO = _skill("spec-make-brainstorm", "references/CONDUCAO.md")
+GLOSSARIO = ["fluxo", "cenário", "módulo", "conexão", "gatilho", "operação", "data store", "interface", "blueprint", "EARS",
+             "critério de aceite", "alerta"]
+REGRAS += [
+    Regra("K1", CONDUCAO, at="AT-001",
+          contem=["Toda resposta, inclusive a primeira, abre com uma linha neste formato:",
+                  "`📍 Etapa <n> de 4 · <Etapa> — passo <k> de <K>: <passo> · depois: <próxima etapa>`",
+                  "`📍 Handoff (fora das etapas) — passo <k> de <K>: <passo> · depois: <etapa que o prompt de retomada abre>`",
+                  'O número e o nome de cada passo vêm da tabela "Passos do mapa"', "a linha tem até 80 caracteres."]),
+    Regra("K2", CONDUCAO, at="AT-003",
+          contem=["Na primeira vez que um destes termos aparecer na conversa, explique-o em uma frase, entre parênteses ou "
+                  "depois de travessão, nunca num parágrafo:"] + [f"- {g} — " for g in GLOSSARIO]),
+    Regra("K3", CONDUCAO, at="AT-003",
+          contem=["faça uma pergunta por mensagem, com 2 ou 3 opções; para cada opção, 1 linha de prós, 1 de contras e 1 de "
+                  "risco; feche com `✅ Recomendo: <opção>, porque <motivo em 1 linha>`. Até 10 linhas no total."]),
+    Regra("K4", CONDUCAO, at="AT-003",
+          contem=["Não pergunte o que o MCP do Make responde (plano, operações por mês, conexões, módulos de cada app) nem o "
+                  "que tem resposta padrão: aplique e avise em 1 linha",
+                  "o módulo oficial do app antes da chamada HTTP ([N1]); fluxo confidencial; sob demanda durante o teste",
+                  "Rollback quando toda gravação do fluxo é idempotente pela chave natural"]),
+    Regra("K5", CONDUCAO, at="AT-001",
+          contem=["Ao terminar, escreva nesta ordem: `✅ Etapa <n> de 4 concluída`",
+                  "o arquivo, pelo nome exato, e onde salvá-lo; os alertas aceitos, se houver ([A2]); e o próximo comando "
+                  "num bloco de código único, que já diz quais arquivos anexar, pelo nome."]),
+    Regra("A1", CONDUCAO, at="AT-004",
+          contem=['Quando uma regra marcada "alerta [A1]" não for atendida, a etapa continua: escreva o alerta neste formato '
+                  "e espere a escolha da pessoa.",
+                  "⚠️ ALERTA (alerta <i> de <n>) — <o que falta, em 1 linha>", "1. Corrigir agora",
+                  "2. Seguir assim e registrar o alerta", "A opção recomendada vem primeiro.",
+                  'Só a escolha de "Seguir assim e registrar o alerta" — a opção ou a frase dela — libera o passo; "sim" '
+                  'solto, "ok", outra resposta ou nenhuma resposta valem "Corrigir agora".',
+                  "Mais de um alerta no mesmo ponto: um por mensagem, o de maior risco primeiro"]),
+    Regra("A2", CONDUCAO, at="AT-006",
+          contem=["Cada alerta aceito vira uma linha na seção `## Alertas aceitos` do documento da etapa",
+                  'sem nenhum, a seção diz "nenhum".',
+                  "A etapa seguinte lista os alertas aceitos das anteriores logo no começo da conversa; a etapa 4 os repete "
+                  "no recibo e na seção `Alertas aceitos` da ficha do fluxo, e o handoff os mantém em \"Falta\" até alguém "
+                  "corrigir."]),
+    Regra("A3", CONDUCAO, at="AT-004",
+          contem=["Sem o documento que a etapa precisa (o BRAINSTORM na etapa 2, o DEFINE na 3, o DESIGN na 4): alerta [A1] "
+                  "— a etapa vai trabalhar sem o que a anterior decidiu e conferiu na conta."]),
+    Regra("X1", CONDUCAO, at="AT-005",
+          contem=["Estes três não viram alerta e nenhuma confirmação os libera; diga o que fazer no lugar, na mesma mensagem, "
+                  "sem culpar a pessoa:",
+                  "Segredo, credencial ou dado pessoal real (CPF, nome de pessoa, salário, dado de cliente)",
+                  "inclusive o endereço de webhook, que carrega o código de acesso.",
+                  'Ligar o gatilho sem a resposta "Ligar agora" à pergunta do gatilho da etapa 4 ([B2]).',
+                  "Apagar, mudar a estrutura ou alterar recurso que esta conversa não criou e que a ficha não marca como "
+                  "`desta família`, ou marcado `compartilhado`"]),
+    Regra("X2", CONDUCAO, at="AT-005",
+          contem=["e, num fluxo com Supabase, gatilho que não seja a agenda do Make nem a execução sob demanda ([S3])",
+                  "não viram alerta nem pergunta: diga que o spec-make não desenha esse caminho, porque usa o Supabase só "
+                  "como banco, e proponha o caminho só com o banco."]),
+]
 
 # Regras que vivem nos arquivos de referência (fora das âncoras), com a polaridade inteira (avaliador, ciclo 4). Uma frase
 # ACRESCENTADA que desmente a regra é pega pelo snapshot de tests/regras.py. Vale também para o trecho de um SKILL.md que
 # fica fora de qualquer âncora (o passo a passo numerado).
 FRASES: dict[str, list[str]] = {
+    # SPEC_MAKE_S6 AT-006 (contrato C2 #4): define, design e handoff listam os alertas aceitos das etapas anteriores
+    "spec-make-define/SKILL.md": ["Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+                                  "Sem o BRAINSTORM, siga o [A3]."],
+    "spec-make-design/SKILL.md": ["Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+                                  "Sem o DEFINE, siga o [A3].",
+                                  "Depois de 3 tentativas no mesmo módulo: alerta [A1] — o módulo pode não aceitar essa "
+                                  "configuração na sua conta",
+                                  "**A pessoa quer a IA gravando direto:** alerta [A1] pelo [G1]"],
+    "spec-make-handoff/SKILL.md": ['Mantenha em "Falta" os alertas aceitos das etapas ([A2]).'],
+    # SPEC_MAKE_S6 AT-002 (contrato C2 #5): os 4 pré-requisitos, cada um com passos (test_contrato conta os passos)
+    "spec-make-brainstorm/references/PROTOCOLO.md": ["### Conector ausente", "### Conector só de leitura",
+                                                     "### Conexão faltando", "### Sem amostra",
+                                                     "Comece pela linha de versão e pelo mapa da regra [E1]."],
+    # SPEC_MAKE_S6 AT-003: o termo e a pergunta remetem ao CONDUCAO.md; o EARS é ensinado 1 vez, com o fluxo da pessoa
+    "spec-make-brainstorm/references/COPY.md": ["a lista e a frase de cada termo estão em [CONDUCAO.md](CONDUCAO.md) [K2]."],
+    "spec-make-define/references/EARS.md": ["## Como ensinar (1 vez por conversa)",
+                                            "com um critério do fluxo da própria pessoa (nunca o do CNPJ"],
     # avaliador fresco do s3, ciclo 2 (B9): o passo 9 da build entrega o handoff com os ids lidos agora e a sessão
     "spec-make-build/SKILL.md": [
+        # SPEC_MAKE_S6 AT-006 (contrato C2 #4): o build repete os alertas aceitos no recibo e na ficha
+        "Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+        "Recibo com operações gastas e os alertas aceitos que ficaram pendentes ([A2])",
+        "a ficha os repete na seção `Alertas aceitos` ([A2]).",
+        "Sem algum dos três documentos, siga o [A3].",
+        "além do que o [B3] corrige: alerta [A1] — corrigir aqui deixa o DESIGN desatualizado",
+        "alerta [A1] — o Make interrompe a execução quando a cota acaba.",
         "9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill `spec-make-handoff`, "
         "com os ids lidos agora e esta sessão no histórico — e feche com [E1]."],
     "spec-make-design/references/GOVERNANCA_DO_FLUXO.md": [
-        "**Sem a chave:** recuse o DESIGN como pronto e peça a chave.",
-        "**Sem o passo:** recuse o DESIGN e diga o que falta; a etapa 4 para antes de criar o fluxo.",
-        "**Sem o registro:** recuse o DESIGN como pronto."],
-    "spec-make-design/references/PROMPTS_DE_IA.md": [
-        "| nome |", "| módulo |", "| versão | v1 |", "| provedor e modelo |", "| entrada |", "| saída e consumidor |",
-        "| tipo |", "| completude |", "| se faltar dado |", "| autônomo ou com aceite | com aceite sempre que grava ([G1]) |",
-        "| teste mínimo | 1 entrada de exemplo (sem dado pessoal real) e a saída esperada |"],
+        "**Sem a chave:** alerta [A1]; peça a chave.",
+        "**Sem o passo:** alerta [A1]; diga o que falta e ofereça o desenho com o passo.",
+        "**Sem o registro:** alerta [A1]."],
+    "spec-make-design/references/PROMPTS_E_SKILLS.md": [
+        "| nome |", "| tipo | prompt (módulo de IA) ou skill (fluxo acionado pelo assistente) |", "| módulo |",
+        "| versão | v1 |", "| provedor e modelo |", "| entrada |", "| saída e consumidor |", "| repetição |", "| completude |",
+        "| se faltar dado |", "| autônomo ou com aceite | com aceite sempre que grava ([G1]) |",
+        "| teste mínimo | 1 entrada de exemplo (sem dado pessoal real) e a saída esperada |",
+        "| ferramenta MCP |", "| campos da interface |", "| limite | a skill só chama o cenário; não grava nada fora dele |",
+        "| prompt | a skill `prompt-builder-by-rdd` | antes de criar o fluxo",
+        "| skill | a skill `skill-builder-by-rdd` | depois do teste aprovado"],
     "spec-make-define/references/VERIFY_GATE_EXECUCAO.md": [
         "amostra: <descrição; sem dado pessoal real; origem: pública | inventada>",
-        '"O blueprint foi validado" como teste: recuse e peça amostra e resultado esperado.',
-        "Fluxo que grava sem a segunda execução: recuse como incompleto.",
-        "Amostra com dado pessoal real: troque por dado inventado ou público."],
+        '"O blueprint foi validado" como teste: alerta [A1]; peça amostra e resultado esperado.',
+        "Fluxo que grava sem a segunda execução: alerta [A1] — sem ela, um fluxo que repete o mesmo item duplica registros "
+        "sem ninguém perceber",
+        "Amostra com dado pessoal real: bloqueio ([X1]); troque por dado inventado ou público."],
     "spec-make-build/references/PROTOCOLO.md": [
         "a contagem não pode mudar e a 2ª execução tem de ter processado o item",
         "Execução que não processou nada também gasta 1 operação: com fila, confira que a linha nova voltou como "
@@ -285,9 +449,8 @@ FRASES: dict[str, list[str]] = {
         "`processado = true`",
         "acrescente ao filtro do `searchRows` a condição `chave_natural` igual a `TESTE-1` (as duas condições juntas), para "
         "o teste nunca ler nem marcar um pendente real",
-        # 1.3.3: o verificador é obrigatório no build com Supabase e reprovar para o fluxo
-        "Fluxo que toca Supabase: o verificador é obrigatório; se ele reprovar, não crie o fluxo: diga o problema e indique "
-        "\"Use a skill spec-make-design.\"",
+        # SPEC_MAKE_S6 (R2@opus): o verificador roda em todo fluxo; a parada mora só no [B8]
+        "o verificador roda em todo fluxo; o que fazer com cada saída (0, 1, 2 e 3) está no [B8] do SKILL.md.",
         # 1.3.1: a 3ª execução, com a fila vazia, prova o filtro e o pacote vazio
         "Com fila, rode também uma 3ª execução com a fila vazia: ela termina em sucesso e gasta exatamente 1 operação.",
         "Faça ainda a **3ª execução com a fila vazia**: ela termina em sucesso e gasta exatamente 1 operação",
@@ -413,3 +576,41 @@ def mutantes(regra: Regra, texto: str) -> list[tuple[str, str]]:
         trocado = b.replace(a, "\x00").replace(c, a).replace("\x00", c)
         saida.append((f"ordem {a!r}↔{c!r}", texto.replace(b, trocado)))
     return saida
+
+
+# SPEC_MAKE_S6 AT-004 (contrato C2 #3): cada item da lista do AT-004 tem frase de alerta prendida — conjunto NOMEADO, nunca
+# "o que por acaso já está em REGRAS" (guard que itera sobre o que aparece é default-PASS para ausência)
+D, DF, B, H = "spec-make-design/SKILL.md", "spec-make-define/SKILL.md", "spec-make-build/SKILL.md", "spec-make-handoff/SKILL.md"
+ITENS_AT004: dict[str, tuple[str, str]] = {
+    "G1": (D, "Sem esse passo: alerta [A1]"), "G2": (D, "Sem esse registro: alerta [A1]"), "G3": (D, "Sem a chave: alerta [A1]"),
+    "S1": (D, "Sem o alcance: alerta [A1]"), "S3": (D, "Filtro por coluna vazia: alerta [A1]"),
+    "S4": (D, "Se o total passar do orçamento do DEFINE: alerta [A1]"),
+    "S5": (D, "auditoria sem o gatilho ou sem a view: alerta [A1]"), "W1": (D, "e faça o alerta [A1]"),
+    "P1-design": (D, "Fluxo com módulo de IA e sem esse inventário: alerta [A1]"),
+    "P1-build": (B, "alerta [A1] antes do `scenarios_create`"),
+    "B3": ("spec-make-build/references/DIAGNOSTICO.md", "ainda falhar: alerta [A1]"),
+    "B6": (B, "e faça o alerta [A1]: a mudança pode apagar"), "B7": (B, "Faltando algum: alerta [A1]"),
+    "D1": (DF, '"blueprint validado" como teste de aceite: alerta [A1]'), "D2": (DF, "na entrega: alerta [A1]"),
+    "N1-brainstorm": ("spec-make-brainstorm/SKILL.md", "ou com módulo oficial disponível: alerta [A1]"),
+    "N1-design": (D, "ou com módulo oficial disponível: alerta [A1]"),
+    "N1-build": (B, "ou com módulo oficial disponível: alerta [A1]"),
+    "H4": (H, "alerta [A1] para cada aviso"),
+    "A3-define": (DF, "Sem o BRAINSTORM, siga o [A3]."), "A3-design": (D, "Sem o DEFINE, siga o [A3]."),
+    "A3-build": (B, "Sem algum dos três documentos, siga o [A3]."),
+    "validacao-3x": (D, "Depois de 3 tentativas no mesmo módulo: alerta [A1]"),
+    "ia-grava-direto": (D, "**A pessoa quer a IA gravando direto:** alerta [A1]"),
+    "desenho-errado": (B, "além do que o [B3] corrige: alerta [A1]"),
+    "plano-sem-operacoes": (B, "alerta [A1] — o Make interrompe a execução quando a cota acaba."),
+}
+
+
+def itens_sem_frase(regras: list[Regra], frases: dict[str, list[str]]) -> list[str]:
+    """Itens do AT-004 cujo trecho de alerta não está prendido (contem de uma Regra do mesmo arquivo ou FRASES)."""
+    faltam = []
+    for nome, (arq, trecho) in ITENS_AT004.items():
+        alvo = _junto(trecho)
+        prendidos = [_junto(s) for r in regras if r.arquivo == arq for s in r.contem] + [_junto(s) for s in frases.get(arq, [])]
+        if not ("alerta [A1]" in alvo or "[A3]" in alvo) or not any(alvo in s for s in prendidos):
+            faltam.append(nome)
+    return faltam
+

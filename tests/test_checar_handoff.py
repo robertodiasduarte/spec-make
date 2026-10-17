@@ -88,5 +88,25 @@ class ChecarHandoff(unittest.TestCase):
             self.assertEqual(roda().returncode, 2)
 
 
+    def test_s6_severidade_de_cada_mutante(self):
+        """SPEC_MAKE_S6 AT-007: webhook e 11+ dígitos são ERRO (exit 1); o resto é AVISO (exit 3); a seção
+        `## Alertas aceitos` é aceita. Severidade conferida pelo classificar e pela linha de comando."""
+        erro = {"webhook", "digitos"}
+        with tempfile.TemporaryDirectory() as tmp:
+            for nome, mutar, _causa in MUTANTES:
+                with self.subTest(mutante=nome):
+                    erros, avisos = ch.classificar(mutar(EXEMPLO))
+                    if nome in erro:
+                        self.assertNotEqual(erros, [], f"{nome}: devia ser ERRO")
+                    else:
+                        self.assertEqual(erros, [], f"{nome}: virou ERRO")
+                        self.assertNotEqual(avisos, [], f"{nome}: sem AVISO")
+                    arq = Path(tmp) / f"HANDOFF_{nome}.md"
+                    arq.write_text(mutar(EXEMPLO), encoding="utf-8")
+                    r = subprocess.run([sys.executable, "-I", str(SCRIPT), str(arq)], capture_output=True, text=True)
+                    self.assertEqual(r.returncode, 1 if nome in erro else 3, r.stdout)
+        self.assertIn("## Alertas aceitos", EXEMPLO)
+        self.assertEqual(ch.problemas(EXEMPLO), [])
+
 if __name__ == "__main__":
     unittest.main()

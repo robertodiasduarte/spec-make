@@ -2,7 +2,7 @@
 
 ## 1. Abertura
 
-As duas linhas da regra [E1]. Depois: "Vamos desenhar o fluxo com os módulos que existem na sua conta e deixar o
+A linha de versão e o mapa da regra [E1], e os alertas aceitos das etapas anteriores ([A2]). Depois: "Vamos desenhar o fluxo com os módulos que existem na sua conta e deixar o
 blueprint pronto e validado. Nada é criado na conta nesta etapa."
 
 ## 2. Módulos reais da conta
@@ -63,9 +63,11 @@ pessoa, faça só a pergunta de negócio, uma por mensagem.
 [G1], [G2] e [G3] da SKILL.md, com os detalhes de GOVERNANCA_DO_FLUXO.md. Cada uma sai como "atendida (como)" ou
 "não se aplica (por quê)".
 
-## 6. Prompts de IA
+## 6. Prompts e skills
 
-[P1] com PROMPTS_DE_IA.md, quando houver módulo de IA.
+[P1] com PROMPTS_E_SKILLS.md: `tipo: prompt` para cada módulo de IA; `tipo: skill` quando o fluxo é sob demanda
+e acionado pelo assistente, ou quando a pessoa pede uma skill em volta do fluxo. Em cada módulo, [N1]: HTTP genérico só
+com a linha de motivo.
 
 ## 7. Blueprint
 

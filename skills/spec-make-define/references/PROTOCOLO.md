@@ -2,7 +2,7 @@
 
 ## 1. Abertura
 
-As duas linhas da regra [E1]. Depois: "Vamos fechar o que o fluxo tem de fazer e como saber que ele funciona.
+A linha de versão e o mapa da regra [E1], e os alertas aceitos das etapas anteriores ([A2]). Depois: "Vamos fechar o que o fluxo tem de fazer e como saber que ele funciona.
 Nada é criado na conta nesta etapa."
 
 ## 2. Leitura do BRAINSTORM
@@ -20,12 +20,13 @@ Liste para você mesmo: decidido · a confirmar · cortado. Itens "a confirmar" 
 
 ## 4. Critérios de aceite
 
-Cada critério tem duas linhas: a frase de escritório e o EARS (ver EARS.md).
+Cada critério tem três linhas ([D3]): a frase de escritório, o EARS e, logo abaixo, `Em outras palavras: <frase do dia a
+dia>` (ver EARS.md). Na primeira vez, ensine o EARS em 3 linhas com um critério do próprio fluxo da pessoa.
 
-| ID | Frase de escritório | EARS |
-|---|---|---|
-| C1 | Quando chegar e-mail com nota, o fluxo guarda número, valor e emitente na planilha | When chega e-mail com anexo de nota, the fluxo shall gravar número, valor e emitente numa linha da planilha |
-| C2 | Se a planilha estiver fora do ar, o fluxo tenta de novo e me avisa | If o Google Sheets falhar, then the fluxo shall tentar de novo em 15 min e avisar por e-mail depois da 3ª falha |
+| ID | Frase de escritório | EARS | Em outras palavras |
+|---|---|---|---|
+| C1 | Quando chegar e-mail com nota, o fluxo guarda número, valor e emitente na planilha | When chega e-mail com anexo de nota, the fluxo shall gravar número, valor e emitente numa linha da planilha | Cada nota que chega por e-mail vira uma linha na planilha, sem você digitar |
+| C2 | Se a planilha estiver fora do ar, o fluxo tenta de novo e me avisa | If o Google Sheets falhar, then the fluxo shall tentar de novo em 15 min e avisar por e-mail depois da 3ª falha | Se a planilha cair, o fluxo espera e tenta de novo; se não der, você recebe um e-mail |
 
 Mínimo de 1 critério If/Then. Considere também: While (enquanto um estado vale) e Where (se uma opção estiver ligada);
 se não se aplicarem, escreva por quê em 1 linha.
@@ -37,18 +38,20 @@ Use o bloco de VERIFY_GATE_EXECUCAO.md. Ele é o que a etapa 4 vai rodar.
 ## 6. Orçamento de operações
 
 `operações por execução` = número de módulos que rodam por item (contando iteradores: cada item repete os módulos
-dentro do laço). `execuções por mês` = frequência × volume. Mostre a conta e compare com o limite do plano.
+dentro do laço). `execuções por mês` = frequência × volume. Mostre a conta e compare com o limite do plano. Acima de
+80% do limite: alerta [D2].
 
 ## 7. Ambiguidades
 
 Varra: escopo, dados, o que a pessoa vê, volume, integrações, o que pode dar errado, restrições, termos com duas
 leituras, como saber que acabou. Cada lacuna vira `A CONFIRMAR: <pergunta>` no ponto exato e uma pergunta na conversa,
-uma por mensagem. A resposta substitui a marca no corpo e entra no registro de esclarecimentos.
+uma por mensagem, no formato [K3] quando houver opções. A resposta substitui a marca no corpo e entra no registro de
+esclarecimentos. Entrega com `A CONFIRMAR:` ainda aberto: alerta [D2].
 
 ## 8. Clareza
 
 0 = ausente · 1 = vago · 2 = claro mas incompleto · 3 = pronto. Problema, quem usa, objetivos, aceite, escopo.
-Abaixo de 12, pergunte o que falta.
+Abaixo de 12: alerta [D2]; recomende perguntar o que falta.
 
 ## 9. Documento e fecho
 

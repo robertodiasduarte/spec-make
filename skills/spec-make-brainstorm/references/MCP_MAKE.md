@@ -53,7 +53,8 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    execução traz só o resultado final. O spec-make liga essa opção sempre, porque o escritório
    trata dado de cliente; o diagnóstico não depende do passo a passo.
 6. **App nativo primeiro.** `apps_recommend` costuma achar um app nativo onde a primeira ideia
-   seria uma chamada HTTP genérica. Prefira o nativo e diga à pessoa qual escolheu.
+   seria uma chamada HTTP genérica. É a regra [N1] das etapas 1, 3 e 4: o módulo oficial vem antes do HTTP, e o HTTP
+   só entra com o motivo escrito.
 7. **App não instalado.** `scenarios_create` pode pedir confirmação quando o fluxo usa um app
    ainda não instalado na conta. Diga à pessoa o que vai ser instalado antes de confirmar.
 8. **Apps embutidos não aparecem na recomendação.** `apps_recommend` lista apps de terceiros e

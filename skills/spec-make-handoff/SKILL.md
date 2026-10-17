@@ -5,26 +5,28 @@ description: "Mantém a ficha de um fluxo do Make para continuar depois — um a
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.3.3"
+  version: "1.4.0"
   updated: "2026-10"
   fase: "transversal"
 ---
 
 # spec-make — Handoff: a ficha para continuar depois
 
-Na primeira resposta desta skill, comece com estas duas linhas, uma vez só:
-`spec-make-handoff v1.3.3 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
-`spec-make · Handoff — para continuar depois`
+Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
+`spec-make-handoff v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
+[references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
 ## Quick start
 
-1. Abra com as duas linhas de **[E1]** e diga: "Vou ler a sua conta pelo Make — só leitura, não gasta operação e não
+1. Abra com a linha de versão e o mapa (**[E1]**) e diga: "Vou ler a sua conta pelo Make — só leitura, não gasta operação e não
    muda nada — e atualizar a ficha."
 2. Ache a ficha do fluxo: `HANDOFF_<FLUXO>.md` anexado ou colado. Existe: atualize. Não existe: ela nasce agora
    (**[H3]**).
 3. Leia a conta na ordem **[H1]** ([references/PROTOCOLO.md](references/PROTOCOLO.md)). Sem o conector, siga **[M1]**.
 4. Preencha a ficha com [assets/HANDOFF_TEMPLATE.md](assets/HANDOFF_TEMPLATE.md) (exemplo pronto em
-   [assets/HANDOFF_EXEMPLO.md](assets/HANDOFF_EXEMPLO.md)), sem segredo (**[H2]**).
+   [assets/HANDOFF_EXEMPLO.md](assets/HANDOFF_EXEMPLO.md)), sem segredo (**[H2]**). Mantenha em "Falta" os alertas aceitos
+   das etapas ([A2]).
 5. Escreva o prompt de retomada (**[H3]**).
 6. Confira a ficha (**[H4]**) com [scripts/checar_handoff.py](scripts/checar_handoff.py).
 7. Entregue a ficha e o prompt e feche com **[E1]**.
@@ -49,7 +51,7 @@ Não usar para mudar o fluxo: esta skill só lê a conta e escreve a ficha. A mu
 
 ## Procedimento passo a passo
 
-1. **Abertura.** As duas linhas de [E1] e a frase do Quick start. Termos explicados uma vez, na primeira vez que
+1. **Abertura.** A linha de versão, o mapa ([E1]) e a frase do Quick start. Termos explicados uma vez, na primeira vez que
    aparecem: fluxo (ou família) é o que a pessoa chama de "o fluxo de boletos"; parte é cada cenário dele no Make; a
    custódia diz o que a próxima conversa pode alterar.
 2. **Uma ficha por fluxo.** Procure a ficha anterior pelo nome do fluxo antes de criar arquivo ([H3]).
@@ -81,18 +83,21 @@ implementa; a etapa em que a conversa parou, se parou no meio), quais arquivos a
 ou apaga.
 
 **[H4] Conferência da ficha.** Antes de entregar, rode `python3 scripts/checar_handoff.py HANDOFF_<FLUXO>.md` se o
-ambiente executar código; ele sai 0 quando está tudo certo. Sem Python, confira à mão os mesmos itens: as quatro seções
+ambiente executar código. Saiu 1 (ERRO: URL de webhook ou sequência de 11 ou mais dígitos) ou 2 (a ficha não pôde ser
+lida): não entregue — apague o trecho ou grave a ficha de novo e confira outra vez ([X1]). Saiu 3 (AVISO: seção
+faltando, trecho de modelo, recurso sem id): alerta [A1] para cada aviso — a próxima conversa pode retomar pelo recurso
+errado. Sem Python, confira à mão os mesmos itens: as quatro seções
 obrigatórias (Ficha, Inventário e custódia, Prompt de retomada, Histórico de sessões) com o título exato; nenhum
 trecho de modelo sobrando; nenhuma URL de webhook; nenhuma sequência de 11 ou mais dígitos (o id de execução e o
-resumo do blueprint vão em grupos de 8 separados por hífen); nenhum recurso sem id no inventário. Não entregue ficha
-com problema.
+resumo do blueprint vão em grupos de 8 separados por hífen); nenhum recurso sem id no inventário — com a mesma divisão
+entre ERRO e AVISO.
 
 **[M1] Sem o conector do Make.** Se a conversa não tiver o MCP do Make, avise em uma frase, escreva "sem o conector" na
 linha "Gerada" da ficha e preencha o inventário com os ids que a pessoa ou os documentos trouxerem, marcando como
 "a confirmar na conta" em cada estado. Não afirme `lastEdit`, custódia nem contagem de registros sem ter lido a conta.
 
-**[E1] Para continuar depois.** A primeira resposta traz a linha "spec-make · Handoff — para continuar depois". O
-fecho entrega o arquivo `HANDOFF_<FLUXO>.md`, pede para salvá-lo junto dos outros documentos do fluxo e mostra o
+**[E1] Para continuar depois.** Toda resposta abre com o mapa de posição ([K1] de references/CONDUCAO.md), que começa
+por "Handoff (fora das etapas)"; a primeira resposta traz antes a linha de versão. O fecho segue [K5] e entrega o arquivo `HANDOFF_<FLUXO>.md`, pede para salvá-lo junto dos outros documentos do fluxo e mostra o
 prompt de retomada pronto para colar — ele começa por "Use a skill spec-make-" e o nome da etapa — com a frase: "Para
 continuar, abra uma conversa nova, anexe os arquivos e cole este bloco."
 
@@ -106,7 +111,8 @@ continuar, abra uma conversa nova, anexe os arquivos e cole este bloco."
   da pessoa
 - [ ] Nenhuma URL de webhook, registro de data store, e-mail, CNPJ, CPF, chave ou senha na ficha
 - [ ] Prompt de retomada na ordem [H3], sem trecho de modelo
-- [ ] Ficha conferida ([H4]) antes de entregar
+- [ ] Toda resposta com o mapa de posição; alertas aceitos das etapas em "Falta" ([A2])
+- [ ] Ficha conferida ([H4]) antes de entregar: ERRO corrigido; cada AVISO corrigido ou com o alerta aceito
 - [ ] Sem o conector: "a confirmar na conta" em cada estado ([M1])
 
 ## Tratamento de exceções
@@ -140,9 +146,10 @@ a conta, que 170102 é usado por outros fluxos e que a mudança é com a etapa 4
 
 - `SKILL.md`
 - `references/PROTOCOLO.md` — a leitura [H1] e a custódia, passo a passo
+- `references/CONDUCAO.md` — mapa de posição, glossário, pergunta de decisão, alerta, alertas aceitos e bloqueios
 - `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/HANDOFF_TEMPLATE.md` · `assets/HANDOFF_EXEMPLO.md`
-- `scripts/checar_handoff.py` — confere a ficha (Python 3.9+, sem dependências)
+- `scripts/checar_handoff.py` — confere a ficha; sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

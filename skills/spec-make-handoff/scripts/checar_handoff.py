@@ -4,7 +4,10 @@
 Uso:
     python3 checar_handoff.py <HANDOFF.md>
 
-Sai 0 quando não há problema, 1 quando há (um por linha, com a seção) e 2 quando o arquivo não pode ser lido.
+Sai 0 sem achado; 1 com ao menos um ERRO (URL de webhook ou sequência de 11+ dígitos: segredo ou dado pessoal, que
+nunca entram na ficha); 3 só com AVISO (o que vira alerta: seção, trecho de modelo, recurso sem id, inventário, ficha
+sem conector, conexão); 2 quando o arquivo não pode ser lido. Cada achado sai numa linha, `ERRO:` ou `AVISO:`, com a
+seção. A seção `## Alertas aceitos` é aceita (não é exigida).
 Não acessa a rede nem a conta do Make: confere só o texto da ficha.
 
 O que confere:
@@ -39,8 +42,10 @@ def celulas(linha: str) -> list[str]:
     return [c.strip() for c in linha.strip().strip("|").split("|")]
 
 
-def problemas(texto: str) -> list[str]:
-    p = [f"seção ausente: {s}" for s in SECOES if not re.search(rf"^{re.escape(s)}\s*$", texto, re.M)]
+def classificar(texto: str) -> tuple[list[str], list[str]]:
+    """(erros, avisos): ERRO = segredo ou dado pessoal na ficha (webhook, 11+ dígitos); o resto é AVISO."""
+    erros: list[str] = []
+    avisos = [f"seção ausente: {s}" for s in SECOES if not re.search(rf"^{re.escape(s)}\s*$", texto, re.M)]
     sem_conector = SEM_CONECTOR.search(texto) is not None
     inventario = 0
     secao = "(topo)"
@@ -48,23 +53,29 @@ def problemas(texto: str) -> list[str]:
         if linha.startswith("## "):
             secao = linha[3:].strip()
         if PLACEHOLDER.search(linha):
-            p.append(f"{secao}: placeholder sobrando na linha {n}")
+            avisos.append(f"{secao}: placeholder sobrando na linha {n}")
         if WEBHOOK.search(linha):
-            p.append(f"{secao}: URL de webhook na linha {n} — guarde só o id (a próxima conversa relê com hooks_get)")
+            erros.append(f"{secao}: URL de webhook na linha {n} — guarde só o id (a próxima conversa relê com hooks_get)")
         if DIGITOS.search(linha):
-            p.append(f"{secao}: sequência de 11+ dígitos na linha {n} — use grupos de 8 com hífen ou apague")
+            erros.append(f"{secao}: sequência de 11+ dígitos na linha {n} — use grupos de 8 com hífen ou apague")
         if LINHA_INV.match(linha):
             inventario += 1
             cel = celulas(linha) + [""] * 5
             if not ID_OK.match(cel[1]) and not (sem_conector and cel[1] == A_CONFIRMAR):
-                p.append(f"{secao}: {cel[0]} sem id numérico na linha {n}")
+                avisos.append(f"{secao}: {cel[0]} sem id numérico na linha {n}")
             if sem_conector and (cel[3] != A_CONFIRMAR or cel[4] != A_CONFIRMAR):
-                p.append(f"{secao}: ficha sem o conector afirma estado ou custódia na linha {n} — use '{A_CONFIRMAR}'")
+                avisos.append(f"{secao}: ficha sem o conector afirma estado ou custódia na linha {n} — use '{A_CONFIRMAR}'")
             if not sem_conector and cel[0].lower().startswith("conex") and "fora do spec-make" not in cel[4]:
-                p.append(f"{secao}: conexão na linha {n} tem de ser 'fora do spec-make' (ela se reautoriza no Make)")
+                avisos.append(f"{secao}: conexão na linha {n} tem de ser 'fora do spec-make' (ela se reautoriza no Make)")
     if inventario == 0 and VAZIO not in texto:
-        p.append(f"Inventário e custódia: nenhum recurso listado — liste os recursos ou escreva '{VAZIO}'")
-    return p
+        avisos.append(f"Inventário e custódia: nenhum recurso listado — liste os recursos ou escreva '{VAZIO}'")
+    return erros, avisos
+
+
+def problemas(texto: str) -> list[str]:
+    """Todos os achados (ERRO e AVISO), na ordem: erros, depois avisos."""
+    erros, avisos = classificar(texto)
+    return erros + avisos
 
 
 def main(argv: list[str]) -> int:
@@ -76,9 +87,14 @@ def main(argv: list[str]) -> int:
     except (OSError, UnicodeDecodeError) as e:
         print(f"não consegui ler {argv[1]}: {e}")
         return 2
-    erros = problemas(texto)
-    print("\n".join(erros) if erros else "ok: ficha completa, sem trecho de modelo, sem segredo e com id em todo recurso")
-    return 1 if erros else 0
+    erros, avisos = classificar(texto)
+    for e in erros:
+        print(f"ERRO: {e}")
+    for a in avisos:
+        print(f"AVISO: {a}")
+    if not erros and not avisos:
+        print("ok: ficha completa, sem trecho de modelo, sem segredo e com id em todo recurso")
+    return 1 if erros else 3 if avisos else 0
 
 
 if __name__ == "__main__":

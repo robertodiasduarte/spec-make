@@ -17,3 +17,15 @@ Regras:
 2. Sem adjetivo sem número: "rápido" vira "em menos de 1 minuto".
 3. Pelo menos um "Se der errado" quando o fluxo depende de app externo (quase sempre).
 4. De 3 a 8 critérios por fluxo.
+
+## Como ensinar (1 vez por conversa)
+
+Na primeira vez que um critério aparecer, explique em 3 linhas, com um critério do fluxo da própria pessoa (nunca o do
+CNPJ, que é só o exemplo deste arquivo):
+
+1. "EARS é um jeito padronizado de escrever o que o fluxo tem de fazer, para virar teste."
+2. "Cada critério começa por uma palavra que diz quando ele vale: When (quando), If/Then (se der errado), While
+   (enquanto), Where (se a opção estiver ligada)."
+3. O critério da pessoa nas três linhas: a frase de escritório, o EARS e `Em outras palavras: <frase do dia a dia>`.
+
+Depois disso, não explique de novo: só escreva as três linhas de cada critério.

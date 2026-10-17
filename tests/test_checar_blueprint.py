@@ -6,6 +6,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -34,6 +35,12 @@ def _com_http(mapper: dict) -> dict:
                           "mapper": {"method": "post", "url": "https://api.exemplo.com/v1", **mapper},
                           "metadata": {"designer": {"x": 450, "y": 0}}})
     return bp
+
+
+def sem_n1(achados: list[str]) -> list[str]:
+    """Achados sem o AVISO do módulo HTTP genérico ([N1], SPEC_MAKE_S6): `_com_http` monta o blueprint com um módulo
+    `http:*`, que agora sempre traz esse aviso; os casos de credencial continuam provados pelo resto da lista."""
+    return [x for x in achados if "([N1])" not in x]
 
 
 def _com_datastore(chave: str) -> dict:
@@ -196,7 +203,7 @@ class ChecarBlueprint(unittest.TestCase):
                 "get com índice": {"data": {"apikey": "{{get(1.chaves; 1)}}"}},
                 "key na query mapeada": {"url": "https://api.exemplo.com/v1?key={{1.chave}}"}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_rodada_5(self):
         """R1-R3@opus (rodada 5): referência só começa por número de módulo ou "var" e aceita acento; texto entre aspas
@@ -210,7 +217,7 @@ class ChecarBlueprint(unittest.TestCase):
                                                 '2.k2)}}'},
                 "campo com acento": {"data": {"token": "{{3.códigoAcesso}}"}}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_avaliador_ciclo_3(self):
         """Avaliador ciclo 3 (AT-005): nomes de credencial em cabeçalho, query e corpo de formulário em texto."""
@@ -236,7 +243,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "?partitionKey=": {"url": "https://api.x.com/v1?partitionKey=clientes"},
                             "X-Pass-Through": {"headers": [{"name": "X-Pass-Through", "value": "enabled"}]}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_entrada_que_pede_credencial(self):
         """R1@opus (rodada 6): o campo de entrada com nome de credencial leva a chave pelo chat e pela execução."""
@@ -273,7 +280,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "Telegram mapeado": {"url": "https://api.telegram.org/bot{{1.token}}/sendMessage"},
                             "texto com 'bot'": {"data": "o robô (bot) respondeu ao cliente"}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_rodada_7(self):
         """R2@codex, R1/R2@opus (rodada 7): Cookie com literal sem "=" ou em fórmula reprova; formato conhecido no meio de
@@ -290,7 +297,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "accept_cookies": {"url": "https://api.exemplo.com/v1?accept_cookies=sempre-aceitar"},
                             "shareCookies": {"shareCookies": False}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_avaliador_ciclo_5(self):
         """Avaliador ciclo 5 (AT-005): valor numérico com nome de credencial reprova; nome que só CONTÉM um marcador
@@ -316,7 +323,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "token_ttl curto": {"token_ttl": 3600},
                             "booleano": {"shareCookies": True, "password_required": False}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_rodada_8(self):
         """R1-R3@opus e A1 (rodada 8): marcador como pedaço da palavra, plural, cookie como última palavra; número em
@@ -333,7 +340,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "secretariaFazenda": {"secretariaFazenda": "Secretaria da Fazenda"},
                             "maxtokens": {"maxtokens": "100000"}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_avaliador_ciclo_6(self):
         """Avaliador ciclo 6 (AT-005): valor curto em nome de senha/segredo/Authorization, plural de token, valor em
@@ -362,7 +369,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "password_required booleano": {"password_required": True},
                             "lista mapeada": {"data": {"api_keys": ["{{1.chave}}"]}}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_rodada_9(self):
         """Rodada 9: senha só de símbolos, ?pass= curto e senha curta dentro do Cookie reprovam; budget_tokens,
@@ -377,7 +384,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "password_type": {"data": {"password_type": "md5"}},
                             "secret_encoding": {"data": {"secret_encoding": "utf8"}}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_s2_nome_forte_em_qualquer_posicao(self):
         """SPEC_MAKE s2 (avaliador, ciclo 7): nome de senha em ordem portuguesa com valor de 1 a 5 caracteres reprova nas
@@ -423,7 +430,7 @@ class ChecarBlueprint(unittest.TestCase):
     def test_s2_fronteira_do_minimo(self):
         """Fronteira exata dos dois limites: nome forte reprova com 1 caractere; nome comum aprova 5 e reprova 6."""
         self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {"senha_api": "x"}}))))
-        self.assertEqual(cb.checar(_com_http({"data": {"api_key": "abcde"}})), [])
+        self.assertEqual(sem_n1(cb.checar(_com_http({"data": {"api_key": "abcde"}}))), [])
         self.assertTrue(any("credencial" in p for p in cb.checar(_com_http({"data": {"api_key": "abcdef"}}))))
         self.assertEqual((cb._minimo("senha_certificado"), cb._minimo("password_type"), cb._minimo("api_key")), (1, 6, 6))
 
@@ -438,7 +445,7 @@ class ChecarBlueprint(unittest.TestCase):
                             "password_reset_url": {"data": {"password_reset_url": "https://x.com/r"}},
                             "password_required": {"password_required": True}}.items():
             with self.subTest(caso=nome):
-                self.assertEqual(cb.checar(_com_http(campo)), [], nome)
+                self.assertEqual(sem_n1(cb.checar(_com_http(campo))), [], nome)
 
     def test_s2_senha_reset_reprova(self):
         """"reset" não descreve: "senha_reset"/"password_reset" guardam token de redefinição (R5, review do DESIGN s2)."""
@@ -467,7 +474,7 @@ class ChecarBlueprint(unittest.TestCase):
                 self.assertTrue(any("flow" in p for p in cb.checar(bp)), nome)
 
     def test_flow_sem_module_reprova_pela_linha_de_comando(self):
-        """Os 2 casos do avaliador pela CLI: sai 1 com uma linha PROBLEMA que nomeia `flow`."""
+        """Os 2 casos do avaliador pela CLI: sai 1 com uma linha ERRO que nomeia `flow`."""
         import tempfile
         casos = {"flow com objeto vazio": {**_ler("blueprint_valido.json"), "flow": [{}]},
                  "flow só com designer": {"name": "x", "flow": [{"designer": {"x": 0}}],
@@ -479,7 +486,8 @@ class ChecarBlueprint(unittest.TestCase):
                 r = subprocess.run([sys.executable, "-I", str(SCRIPT), str(arq)],
                                    capture_output=True, text=True)
                 self.assertEqual(r.returncode, 1, r.stdout)
-                self.assertTrue(any(l.startswith("PROBLEMA") and "flow" in l for l in r.stdout.splitlines()), r.stdout)
+                # SPEC_MAKE_S6: a linha é ERRO (era PROBLEMA): flow ausente para a etapa 4
+                self.assertTrue(any(l.startswith("ERRO") and "flow" in l for l in r.stdout.splitlines()), r.stdout)
 
     # SPEC_MAKE_S5 AT-003: o Supabase entra só como banco — lista PERMITIDA do app, nada de supabase-management/postgres,
     # nada de endereço de projeto fora do app (R2@codex, R9@opus, A2@fable: caixa, /graphql/v1 e mapeamento inteiro)
@@ -613,12 +621,87 @@ class ChecarBlueprint(unittest.TestCase):
 
     def test_http_fora_de_edge_continua_igual(self):
         """Módulo HTTP para outra API (sem /functions/v1/) segue a regra antiga: só reprova com credencial escrita."""
-        self.assertEqual(cb.checar(_com_http({})), [])
+        self.assertEqual(sem_n1(cb.checar(_com_http({}))), [])
+
+    def test_s6_http_generico_e_so_aviso_n1(self):
+        """SPEC_MAKE_S6 AT-008: módulo http:* sem credencial = 1 AVISO [N1], nenhum ERRO; em rota e tratador também."""
+        erros, avisos = cb.classificar(_com_http({}))
+        self.assertEqual(erros, [])
+        self.assertEqual(len(avisos), 1)
+        self.assertIn("([N1])", avisos[0])
+        bp = _ler("blueprint_valido.json")
+        bp["flow"][1]["onerror"] = [{"id": 9, "module": "http:MakeRequest", "version": 4, "mapper": {"url": "https://api.exemplo.com/v1"}}]
+        self.assertTrue(any("([N1])" in a for a in cb.classificar(bp)[1]))
+
+    def test_s6_credencial_e_supabase_fora_do_alcance_sao_erro(self):
+        """SPEC_MAKE_S6 AT-007: credencial e Supabase fora do alcance nunca descem para AVISO."""
+        for nome in ("blueprint_com_credencial.json", "blueprint_header_bearer.json", "blueprint_chave_na_url.json",
+                     "blueprint_sem_flow.json", "blueprint_supabase_fora_da_lista.json", "blueprint_http_projeto.json"):
+            with self.subTest(fixture=nome):
+                self.assertNotEqual(cb.classificar(_ler(nome))[0], [], f"{nome}: sem ERRO")
+        erros, _ = cb.classificar(_com_http({"headers": [{"name": "Authorization", "value": "Bearer " + SEGREDO}]}))
+        self.assertTrue(any("credencial" in e for e in erros))
+
+    def test_s6_severidade_pela_linha_de_comando(self):
+        """SPEC_MAKE_S6 AT-007/AT-008 (R10@opus): exit 1 com ERRO, 3 só com AVISO, 0 limpo, 2 ilegível — por fixture e
+        por casos gerados (HTTP genérico, filtro booleano, busca sem o filtro "existe")."""
+        SEV = {"blueprint_valido.json": 0, "blueprint_supabase_valido.json": 0,
+               "blueprint_com_credencial.json": 1, "blueprint_header_bearer.json": 1, "blueprint_chave_na_url.json": 1,
+               "blueprint_sem_flow.json": 1, "blueprint_supabase_fora_da_lista.json": 1, "blueprint_http_projeto.json": 1,
+               "blueprint_sem_confidencial.json": 3, "blueprint_interface_no_blueprint.json": 3,
+               "blueprint_entrada_sem_campos.json": 3}
+        sup = _ler("blueprint_supabase_valido.json")
+        booleano = json.loads(json.dumps(sup))
+        busca_vazia = json.loads(json.dumps(sup))
+        achou = False
+        for m in booleano["flow"]:
+            if m.get("module") == "supabase:searchRows":
+                for g in (m.get("mapper") or {}).get("search", []) or []:
+                    for c in g if isinstance(g, list) else []:
+                        if isinstance(c, dict) and str(c.get("o", "")).startswith("boolean:"):
+                            c["b"] = False
+                            achou = True
+        self.assertTrue(achou, "o fixture supabase_valido não tem o filtro de verdade/falso que o caso precisa")
+        i = next(k for k, m in enumerate(busca_vazia["flow"]) if m.get("module") == "supabase:searchRows")
+        busca_vazia["flow"][i + 1].pop("filter", None)
+        gerados = {"http-generico": (_com_http({}), 3), "filtro-booleano": (booleano, 3), "sem-filtro-existe": (busca_vazia, 3)}
+        with tempfile.TemporaryDirectory() as d:
+            casos = [(n, FIX / n, rc) for n, rc in SEV.items()]
+            for n, (bp, rc) in gerados.items():
+                f = Path(d) / f"{n}.json"
+                f.write_text(json.dumps(bp), encoding="utf-8")
+                casos.append((n, f, rc))
+            ruim = Path(d) / "ilegivel.json"
+            ruim.write_text("{", encoding="utf-8")
+            casos.append(("ilegivel", ruim, 2))
+            for n, f, rc in casos:
+                with self.subTest(caso=n):
+                    r = subprocess.run([sys.executable, "-I", str(SCRIPT), str(f)], capture_output=True, text=True)
+                    self.assertEqual(r.returncode, rc, r.stdout)
+                    if rc == 1:
+                        self.assertIn("ERRO: ", r.stdout)
+                    if rc == 3:
+                        self.assertIn("AVISO: ", r.stdout)
+                        self.assertNotIn("ERRO: ", r.stdout)
+
+    def test_s6_credencial_rebaixada_a_aviso_reprova(self):
+        """Mutante (AT-007): mover a credencial para AVISO tem de ser pego pela checagem de severidade."""
+        original = cb.classificar
+        def rebaixa(bp):
+            e, a = original(bp)
+            return [], e + a
+        try:
+            cb.classificar = rebaixa
+            self.assertEqual(cb.classificar(_ler("blueprint_com_credencial.json"))[0], [])
+        finally:
+            cb.classificar = original
+        self.assertNotEqual(cb.classificar(_ler("blueprint_com_credencial.json"))[0], [])
 
     def test_cli_codigos_de_saida(self):
         ok = subprocess.run([sys.executable, "-I", str(SCRIPT), str(FIX / "blueprint_valido.json")], capture_output=True)
         ruim = subprocess.run([sys.executable, "-I", str(SCRIPT), str(FIX / "blueprint_sem_confidencial.json")], capture_output=True)
-        self.assertEqual((ok.returncode, ruim.returncode), (0, 1))
+        # SPEC_MAKE_S6: confidencial desligado é AVISO (3); a tabela completa está em test_s6_severidade_pela_linha_de_comando
+        self.assertEqual((ok.returncode, ruim.returncode), (0, 3))
 
     def test_copias_nas_skills_sao_identicas(self):
         for s in ("spec-make-design", "spec-make-build"):

@@ -1,10 +1,49 @@
 # Protocolo da etapa 1 — Brainstorm do fluxo
 
-## 1. Abertura
+## 1. Abertura e pré-requisitos — regra [E2]
 
-Comece pelas duas linhas da regra [E1] da SKILL.md. Em seguida, uma frase sobre o que acontece nesta etapa:
-"Vamos transformar a rotina num documento de ideia e conferir na sua conta do Make o que já existe para ela. Nada é
-criado na conta nesta etapa."
+Comece pela linha de versão e pelo mapa da regra [E1]. Depois, em 4 a 6 linhas: "O spec-make leva uma rotina do
+escritório até um fluxo funcionando no Make, em 4 etapas — Brainstorm, Define, Design e Build — e uma ficha para
+continuar depois (Handoff). No fim, você tem o fluxo testado na sua conta, o recibo do teste e as fichas. Para isso,
+precisamos de 3 coisas: sua conta no Make, o conector do Make ligado aqui com as ferramentas que gravam e uma amostra da
+rotina sem dado pessoal real. Nesta etapa nada é criado na conta."
+
+Confira pelo MCP o que dá e mostre 1 linha por pré-requisito, com o ícone e o estado em palavras (✅ ok · ⚠️ falta · a
+confirmar). Faltando algum, mostre o como resolver abaixo e siga a conversa. A resposta termina com uma pergunta só:
+qual rotina a pessoa quer automatizar.
+
+### Conector ausente
+
+1. No seu assistente, abra as configurações e procure Conectores (no Claude) ou Aplicativos e conectores (no ChatGPT);
+   o nome do menu muda com a versão do app.
+2. Escolha o Make, entre com a sua conta do Make e permita as ferramentas que criam, ativam e rodam cenários.
+3. Abra uma conversa nova e pergunte: "Liste as ferramentas do Make que você tem e diga se consegue criar, ativar e
+   rodar um cenário." Deu certo quando aparecem criar, ativar e rodar.
+
+A conversa segue no papel enquanto isso ([M1]): o que depende da conta fica "a confirmar na conta".
+
+### Conector só de leitura
+
+1. Nas configurações do conector do Make, ligue as ferramentas que gravam (criar, ativar e rodar cenários); em alguns
+   apps é preciso desconectar e conectar de novo para elas aparecerem.
+2. Confira com a mesma pergunta do caso acima.
+
+A conversa segue: as etapas 1 a 3 só leem a conta; só a etapa 4 precisa gravar.
+
+### Conexão faltando
+
+1. Agora, nada: a etapa 4 manda um link de autorização do próprio Make para cada app que falta.
+2. Quando o link chegar, abra, entre com a conta do app e autorize. Nunca cole senha ou chave no chat.
+
+A conversa segue; a tabela de viabilidade marca o que falta autorizar.
+
+### Sem amostra
+
+1. Escolha um caso real da rotina e troque tudo que é pessoal por dado inventado, ou use dado público (o CNPJ de uma
+   companhia aberta, por exemplo).
+2. Anote o resultado que você espera com essa amostra: os valores que devem aparecer e onde.
+
+A conversa segue; a amostra pode chegar até o passo 4 do mapa.
 
 ## 2. Conta
 
@@ -42,7 +81,8 @@ Para cada passo do fluxo:
 
 1. `apps_recommend` com a intenção em uma frase ("buscar dados de empresa pelo CNPJ").
 2. Considere apenas resultados claramente ligados ao passo; mostre no máximo 3, pelo rótulo do módulo.
-3. Prefira app nativo. Use HTTP genérico só quando não houver nativo, e diga isso.
+3. Módulo oficial primeiro ([N1]): HTTP genérico só quando o app não tiver módulo para a operação, com o motivo
+   escrito ("o app <X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>").
 3a. Guardar dado no próprio Make, chamar uma API sem app, dividir o fluxo em caminhos ou repetir para cada item da
     lista: são apps embutidos que a recomendação não mostra — consulte direto `app-modules_list` com `datastore`,
     `http` ou `builtin` (ver MCP_MAKE.md, fato 8).

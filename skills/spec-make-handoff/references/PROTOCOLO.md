@@ -2,7 +2,7 @@
 
 ## Abertura
 
-As duas linhas da regra [E1]. Depois: "Vou ler a sua conta pelo Make — só leitura, não gasta operação e não muda
+A linha de versão e o mapa da regra [E1]. Depois: "Vou ler a sua conta pelo Make — só leitura, não gasta operação e não muda
 nada — e atualizar a ficha."
 
 **[H1] Leitura da conta e custódia.** Leia nesta ordem, só com ferramentas de leitura:

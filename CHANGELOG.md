@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.4.0 — 2026-10
+
+- As 5 skills conduzem desde a primeira mensagem: toda resposta abre com um mapa de posição ("Etapa 2 de 4 · Define —
+  passo 3 de 7 · depois: Design"), cada termo é explicado na primeira vez, cada etapa termina com o arquivo produzido e o
+  próximo comando pronto para colar. A etapa 1 explica o método e confere os pré-requisitos pelo Make; o que faltar vem
+  com o como resolver, e a conversa segue.
+- Cada critério do DEFINE ganha, logo abaixo, "Em outras palavras", em linguagem do dia a dia.
+- Pergunta de decisão sempre com opções, prós, contras, riscos e a recomendação; o que o Make responde sozinho ou tem
+  resposta padrão não vira pergunta.
+- O que antes travava a etapa vira alerta: a skill mostra o risco, recomenda e espera "Corrigir agora" ou "Seguir assim e
+  registrar o alerta"; o alerta aceito fica no documento da etapa, no recibo e na ficha. Continuam travando só segredo ou
+  dado pessoal real, ligar o gatilho sem o seu "Ligar agora" e mexer no que a conversa não criou; o Supabase segue só
+  como banco.
+- Módulo oficial do app antes de HTTP: chamada HTTP só com o motivo escrito, e o verificador avisa.
+- Os verificadores separam ERRO (para a etapa 4) de AVISO (vira alerta).
+- O prompt do agente de IA passa a ser escrito pela `prompt-builder-by-rdd`; fluxo acionado pelo assistente ganha uma
+  skill feita pela `skill-builder-by-rdd`.
+
 ## v1.3.3 — 2026-10
 
 - A etapa 4, quando o fluxo toca o Supabase, roda o verificador de blueprint como passo obrigatório e, se ele reprovar,

@@ -4,8 +4,11 @@
 Uso:
     python3 checar_blueprint.py <blueprint.json>
 
-Sai 0 quando não há problema e 1 quando há (cada problema numa linha). Sai 2 quando o arquivo
-não é um JSON legível. Não acessa a rede nem a conta do Make: confere só o texto do blueprint.
+Sai 0 sem achado; 1 com ao menos um ERRO (o que para a etapa 4: credencial escrita, campo de credencial na entrada,
+`flow` ausente, o Supabase fora do alcance do kit); 3 só com AVISO (o que vira alerta: confidencial desligado, chave
+`interface` no blueprint, entrada sem campos, as duas armadilhas da busca do Supabase e o módulo HTTP genérico da regra
+[N1]); 2 quando o arquivo não é um JSON legível (nada foi conferido). Cada achado sai numa linha, `ERRO:` ou `AVISO:`.
+Não acessa a rede nem a conta do Make: confere só o texto do blueprint.
 
 O que confere (o que os validadores do MCP do Make não pegam):
   0. o blueprint tem `flow`: uma lista com pelo menos um módulo (objeto com `module` em texto não vazio; sem ele, nada
@@ -30,6 +33,9 @@ Nome com palavra de senha ou segredo em QUALQUER posição ("senha_certificado",
 conta a partir de 1 caractere fixo, salvo quando outra palavra do nome diz que o campo descreve a senha em vez de
 guardá-la ("password_type", "token_expires_in", "token_url"); palavra de senha fundida a outra numa palavra só
 ("senhacertificado") segue o limite de 6 caracteres dos nomes comuns.
+
+  5. [N1]: todo módulo HTTP genérico (`http:*`), em qualquer rota ou tratador, sai como AVISO: o DESIGN tem de dizer por
+     que o app não tem módulo próprio para a operação (a etapa 4 não alerta o aviso cujo módulo traz esse motivo).
 
 Este arquivo é igual nas skills spec-make-design e spec-make-build.
 """
@@ -398,14 +404,24 @@ def problemas_busca_supabase(fluxo: list) -> list[str]:
     return saida
 
 
-def checar(bp: dict) -> list[str]:
-    problemas: list[str] = []
+def problemas_http(modulos: list[dict]) -> list[str]:
+    """[N1]: módulo HTTP genérico em qualquer rota ou tratador vira AVISO (o design escreve o motivo)."""
+    return [f"o módulo {m.get('id')} é HTTP genérico ({m.get('module')}): confira em app-modules_list se o app tem "
+            "módulo próprio e escreva o motivo no DESIGN ([N1])"
+            for m in modulos if str(m.get("module", "")).startswith("http:")]
+
+
+def classificar(bp: dict) -> tuple[list[str], list[str]]:
+    """(erros, avisos). ERRO para a etapa 4; AVISO vira alerta. A credencial e o Supabase fora do alcance nunca descem
+    para AVISO."""
     if not isinstance(bp, dict):
-        return ["o arquivo não é um blueprint (esperado um objeto JSON)"]
+        return ["o arquivo não é um blueprint (esperado um objeto JSON)"], []
+    erros: list[str] = []
+    avisos: list[str] = []
 
     cenario = ((bp.get("metadata") or {}).get("scenario") or {})
     if cenario.get("confidential") is not True:
-        problemas.append(
+        avisos.append(
             "metadata.scenario.confidential precisa ser true: os dados do escritório não ficam no histórico do Make"
         )
 
@@ -413,11 +429,11 @@ def checar(bp: dict) -> list[str]:
     tem_modulo = isinstance(fluxo, list) and any(
         isinstance(m, dict) and isinstance(m.get("module"), str) and m["module"].strip() for m in fluxo)
     if not tem_modulo:
-        problemas.append("o blueprint não tem flow (lista de módulos): nada foi conferido; exporte o blueprint de novo")
+        erros.append("o blueprint não tem flow (lista de módulos): nada foi conferido; exporte o blueprint de novo")
     modulos = _modulos(fluxo if isinstance(fluxo, list) else [])
-    problemas += problemas_busca_supabase(fluxo if isinstance(fluxo, list) else [])
+    avisos += problemas_busca_supabase(fluxo if isinstance(fluxo, list) else [])
     if "interface" in bp:
-        problemas.append(
+        avisos.append(
             "o blueprint traz a chave interface: o validador do Make a recusa; grave a interface com "
             "scenarios_set-interface depois de criar o fluxo"
         )
@@ -425,26 +441,33 @@ def checar(bp: dict) -> list[str]:
         campos = (m.get("metadata") or {}).get("interface") if m.get("module") == ENTRADA else None
         for c in campos if isinstance(campos, list) else []:
             if isinstance(c, dict) and nome_de_credencial(c.get("name")):
-                problemas.append(
+                erros.append(
                     f"o módulo de entrada pede o campo {c.get('name')!r}, que é credencial: ela viria pelo chat e pela "
                     "entrada da execução; use a conexão do Make (R1@opus, rodada 6)"
                 )
-        problemas += problemas_supabase(m)
+        erros += problemas_supabase(m)
         if m.get("module") == ENTRADA and not ((m.get("metadata") or {}).get("interface")):
-            problemas.append(
+            avisos.append(
                 "o módulo de entrada (StartSubscenario) não declara os campos em metadata.interface: sem eles a "
                 "interface do fluxo fica vazia e o teste falha com 'Validation failed for 1 parameter(s)'"
             )
+    avisos += problemas_http(modulos)
 
     onde = credenciais_literais(bp)
     if onde:
-        problemas.append(
+        erros.append(
             "há credencial escrita no blueprint (chave, token, senha ou cabeçalho Authorization) em "
             + ", ".join(onde[:3]) + ": use a conexão do Make (credential-requests_create); nunca peça a credencial no "
             "chat nem a ponha na entrada do fluxo"
         )
 
-    return problemas
+    return erros, avisos
+
+
+def checar(bp: dict) -> list[str]:
+    """Todos os achados (ERRO e AVISO): lista vazia = nada a conferir. Assinatura mantida para quem já a usa."""
+    erros, avisos = classificar(bp)
+    return erros + avisos
 
 
 def main(argv: list[str]) -> int:
@@ -456,11 +479,15 @@ def main(argv: list[str]) -> int:
     except (OSError, ValueError) as e:
         print(f"não consegui ler o blueprint: {e}")
         return 2
-    problemas = checar(bp)
-    if problemas:
-        for p in problemas:
-            print(f"PROBLEMA: {p}")
+    erros, avisos = classificar(bp)
+    for e in erros:
+        print(f"ERRO: {e}")
+    for a in avisos:
+        print(f"AVISO: {a}")
+    if erros:
         return 1
+    if avisos:
+        return 3
     print("OK: confidencial ligado, interface de entrada no lugar e nenhuma credencial escrita.")
     return 0
 

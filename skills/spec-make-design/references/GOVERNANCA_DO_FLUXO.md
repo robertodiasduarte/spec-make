@@ -22,7 +22,7 @@ escritório descobre a duplicata na conciliação, meses depois.
 
 **Prova no teste de aceite:** a segunda execução da mesma amostra deixa a mesma contagem de registros.
 
-**Sem a chave:** recuse o DESIGN como pronto e peça a chave.
+**Sem a chave:** alerta [A1]; peça a chave.
 
 ## [G1] Aceite humano antes de a IA gravar
 
@@ -40,7 +40,7 @@ escritório.
 **Por quê:** quem responde pelo lançamento é o profissional. "O modelo classificou" não serve de resposta diante de um
 cliente, do fisco ou de um perito.
 
-**Sem o passo:** recuse o DESIGN e diga o que falta; a etapa 4 para antes de criar o fluxo.
+**Sem o passo:** alerta [A1]; diga o que falta e ofereça o desenho com o passo.
 
 ## [G2] Registro do aceite
 
@@ -61,4 +61,4 @@ Make; quando o fluxo já usa Supabase, a 1ª opção é uma tabela de auditoria 
 **Por quê:** com `confidential: true`, o histórico do Make não guarda a entrada nem a saída da IA. Sem o registro, não
 há como reconstruir por que um lançamento foi feito daquele jeito, nem medir se as sugestões são aceitas sem leitura.
 
-**Sem o registro:** recuse o DESIGN como pronto.
+**Sem o registro:** alerta [A1].

@@ -17,8 +17,10 @@ ela lê a sua conta (sem gravar nada), guarda a ficha do fluxo com os números d
 o que a próxima conversa pode alterar e escreve a frase para retomar.
 
 Fluxo com agente de IA dentro (OpenAI, Claude, Gemini)? Instale também a
-[`sdd-prompt-builder`](https://github.com/robertodiasduarte/sdd-starter/releases/latest/download/sdd-prompt-builder.zip),
-que escreve os prompts a partir do contrato que a etapa 3 registra.
+[`prompt-builder-by-rdd`](https://github.com/robertodiasduarte/skills-by-rdd/releases/latest/download/prompt-builder-by-rdd.zip),
+que escreve os prompts a partir do contrato que a etapa 3 registra. Vai acionar o fluxo pelo assistente? A
+[`skill-builder-by-rdd`](https://github.com/robertodiasduarte/skills-by-rdd/releases/latest/download/skill-builder-by-rdd.zip)
+cria a skill que chama o fluxo. Sem elas, a etapa 4 mostra como instalar e segue, com um alerta.
 
 ## Antes de começar
 
@@ -32,15 +34,28 @@ Sem o conector, as skills funcionam no papel: os documentos saem completos, com 
 
 ## O que o método garante
 
-- Nada é ligado na sua conta sem o seu "sim"; antes de gravar ou rodar, a skill diz o que vai acontecer e quantas
+Toda resposta diz em que etapa e em que passo você está, explica cada termo na primeira vez e termina com o próximo
+comando pronto para colar.
+
+Três coisas a skill nunca faz, nem com a sua confirmação:
+
+- Usar segredo, chave ou dado pessoal real no fluxo, na amostra ou nos documentos: conexões são autorizadas por link,
+  dentro do Make, e a amostra é inventada ou pública.
+- Ligar o gatilho sem você responder "Ligar agora" — antes de gravar ou rodar, ela diz o que vai acontecer e quantas
   operações gasta.
+- Apagar ou alterar o que esta conversa não criou, ou o que outro fluxo também usa: ela oferece criar um novo.
+
+O resto a skill avisa e você decide: quando algo está fora do padrão (falta a chave que evita registro duplicado, o
+teste não prova o que devia, o custo passa do plano), ela mostra o risco, recomenda e espera você escolher entre
+"Corrigir agora" e "Seguir assim e registrar o alerta". O que você aceitou fica registrado no documento da etapa e na
+ficha do fluxo.
+
+Também vale sempre:
+
 - O teste de aceite é uma execução de verdade, não uma validação de texto.
 - O fluxo nasce confidencial: o Make não guarda os dados de cada passo no histórico.
-- Fluxo que grava não duplica registro (chave natural); IA que decide não grava sem aceite de uma pessoa, e cada
-  aceite fica registrado.
-- Nenhuma chave ou senha passa pelo chat: conexões são autorizadas por link, dentro do Make.
-- Quem retoma um fluxo só altera o que a ficha diz ser dele, depois de conferir na conta que nada mudou desde a ficha;
-  o que outro fluxo também usa fica só para leitura.
+- O módulo oficial de cada app vem antes da chamada HTTP genérica.
+- Quem retoma um fluxo só altera o que a ficha diz ser dele, depois de conferir na conta que nada mudou desde a ficha.
 
 ## Instalação
 

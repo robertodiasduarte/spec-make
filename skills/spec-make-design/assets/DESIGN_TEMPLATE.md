@@ -12,6 +12,8 @@ organizationId {n} · teamId {n} · plano {nome} · conferido pelo MCP: {sim | n
 |---|---|---|---|---|---|---|
 | 1 | {…} | {…} | {…} | {…} | {nome da conexão · "a autorizar no build" · "não precisa"} | {Supabase: motivo · tabelas · operações ([S1]) · "não se aplica: o fluxo não usa Supabase"} |
 
+{Módulo `http:*` ([N1]): escreva aqui "o app <X> não tem módulo para <operação> — conferido em `app-modules_list` em <data>" · ou "nenhum módulo HTTP"}
+
 ## Fontes consultadas
 
 | App | URL | Data | Módulo e versão lidos | Divergência com a conta |
@@ -46,9 +48,13 @@ Sem Supabase: "não se aplica: o fluxo não usa Supabase".}
 
 {Agenda do Make com o intervalo, ou sob demanda ([S4]), com o motivo. Sem Supabase: "não se aplica: o fluxo não usa Supabase".}
 
-## Prompts de IA
+## Prompts e skills
 
-{Inventário e contrato de PROMPTS_DE_IA.md · ou "não se aplica: o fluxo não tem módulo de IA"}
+| Nome | Tipo | Módulo ou cenário | Entrada | Saída e consumidor | Gera na etapa 4 |
+|---|---|---|---|---|---|
+| {…} | {prompt · skill} | {…} | {…} | {…} | {prompt-builder-by-rdd · skill-builder-by-rdd} |
+
+{Contrato de cada linha (PROMPTS_E_SKILLS.md) · ou "não se aplica: o fluxo não tem módulo de IA nem é acionado pelo assistente"}
 
 ## Interface do fluxo
 
@@ -81,6 +87,10 @@ Arquivo entregue junto: `{FLUXO}.blueprint.json`.
 ```json
 {blueprint}
 ```
+
+## Alertas aceitos
+
+{nenhum — ou uma linha por alerta aceito ([A2] de CONDUCAO.md): - ⚠️ AAAA-MM-DD · [regra] · o que falta · risco: 1 linha}
 
 ## Próxima etapa
 

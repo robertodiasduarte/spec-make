@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-build",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -45,7 +45,7 @@
         "Investiga interface → módulo → conexão → mapeamento",
         "Cada tentativa em 3 partes, com operações gastas",
         "Faz no máximo 3 correções (no máximo 4 execuções)",
-        "Depois da execução que falha após a 3ª correção, para e entrega o resumo e a frase para pedir ajuda"
+        "Depois da execução que falha após a 3ª correção, faz o alerta [A1]; sem a escolha Seguir assim, para e entrega o resumo e a frase para pedir ajuda"
       ]
     },
     {
@@ -79,7 +79,8 @@
       ],
       "input": "DESIGN com módulo de IA e sem inventário de prompts.",
       "expected": [
-        "Para antes do scenarios_create e indica voltar ao spec-make-design"
+        "Alerta [A1] antes do scenarios_create; recomenda voltar ao spec-make-design",
+        "Não cria o fluxo sem a escolha Seguir assim"
       ]
     },
     {
@@ -103,7 +104,7 @@
       "input": "Retomada com HANDOFF anexo; o lastEdit do cenário 6600101 na conta é posterior ao da ficha, e a pessoa pede uma mudança nele.",
       "expected": [
         "Diz 'editado no Make depois da ficha' com os dois horários",
-        "Não chama scenarios_update antes do 'sim' da pessoa"
+        "Alerta [A1]; não chama scenarios_update antes da escolha Seguir assim"
       ]
     },
     {
@@ -126,18 +127,19 @@
       ],
       "input": "DESIGN que grava no Supabase com conexão sem a coluna alcance e sem a seção Prepare o banco.",
       "expected": [
-        "Para antes do scenarios_create, diz o que falta e indica: Use a skill spec-make-design."
+        "Alerta [A1] antes do scenarios_create, nomeando a coluna alcance e a seção Prepare o banco",
+        "Não cria o fluxo sem a escolha Seguir assim"
       ]
     },
     {
       "id": "gatilho-webhook-no-design",
       "type": "negative_control",
       "regras": [
-        "B7"
+        "B8"
       ],
       "input": "DESIGN que toca Supabase com gatilho por webhook do Make e módulo Make an API Call do app supabase; a pessoa pede para criar o fluxo agora.",
       "expected": [
-        "Para antes do scenarios_create, diz o que falta (só os 5 módulos do banco; gatilho só pela agenda do Make ou sob demanda) e indica: Use a skill spec-make-design."
+        "Para antes do scenarios_create, sem alerta: fora do alcance do kit (só os 5 módulos do banco; gatilho só pela agenda do Make ou sob demanda) e indica: Use a skill spec-make-design."
       ]
     }
   ]

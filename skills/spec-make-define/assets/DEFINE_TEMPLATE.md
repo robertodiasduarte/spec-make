@@ -21,10 +21,10 @@
 
 ## Critérios de aceite
 
-| ID | Frase de escritório | EARS |
-|---|---|---|
-| C1 | {Quando …, o fluxo …} | {When …, the fluxo shall …} |
-| C2 | {Se …, o fluxo …} | {If …, then the fluxo shall …} |
+| ID | Frase de escritório | EARS | Em outras palavras |
+|---|---|---|---|
+| C1 | {Quando …, o fluxo …} | {When …, the fluxo shall …} | Em outras palavras: {a mesma coisa em linguagem do dia a dia} |
+| C2 | {Se …, o fluxo …} | {If …, then the fluxo shall …} | Em outras palavras: {…} |
 
 While: {critério ou "não se aplica porque …"} · Where: {critério ou "não se aplica porque …"}
 
@@ -58,6 +58,10 @@ passa quando: {…}
 | Problema | Quem usa | Objetivos | Aceite | Escopo | Total |
 |---|---|---|---|---|---|
 | {0-3} | {0-3} | {0-3} | {0-3} | {0-3} | {n}/15 |
+
+## Alertas aceitos
+
+{nenhum — ou uma linha por alerta aceito ([A2] de CONDUCAO.md): - ⚠️ AAAA-MM-DD · [regra] · o que falta · risco: 1 linha}
 
 ## Próxima etapa
 

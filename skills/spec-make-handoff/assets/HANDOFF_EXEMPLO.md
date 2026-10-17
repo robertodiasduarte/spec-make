@@ -41,6 +41,10 @@
 - Testar a recusa pelo link (parte 2/2) com um boleto de teste.
 - Decidir se o boleto vencido vira aviso no mesmo dia ou só no resumo semanal.
 
+## Alertas aceitos
+
+nenhum
+
 ## Casos e testes em aberto
 
 - Boleto de arrecadação (48 dígitos) ainda não passou por um teste de aceite.

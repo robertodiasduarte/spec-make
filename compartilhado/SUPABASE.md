@@ -1,6 +1,6 @@
 # Fluxo com Supabase — as receitas das regras [S1] a [S5]
 
-Este arquivo é igual em todas as skills do spec-make. As regras curtas, com o que recusar, ficam no `SKILL.md` da skill
+Este arquivo é igual em todas as skills do spec-make. As regras curtas, com o que vira alerta e o que fica fora do alcance, ficam no `SKILL.md` da skill
 `spec-make-design`; aqui fica o como fazer. Vale quando o fluxo **toca Supabase**: tem módulo do app `supabase`,
 `supabase-management` ou `postgres`, ou chama por HTTP o endereço de um projeto Supabase.
 

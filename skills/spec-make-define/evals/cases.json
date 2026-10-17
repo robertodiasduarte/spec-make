@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-define",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -25,7 +25,8 @@
       ],
       "input": "A pessoa propõe como teste rodar o fluxo de cadastro uma vez e ver a linha aparecer.",
       "expected": [
-        "Recusa como incompleto: fluxo que grava exige a segunda execução da mesma amostra com a mesma contagem"
+        "Alerta [A1]: fluxo que grava sem a 2ª execução da mesma amostra; oferece Corrigir agora e Seguir assim",
+        "Só registra em Alertas aceitos se a pessoa escolher Seguir assim"
       ]
     },
     {
@@ -36,8 +37,8 @@
       ],
       "input": "A pessoa propõe como teste: 'o Make validou o blueprint'.",
       "expected": [
-        "Recusa e pede amostra e resultado esperado",
-        "Cita que validação não é execução"
+        "Alerta [A1]: validação não é execução; recomenda a amostra e o resultado esperado",
+        "Não segue sem a escolha Seguir assim"
       ]
     },
     {

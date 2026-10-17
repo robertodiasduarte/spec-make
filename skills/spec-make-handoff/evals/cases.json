@@ -1,6 +1,6 @@
 {
   "skill": "spec-make-handoff",
-  "version": "1.3.3",
+  "version": "1.4.0",
   "formato": "Cenários comportamentais escritos. Cada caso descreve a entrada e o que a skill tem de fazer; o manifest.json diz quais foram executados.",
   "cases": [
     {
@@ -27,8 +27,8 @@
       ],
       "input": "A ficha pronta para entregar ainda tem '{próxima ação}' no prompt de retomada.",
       "expected": [
-        "Não entrega: confere a ficha, busca o valor ou apaga a linha",
-        "Só entrega com a conferência limpa"
+        "Alerta [A1]: trecho de modelo na ficha; recomenda buscar o valor ou apagar a linha",
+        "Só entrega com o trecho se a pessoa escolher Seguir assim"
       ]
     },
     {

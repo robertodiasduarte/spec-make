@@ -21,9 +21,10 @@ A cada tentativa, fale com a pessoa em três partes:
 - **o que eu já fiz** — a hipótese conferida, a correção, a tentativa (n de 3) e as operações gastas até aqui;
 - **o que você faz agora** — uma ação: "nada, vou rodar de novo" ou "autorize a conexão neste link".
 
-**Teto: 3 tentativas** de correção para o mesmo teste: o teste roda no máximo 4 vezes (a 1ª execução e uma depois
-de cada correção). Se a execução depois da 3ª correção ainda falhar, pare: não corrija nem rode de novo, deixe o fluxo
-sob demanda como está, entregue o resumo (as hipóteses, o que o Make respondeu, as operações gastas) e a frase pronta
-para pedir ajuda: "Meu fluxo {nome} falhou no teste com {erro}; já conferi interface, módulo, conexão e mapeamento."
+**Teto: 3 tentativas** de correção para o mesmo teste sem perguntar: o teste roda até 4 vezes antes do alerta (a 1ª
+execução e uma depois de cada correção). Se a execução depois da 3ª correção ainda falhar: alerta [A1] — cada nova
+tentativa gasta operações e o problema pode estar no desenho; recomende parar e entregar o resumo. Sem a escolha de
+"Seguir assim", não corrija nem rode de novo, deixe o fluxo sob demanda e entregue o resumo (as hipóteses, o que o Make
+respondeu, as operações gastas) e a frase pronta para pedir ajuda; cada "Seguir assim" libera mais 1 correção. A frase: "Meu fluxo {nome} falhou no teste com {erro}; já conferi interface, módulo, conexão e mapeamento."
 
 Correções só no fluxo que esta conversa criou ([B4]).

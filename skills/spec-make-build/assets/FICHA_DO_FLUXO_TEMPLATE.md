@@ -30,7 +30,7 @@ Make → Cenários → {nome} · {link} · organização {nome} · equipe {nome}
 |---|---|
 | E-mail do Make "execução incompleta" | Abra o fluxo → Histórico → a execução marcada; o erro diz o módulo |
 | Erro de conexão | Reautorize a conexão (tabela acima) e rode de novo a execução incompleta |
-| Resultado errado sem erro | Pare o gatilho, rode a amostra do DEFINE e compare; volte à etapa de design se o desenho estiver errado |
+| Resultado errado sem erro | Desligue o gatilho, rode a amostra do DEFINE e compare; a etapa 3 (spec-make-design) corrige se o desenho estiver errado |
 | Fluxo desativado sozinho | O Make desativa depois de {maxErrors} falhas seguidas; corrija a causa e ative de novo |
 
 ## Proteções que já vêm no fluxo
@@ -38,6 +38,14 @@ Make → Cenários → {nome} · {link} · organização {nome} · equipe {nome}
 - Confidencial: o Make não guarda os dados de cada passo no histórico.
 - {Chave natural: rodar de novo o mesmo item não duplica registro (chave = …)}
 - {Aceite humano e registro do aceite, se houver IA}
+
+## Prompts e skills gerados
+
+{nome · tipo (prompt ou skill) · builder usado (prompt-builder-by-rdd, skill-builder-by-rdd ou "provisório") · onde está · ou "não se aplica"}
+
+## Alertas aceitos
+
+{nenhum — ou uma linha por alerta aceito ([A2] de CONDUCAO.md): - ⚠️ AAAA-MM-DD · [regra] · o que falta · risco: 1 linha — é o que falta corrigir neste fluxo}
 
 ## Teste de aceite
 
