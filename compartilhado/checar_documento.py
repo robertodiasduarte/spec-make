@@ -6,7 +6,7 @@ Uso:
 
 Sai 0 sem achado; 1 com ao menos um ERRO (URL de webhook, credencial, CPF, CNPJ ou sequência de 11+ dígitos: segredo ou
 dado pessoal inteiro, que o documento não guarda); 3 só com AVISO (e-mail pessoal inteiro); 2 quando o arquivo não pode ser
-lido. Cada achado sai numa linha, `ERRO:` ou `AVISO:`, com a seção. O arquivo do aluno (o extrato, a folha) pode ter o dado
+lido. Cada achado sai numa linha, `ERRO:` ou `AVISO:`, com a seção. O arquivo da pessoa (o extrato, a folha) pode ter o dado
 inteiro; o documento que a skill entrega guarda só a estrutura, com exemplo mascarado (regra [F1] de CONDUCAO.md).
 
 O que confere:
