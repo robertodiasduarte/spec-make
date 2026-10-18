@@ -11,7 +11,7 @@ funciona é rodá-lo com uma amostra e comparar o resultado.
 ```text
 TESTE DE ACEITE
 modo: sob demanda com a amostra | gatilho real
-amostra: <descrição; sem dado pessoal real; origem: pública | inventada>
+amostra: <estrutura; exemplo mascarado> (origem: real, mascarada aqui | inventada | pública)
 resultado esperado: <valores concretos que devem aparecer, e onde>
 grava registros: sim | não
 segunda execução: <se grava: rodar a mesma amostra de novo (gatilho real: um item com a mesma chave natural — ver a tabela abaixo); esperado = mesma contagem de registros no destino>
@@ -33,4 +33,4 @@ passa quando: <resultado esperado igual ao obtido> e <segunda execução process
 - Resultado esperado sem valor ("tem que dar certo"): pergunte o que deve aparecer.
 - Fluxo que grava sem a segunda execução: alerta [A1] — sem ela, um fluxo que repete o mesmo item duplica registros sem
   ninguém perceber (e-mail reaberto, linha reprocessada, tentativa depois de falha).
-- Amostra com dado pessoal real: bloqueio ([X1]); troque por dado inventado ou público.
+- Amostra com dado real no documento: mascare pela tabela do [F1] e confira pelo [F2]; o teste roda na origem de teste, com o fluxo confidencial.

@@ -107,6 +107,14 @@ class ChecarHandoff(unittest.TestCase):
                     self.assertEqual(r.returncode, 1 if nome in erro else 3, r.stdout)
         self.assertIn("## Alertas aceitos", EXEMPLO)
         self.assertEqual(ch.problemas(EXEMPLO), [])
+    def test_s7_mensagem_de_11_digitos_oferece_mascarar(self):
+        """SPEC_MAKE_S7 AT-005: a severidade não muda (ERRO), mas a mensagem deixa de mandar "apagar" e oferece a máscara."""
+        erros, _ = ch.classificar(EXEMPLO + "\nCNPJ " + "1" * 11 + "\n")
+        msg = next(e for e in erros if "11+ dígitos" in e)
+        self.assertIn("mascare pela tabela do [F1]", msg)
+        self.assertIn("grupos de 8 com hífen", msg)
+        self.assertNotIn("ou apague", msg)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -157,10 +157,11 @@ REGRAS: list[Regra] = [
                   'spec-make-build." quando só implementa; a etapa em que a conversa parou, se parou no meio)'],
           em_ordem=["qual skill abrir", "quais arquivos anexar", "onde paramos", "último teste", "próxima ação"]),
     Regra("H4", _skill("spec-make-handoff"), at="AT-004",
-          contem=["checar_handoff.py", "URL de webhook", "11 ou mais dígitos", "sem id",
-                  # SPEC_MAKE_S6 AT-007: ERRO (ou 2) não entrega; AVISO vira alerta
-                  "Saiu 1 (ERRO: URL de webhook ou sequência de 11 ou mais dígitos) ou 2 (a ficha não pôde ser lida): não "
-                  "entregue — apague o trecho ou grave a ficha de novo e confira outra vez ([X1]).",
+          contem=["checar_handoff.py", "checar_documento.py", "URL de webhook", "11 ou mais dígitos", "sem id",
+                  # SPEC_MAKE_S6 AT-007: ERRO (ou 2) não entrega; AVISO vira alerta. SPEC_MAKE_S7: a ficha passa também pelo [F2]
+                  "Saiu 1 (ERRO: URL de webhook, credencial, CPF ou CNPJ inteiro, ou sequência de 11 ou mais dígitos) ou 2 "
+                  "(a ficha não pôde ser lida): não entregue — troque o trecho pela máscara do [F1] (segredo: pelo id) ou grave "
+                  "a ficha de novo e confira outra vez ([X1]).",
                   "Saiu 3 (AVISO: seção faltando, trecho de modelo, recurso sem id): alerta [A1] para cada aviso — a próxima "
                   "conversa pode retomar pelo recurso errado."]),
     Regra("E1", _skill("spec-make-handoff"), at="AT-001",
@@ -280,10 +281,10 @@ REGRAS: list[Regra] = [
                   "alerta — o design já decidiu; cada outro aviso vira alerta [A1].",
                   "Rode o verificador em todo fluxo; se o ambiente não executa código, faça a mesma conferência lendo."]),
     Regra("D1", _skill("spec-make-define"), at="AT-008",
-          contem=["sem dado pessoal real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
+          contem=["agregados ou mascarados quando a amostra é real", "resultado esperado", "segunda execução da mesma", "mesma contagem",
                   # SPEC_MAKE_S6 (varredura de polaridade numa cópia): o trecho curto aparece 2× no bloco; tirar o "sem" de
                   # 1 deles passava
-                  "Ele traz: a amostra (sem dado pessoal real), o resultado esperado escrito com valores",
+                  "Ele traz: a amostra (a estrutura, com exemplo mascarado, e de onde veio), o resultado esperado escrito com valores",
                   # SPEC_MAKE_S6: o gate de execução continua; a falta dele vira alerta
                   'Teste que só confere uma execução de um fluxo que grava, ou "blueprint validado" como teste de aceite: '
                   "alerta [A1] — os validadores do Make já aprovaram blueprint que falhou na primeira execução, e sem a 2ª "
@@ -300,7 +301,9 @@ REGRAS: list[Regra] = [
     Regra("E2", _skill("spec-make-brainstorm"), at="AT-001",
           contem=["Na primeira resposta, depois da linha de versão e do mapa, explique em 4 a 6 linhas",
                   "o que é o spec-make, as 4 etapas e o handoff, o que a pessoa recebe no fim",
-                  "conta no Make, o conector do Make com as ferramentas que gravam e uma amostra sem dado pessoal real.",
+                  "conta no Make, o conector do Make com as ferramentas que gravam e uma amostra da rotina — pode ser o arquivo "
+                  "real.",
+                  "Depois do parágrafo, escreva o aviso do [F1] em até 3 linhas, sem ícone de alerta e sem pergunta.",
                   "`environment_get` (conta e equipe), as ferramentas `scenarios_create`, `scenarios_activate` e "
                   "`scenarios_run`, e `connections_list`",
                   "Faltando algum, diga como resolver em passos numerados (references/PROTOCOLO.md) e siga a conversa; nunca "
@@ -390,11 +393,41 @@ REGRAS += [
     Regra("X1", CONDUCAO, at="AT-005",
           contem=["Estes três não viram alerta e nenhuma confirmação os libera; diga o que fazer no lugar, na mesma mensagem, "
                   "sem culpar a pessoa:",
-                  "Segredo, credencial ou dado pessoal real (CPF, nome de pessoa, salário, dado de cliente)",
-                  "inclusive o endereço de webhook, que carrega o código de acesso.",
+                  # SPEC_MAKE_S7: dado pessoal saiu do bloqueio; o item 1 é só segredo (test_contrato prende "3 itens, 0 dado pessoal")
+                  "Segredo, credencial ou endereço de webhook (que carrega o código de acesso) no blueprint, na amostra, na "
+                  "ficha ou em qualquer documento.",
+                  "No lugar: conexão autorizada por link, ou só o id.",
                   'Ligar o gatilho sem a resposta "Ligar agora" à pergunta do gatilho da etapa 4 ([B2]).',
                   "Apagar, mudar a estrutura ou alterar recurso que esta conversa não criou e que a ficha não marca como "
                   "`desta família`, ou marcado `compartilhado`"]),
+    # SPEC_MAKE_S7 AT-001/AT-002/AT-006/AT-007: o arquivo real da rotina e a conferência do documento
+    Regra("F1", CONDUCAO, at="AT-001",
+          contem=["A pessoa pode anexar ou colar o arquivo real da rotina (extrato, nota fiscal, folha, CSV com CNPJ ou CPF) em "
+                  "qualquer etapa.",
+                  "Nunca peça dado inventado ou público no lugar dele.",
+                  "diga em até 6 linhas o que entendeu do arquivo",
+                  "Se leu só parte, diga quanto leu",
+                  "guardam só a estrutura e a regra, com exemplo mascarado, e uma linha dizendo o que foi mascarado. "
+                  "Nunca copie linha do arquivo.",
+                  "| CPF | `***.123.456-**` |", "| CNPJ de cliente | `12.345.***/****-90` |",
+                  "| Nome de pessoa | o papel:", "| Salário ou valor de pessoa |", "| E-mail pessoal | `m***@dominio.com.br` |",
+                  "CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` na mesma linha.",
+                  "Se o documento anterior diz `origem: real`, abra com uma linha:",
+                  "Dado real só na origem de teste, com 1 item por execução e o fluxo confidencial ([B1]).",
+                  "teste com dado real da rotina · confidencial · origem de teste: <nome>",
+                  "escreva em até 3 linhas, sem ícone de alerta e sem pergunta:",
+                  "Sobre o seu arquivo: pode anexar o real.",
+                  'Sem o conector do Make ([M1]), tire o trecho "(zona <zona>)" e não invente uma zona.',
+                  "Isto é aviso, não alerta [A1]."]),
+    Regra("F2", CONDUCAO, at="AT-003",
+          contem=["rode `python3 scripts/checar_documento.py <arquivo>`",
+                  "Sem Python, confira à mão os mesmos itens: endereço de webhook, sequência de 11 ou mais dígitos, CPF e CNPJ "
+                  "inteiros, chave ou senha escrita no texto.",
+                  "Saiu 1 (ERRO): não entregue.",
+                  "diga em 3 partes o que achou, o que já fez e que a pessoa não precisa fazer nada.",
+                  "Saiu 2 (arquivo ilegível): grave o documento de novo e confira outra vez.",
+                  "Saiu 3 (AVISO: e-mail pessoal inteiro): alerta [A1]",
+                  "Saiu 0: entregue."]),
     Regra("X2", CONDUCAO, at="AT-005",
           contem=["e, num fluxo com Supabase, gatilho que não seja a agenda do Make nem a execução sob demanda ([S3])",
                   "não viram alerta nem pergunta: diga que o spec-make não desenha esse caminho, porque usa o Supabase só "
@@ -406,18 +439,33 @@ REGRAS += [
 # fica fora de qualquer âncora (o passo a passo numerado).
 FRASES: dict[str, list[str]] = {
     # SPEC_MAKE_S6 AT-006 (contrato C2 #4): define, design e handoff listam os alertas aceitos das etapas anteriores
-    "spec-make-define/SKILL.md": ["Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
-                                  "Sem o BRAINSTORM, siga o [A3]."],
     "spec-make-design/SKILL.md": ["Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+                                  "Preencha o template com o blueprint no fim, confira-o pelo **[F2]** e feche com [E1].",
+                                  "Se a amostra diz `origem: real`, diga a linha de continuidade do **[F1]**.",
                                   "Sem o DEFINE, siga o [A3].",
                                   "Depois de 3 tentativas no mesmo módulo: alerta [A1] — o módulo pode não aceitar essa "
                                   "configuração na sua conta",
                                   "**A pessoa quer a IA gravando direto:** alerta [A1] pelo [G1]"],
-    "spec-make-handoff/SKILL.md": ['Mantenha em "Falta" os alertas aceitos das etapas ([A2]).'],
+    "spec-make-handoff/SKILL.md": ['Mantenha em "Falta" os alertas aceitos das etapas ([A2]).',
+                                   # SPEC_MAKE_S7 AT-003: a ficha também passa por checar_documento ([F2])
+                                   "e depois `python3 scripts/checar_documento.py HANDOFF_<FLUXO>.md` ([F2]).",
+                                   "troque o trecho pela máscara do [F1] (segredo: pelo id) ou grave a ficha de novo"],
+    # SPEC_MAKE_S7 AT-003: o passo "documento" cita o [F2] nas 4 skills que entregam documento
+    "spec-make-brainstorm/SKILL.md": ["Preencha o template, confira-o pelo **[F2]**, entregue o arquivo e feche com **[E1]**.",
+                                      "Peça uma amostra da rotina (pode ser o arquivo real), devolva o que entendeu dela pelo **[F1]**"],
+    "spec-make-define/SKILL.md": ["Liste no começo os alertas aceitos das etapas anteriores ([A2]).",
+                                  "Sem o BRAINSTORM, siga o [A3].",
+                                  "Preencha o template, confira-o pelo **[F2]** e feche com [E1].",
+                                  "Se a amostra diz `origem: real`, diga a linha de continuidade do **[F1]**."],
     # SPEC_MAKE_S6 AT-002 (contrato C2 #5): os 4 pré-requisitos, cada um com passos (test_contrato conta os passos)
     "spec-make-brainstorm/references/PROTOCOLO.md": ["### Conector ausente", "### Conector só de leitura",
                                                      "### Conexão faltando", "### Sem amostra",
-                                                     "Comece pela linha de versão e pelo mapa da regra [E1]."],
+                                                     "Comece pela linha de versão e pelo mapa da regra [E1].",
+                                                     # SPEC_MAKE_S7 AT-006 / UX SHOULD-3: o aviso e os estados do anexo
+                                                     "Sobre o seu arquivo: pode anexar o real.",
+                                                     "### Anexo que a skill não consegue ler",
+                                                     "Arquivo com senha: a senha é segredo ([X1]); não peça nem use;",
+                                                     "nunca invente o conteúdo."],
     # SPEC_MAKE_S6 AT-003: o termo e a pergunta remetem ao CONDUCAO.md; o EARS é ensinado 1 vez, com o fluxo da pessoa
     "spec-make-brainstorm/references/COPY.md": ["a lista e a frase de cada termo estão em [CONDUCAO.md](CONDUCAO.md) [K2]."],
     "spec-make-define/references/EARS.md": ["## Como ensinar (1 vez por conversa)",
@@ -429,6 +477,10 @@ FRASES: dict[str, list[str]] = {
         # rodada 1b (R5@opus): o resumo do Quick start não pode dizer que só o [B8] para
         "O que para o build está em **[B8]** e nos bloqueios [X1] ([B2], [B4], [B6]); o resto vira alerta.",
         "Recibo com operações gastas e os alertas aceitos que ficaram pendentes ([A2])",
+        # SPEC_MAKE_S7 AT-003/AT-007: o recibo passa pelo [F2]; com origem real, o teste fica na origem de teste, confidencial
+        "confira-o pelo **[F2]** e faça a pergunta **[B2]**.",
+        'com `origem: real` no DEFINE, o teste só na origem de teste, com 1 item e o fluxo confidencial, e a linha "teste com '
+        'dado real da rotina" ([F1])',
         "a ficha os repete na seção `Alertas aceitos` ([A2]).",
         "Sem algum dos três documentos, siga o [A3].",
         # rodada 1b (A2@fable): DEFINE sem teste aceito no Define — o build monta o mínimo; sem amostra, alerta
@@ -446,16 +498,17 @@ FRASES: dict[str, list[str]] = {
         "| nome |", "| tipo | prompt (módulo de IA) ou skill (fluxo acionado pelo assistente) |", "| módulo |",
         "| versão | v1 |", "| provedor e modelo |", "| entrada |", "| saída e consumidor |", "| repetição |", "| completude |",
         "| se faltar dado |", "| autônomo ou com aceite | com aceite sempre que grava ([G1]) |",
-        "| teste mínimo | 1 entrada de exemplo (sem dado pessoal real) e a saída esperada |",
+        "| teste mínimo | 1 entrada de exemplo (mascarada, [F1]) e a saída esperada |",
         "| ferramenta MCP |", "| campos da interface |", "| limite | a skill só chama o cenário; não grava nada fora dele |",
         "| prompt | a skill `prompt-builder-by-rdd` | antes de criar o fluxo",
         "| skill | a skill `skill-builder-by-rdd` | depois do teste aprovado"],
     "spec-make-define/references/VERIFY_GATE_EXECUCAO.md": [
-        "amostra: <descrição; sem dado pessoal real; origem: pública | inventada>",
+        "amostra: <estrutura; exemplo mascarado> (origem: real, mascarada aqui | inventada | pública)",
         '"O blueprint foi validado" como teste: alerta [A1]; peça amostra e resultado esperado.',
         "Fluxo que grava sem a segunda execução: alerta [A1] — sem ela, um fluxo que repete o mesmo item duplica registros "
         "sem ninguém perceber",
-        "Amostra com dado pessoal real: bloqueio ([X1]); troque por dado inventado ou público."],
+        "Amostra com dado real no documento: mascare pela tabela do [F1] e confira pelo [F2]; o teste roda na origem de teste, "
+        "com o fluxo confidencial."],
     "spec-make-build/references/PROTOCOLO.md": [
         "a contagem não pode mudar e a 2ª execução tem de ter processado o item",
         "Execução que não processou nada também gasta 1 operação: com fila, confira que a linha nova voltou como "

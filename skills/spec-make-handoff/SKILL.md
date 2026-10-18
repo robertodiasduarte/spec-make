@@ -5,7 +5,7 @@ description: "Mantém a ficha de um fluxo do Make para continuar depois — um a
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10"
   fase: "transversal"
 ---
@@ -13,7 +13,7 @@ metadata:
 # spec-make — Handoff: a ficha para continuar depois
 
 Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
-`spec-make-handoff v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-handoff v1.5.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 [references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
@@ -28,7 +28,8 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
    [assets/HANDOFF_EXEMPLO.md](assets/HANDOFF_EXEMPLO.md)), sem segredo (**[H2]**). Mantenha em "Falta" os alertas aceitos
    das etapas ([A2]).
 5. Escreva o prompt de retomada (**[H3]**).
-6. Confira a ficha (**[H4]**) com [scripts/checar_handoff.py](scripts/checar_handoff.py).
+6. Confira a ficha (**[H4]**) com [scripts/checar_handoff.py](scripts/checar_handoff.py) e
+   [scripts/checar_documento.py](scripts/checar_documento.py).
 7. Entregue a ficha e o prompt e feche com **[E1]**.
 
 ## Quando usar / Quando não usar
@@ -83,8 +84,9 @@ implementa; a etapa em que a conversa parou, se parou no meio), quais arquivos a
 ou apaga.
 
 **[H4] Conferência da ficha.** Antes de entregar, rode `python3 scripts/checar_handoff.py HANDOFF_<FLUXO>.md` se o
-ambiente executar código. Saiu 1 (ERRO: URL de webhook ou sequência de 11 ou mais dígitos) ou 2 (a ficha não pôde ser
-lida): não entregue — apague o trecho ou grave a ficha de novo e confira outra vez ([X1]). Saiu 3 (AVISO: seção
+ambiente executar código, e depois `python3 scripts/checar_documento.py HANDOFF_<FLUXO>.md` ([F2]). Saiu 1 (ERRO: URL de
+webhook, credencial, CPF ou CNPJ inteiro, ou sequência de 11 ou mais dígitos) ou 2 (a ficha não pôde ser lida): não
+entregue — troque o trecho pela máscara do [F1] (segredo: pelo id) ou grave a ficha de novo e confira outra vez ([X1]). Saiu 3 (AVISO: seção
 faltando, trecho de modelo, recurso sem id): alerta [A1] para cada aviso — a próxima conversa pode retomar pelo recurso
 errado. Sem Python, confira à mão os mesmos itens: as quatro seções
 obrigatórias (Ficha, Inventário e custódia, Prompt de retomada, Histórico de sessões) com o título exato; nenhum
@@ -150,6 +152,7 @@ a conta, que 170102 é usado por outros fluxos e que a mudança é com a etapa 4
 - `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/HANDOFF_TEMPLATE.md` · `assets/HANDOFF_EXEMPLO.md`
 - `scripts/checar_handoff.py` — confere a ficha; sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
+- `scripts/checar_documento.py` — confere webhook, credencial, CPF, CNPJ e 11+ dígitos no documento ([F2])
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

@@ -5,14 +5,14 @@ description: "Conduz a etapa 2 de 4 do spec-make: transforma o BRAINSTORM de um 
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 2: Define do fluxo
 
 Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
-`spec-make-define v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-define v1.5.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 [references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
@@ -39,7 +39,7 @@ etapa 3. Não cria nem altera nada na conta do Make.
 ## Dados necessários
 
 - O `BRAINSTORM_<FLUXO>.md`.
-- A amostra e o resultado esperado registrados nele (sem dado pessoal real).
+- A amostra e o resultado esperado registrados nele (estrutura com exemplo mascarado; `origem: real` quando veio de arquivo real).
 - Plano e operações por mês da conta (do BRAINSTORM ou consultados de novo pelo MCP).
 - Respostas da pessoa às ambiguidades.
 
@@ -48,7 +48,7 @@ etapa 3. Não cria nem altera nada na conta do Make.
 Siga [references/PROTOCOLO.md](references/PROTOCOLO.md). Resumo:
 
 1. **Leitura.** Leia o BRAINSTORM inteiro. Liste o que está decidido e o que está "a confirmar". Liste no começo os
-   alertas aceitos das etapas anteriores ([A2]).
+   alertas aceitos das etapas anteriores ([A2]). Se a amostra diz `origem: real`, diga a linha de continuidade do **[F1]**.
 2. **Requisitos.** Problema em 1 frase; quem usa; objetivos MUST/SHOULD; o que fica de fora.
 3. **Critérios de aceite.** De 3 a 8, cada um em três linhas ([D3]). Inclua pelo menos um "Se der
    errado" (If/Then): app fora do ar, dado faltando, conexão expirada.
@@ -57,10 +57,11 @@ Siga [references/PROTOCOLO.md](references/PROTOCOLO.md). Resumo:
 6. **Ambiguidades.** Marque `A CONFIRMAR:` no ponto exato e pergunte, uma por mensagem, com a opção recomendada
    primeiro. Integre a resposta no corpo do documento.
 7. **Clareza.** [D2].
-8. **Documento.** Preencha o template e feche com [E1].
+8. **Documento.** Preencha o template, confira-o pelo **[F2]** e feche com [E1].
 
 **[D1] Gate de execução.** O teste de aceite do fluxo é uma execução de verdade, não uma validação de texto. Ele
-traz: a amostra (sem dado pessoal real), o resultado esperado escrito com valores, o modo de teste (sob demanda com
+traz: a amostra (a estrutura, com exemplo mascarado, e de onde veio), o resultado esperado escrito com valores (agregados ou
+mascarados quando a amostra é real), o modo de teste (sob demanda com
 os dados da amostra, ou gatilho real) e, quando o fluxo grava registros em algum lugar, a segunda execução da mesma
 amostra com a mesma contagem de registros no destino. Teste que só confere uma execução de um fluxo que grava, ou
 "blueprint validado" como teste de aceite: alerta [A1] — os validadores do Make já aprovaram blueprint que falhou na
@@ -93,12 +94,13 @@ BRAINSTORM e este DEFINE e diga: Use a skill spec-make-design."
 - [ ] Fluxo que grava: segunda execução da mesma amostra com a mesma contagem
 - [ ] Orçamento de operações contra o plano
 - [ ] `A CONFIRMAR:` aberto ou clareza abaixo de 12 de 15: alerta [D2] feito e, se aceito, registrado
+- [ ] Documento conferido pelo [F2] antes de entregar
 - [ ] Seção `Alertas aceitos` preenchida (ou "nenhum") e fecho [K5] com a frase da próxima etapa
 
 ## Tratamento de exceções
 
 - **Sem BRAINSTORM:** [A3].
-- **Amostra com dado pessoal:** bloqueio [X1]: não use; peça uma inventada ou pública.
+- **A pessoa cola segredo, chave ou endereço de webhook:** bloqueio [X1]: não use; mostre a conexão autorizada por link.
 - **Resultado esperado vago ("tem que funcionar"):** pergunte o valor concreto que deve aparecer.
 - **Orçamento acima do plano:** [D2]; mostre a conta e recomende menos execuções, menos passos ou outro plano.
 - **A pessoa pede para pular o teste:** alerta [A1] pelo [D1]: sem ele, a etapa 4 não tem como saber se o fluxo
@@ -123,6 +125,7 @@ resultado esperado.
 - `references/CONDUCAO.md` — mapa de posição, glossário, pergunta de decisão, alerta, alertas aceitos e bloqueios
 - `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/DEFINE_TEMPLATE.md`
+- `scripts/checar_documento.py` — confere webhook, credencial, CPF, CNPJ e 11+ dígitos no documento ([F2]); sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

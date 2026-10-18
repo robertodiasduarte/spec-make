@@ -36,6 +36,7 @@ Make → Cenários → {nome} · {link} · organização {nome} · equipe {nome}
 ## Proteções que já vêm no fluxo
 
 - Confidencial: o Make não guarda os dados de cada passo no histórico.
+- {Teste com dado real da rotina · confidencial · origem de teste: {nome} — só quando o DEFINE tem `origem: real`}
 - {Chave natural: rodar de novo o mesmo item não duplica registro (chave = …)}
 - {Aceite humano e registro do aceite, se houver IA}
 

@@ -5,14 +5,14 @@ description: "Conduz a etapa 1 de 4 do spec-make: transforma uma rotina do escri
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 1: Brainstorm do fluxo
 
 Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
-`spec-make-brainstorm v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-brainstorm v1.5.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 [references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
@@ -25,7 +25,7 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 4. Faça perguntas uma por vez até entender: o que dispara a rotina, o que ela produz, onde os dados moram, quem confere.
 5. Confira a viabilidade na conta pela regra **[N1]** (módulo oficial antes de HTTP) e `connections_list` para o que já
    está conectado.
-6. Peça uma amostra sem dado pessoal real.
+6. Peça uma amostra da rotina; pode ser o arquivo real, lido pelo **[F1]**.
 7. Proponha 2 ou 3 jeitos de montar o fluxo, com a recomendação primeiro.
 8. Corte o que não é necessário agora e valide em 2 blocos curtos.
 9. Entregue `BRAINSTORM_<FLUXO>.md` usando [assets/BRAINSTORM_TEMPLATE.md](assets/BRAINSTORM_TEMPLATE.md) e feche com a regra **[E1]**.
@@ -42,8 +42,8 @@ brainstorm de uma versão nova). Não cria nem altera nada na conta do Make.
 ## Dados necessários
 
 - A rotina, contada pela pessoa: gatilho, entradas, saídas, frequência, quem confere.
-- Uma amostra do que entra no fluxo (um e-mail, uma linha de planilha, um número de nota), **sem dado pessoal
-  real**: CPF, nome de pessoa, salário e dado de cliente ficam de fora; use dado público ou inventado
+- Uma amostra do que entra no fluxo (um e-mail, uma linha de planilha, um número de nota): pode ser o **arquivo real**
+  da rotina, lido pelo [F1]; os documentos guardam só a estrutura, com exemplo mascarado
   ([references/COPY.md](references/COPY.md)).
 - Da conta, pelo MCP: organização, equipe, plano, operações por mês, conexões existentes e apps disponíveis.
 - Opcional: quanto tempo a rotina leva hoje, por mês (só para mostrar o "hoje × amanhã" com a conta dela).
@@ -60,13 +60,14 @@ Siga [references/PROTOCOLO.md](references/PROTOCOLO.md). Resumo:
 3. **Viabilidade na conta.** Para cada passo, `apps_recommend` com a intenção em uma frase. Mostre no máximo 3 apps
    por passo, pelo rótulo do módulo ("Buscar CNPJ"), não pelo nome técnico. Aplique [N1].
    Em seguida, `connections_list`: diga o que já está conectado e o que faltará autorizar no build.
-4. **Amostra.** Peça uma amostra sem dado pessoal real e anote o resultado esperado com ela.
+4. **Amostra.** Peça uma amostra da rotina (pode ser o arquivo real), devolva o que entendeu dela pelo **[F1]** e anote o
+   resultado esperado com ela.
 5. **Abordagens.** 2 ou 3 jeitos de montar, cada um com prós, contras e custo aproximado em operações por mês contra
    o plano. Recomende um e explique por quê.
 6. **Corte.** Para cada parte, pergunte se é necessária agora. Registre o que saiu e por quê.
 7. **Validação.** Apresente o fluxo em 2 blocos curtos (o que faz e com quais apps; o que acontece quando falha) e
    peça confirmação de cada um.
-8. **Documento.** Preencha o template, entregue o arquivo e feche com **[E1]**.
+8. **Documento.** Preencha o template, confira-o pelo **[F2]**, entregue o arquivo e feche com **[E1]**.
 
 **[M1] Sem o conector do Make.** Se a conversa não tiver o MCP do Make, avise em uma frase, siga o mesmo roteiro no
 papel e marque cada item que depende da conta (apps nativos, conexões, plano) como "a confirmar na conta". Não afirme
@@ -80,8 +81,9 @@ arquivo e diga: Use a skill spec-make-define."
 
 **[E2] Abertura e pré-requisitos.** Na primeira resposta, depois da linha de versão e do mapa, explique em 4 a 6 linhas
 o que é o spec-make, as 4 etapas e o handoff, o que a pessoa recebe no fim (o fluxo testado na conta dela, o recibo e
-as fichas) e o que ela precisa ter: conta no Make, o conector do Make com as ferramentas que gravam e uma amostra sem
-dado pessoal real. Confira pelo MCP o que dá — `environment_get` (conta e equipe), as ferramentas `scenarios_create`,
+as fichas) e o que ela precisa ter: conta no Make, o conector do Make com as ferramentas que gravam e uma amostra da rotina
+— pode ser o arquivo real. Depois do parágrafo, escreva o aviso do [F1] em até 3 linhas, sem ícone de alerta e sem
+pergunta. Confira pelo MCP o que dá — `environment_get` (conta e equipe), as ferramentas `scenarios_create`,
 `scenarios_activate` e `scenarios_run`, e `connections_list` — e mostre 1 linha por pré-requisito, com o estado em
 palavras. Faltando algum, diga como resolver em passos numerados (references/PROTOCOLO.md) e siga a conversa; nunca
 encerre nem peça para voltar depois. A resposta termina com uma única pergunta: qual rotina a pessoa quer automatizar.
@@ -101,7 +103,9 @@ Make (data store, roteador, entrada sob demanda) não contam como HTTP. Com o Su
 - [ ] Viabilidade por passo pelo [N1]: módulo oficial, ou o motivo do HTTP escrito
 - [ ] Termos explicados na primeira vez; decisões no formato [K3]; alertas no formato [A1]
 - [ ] Conexões existentes e faltantes listadas
-- [ ] Amostra sem dado pessoal real e resultado esperado anotado
+- [ ] Amostra da rotina (pode ser o arquivo real) lida pelo [F1], registrada só com estrutura e exemplo mascarado, e
+  resultado esperado anotado
+- [ ] Documento conferido pelo [F2] antes de entregar
 - [ ] 2 ou 3 abordagens, uma recomendada, com custo em operações
 - [ ] Cortes registrados
 - [ ] 2 validações confirmadas pela pessoa
@@ -116,7 +120,7 @@ Make (data store, roteador, entrada sob demanda) não contam como HTTP. Com o Su
   documentação, registre como risco.
 - **Plano sem operações suficientes:** mostre a conta (operações por execução × execuções por mês) e ofereça
   reduzir a frequência ou o número de passos.
-- **A pessoa traz dado pessoal na amostra:** bloqueio [X1]: não use; peça para trocar por dado inventado ou público.
+- **A pessoa cola segredo, chave ou endereço de webhook:** bloqueio [X1]: não use; mostre a conexão autorizada por link.
 - **A pessoa quer pular para o fluxo pronto:** explique em uma frase que a próxima etapa precisa deste documento e
   ofereça um brainstorm curto (3 perguntas).
 
@@ -140,6 +144,7 @@ etapa de ideia, faz as perguntas da rotina e confere na conta se o ERP tem app n
 - `references/COPY.md` — como falar com a pessoa
 - `references/RUNTIME_COMPATIBILITY.md` — o que a skill precisa do ambiente
 - `assets/BRAINSTORM_TEMPLATE.md` — molde do documento
+- `scripts/checar_documento.py` — confere webhook, credencial, CPF, CNPJ e 11+ dígitos no documento ([F2]); sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

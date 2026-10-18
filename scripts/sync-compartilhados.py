@@ -25,6 +25,7 @@ MAPA = {
     "SUPABASE.md": ("references", SKILLS),
     "CONDUCAO.md": ("references", SKILLS),
     "checar_blueprint.py": ("scripts", ["spec-make-design", "spec-make-build"]),
+    "checar_documento.py": ("scripts", SKILLS),
 }
 
 

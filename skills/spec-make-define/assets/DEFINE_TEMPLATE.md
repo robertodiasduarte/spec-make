@@ -33,7 +33,7 @@ While: {critério ou "não se aplica porque …"} · Where: {critério ou "não 
 ```text
 TESTE DE ACEITE
 modo: {sob demanda com a amostra | gatilho real}
-amostra: {…} (origem: {pública | inventada})
+amostra: {estrutura; exemplo mascarado} (origem: {real, mascarada aqui | inventada | pública})
 resultado esperado: {valores e onde aparecem}
 grava registros: {sim | não}
 segunda execução: {mesma amostra; esperado = mesma contagem no destino | não se aplica: o fluxo não grava}

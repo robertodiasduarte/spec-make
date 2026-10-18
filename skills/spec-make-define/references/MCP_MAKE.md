@@ -18,6 +18,10 @@ Sem nenhuma delas, siga a regra **[M1]** da skill (trabalho no papel).
 
 Se houver mais de uma organização ou equipe, pergunte uma vez qual usar e anote.
 
+A zona (eu1, eu2, us1 ou us2) é onde a conta mora. Nos avisos do [F1], diga o nome dela como veio. A ajuda do Make
+(conferida em 18/10/2026: https://help.make.com/ai-providers-and-data-zones-in-make) lista as zonas, mas não diz em que país
+ficam os dados da plataforma: não afirme país nem prometa retenção. Módulo de IA tem região de processamento própria.
+
 ## Ferramentas por etapa
 
 | Etapa | Ferramentas | Para quê |
@@ -51,7 +55,8 @@ Ler a conta não gasta operação. Executar um fluxo gasta.
    tem um roteiro de diagnóstico próprio.
 5. **Fluxo confidencial não guarda o passo a passo.** Com `confidential: true`, o detalhe da
    execução traz só o resultado final. O spec-make liga essa opção sempre, porque o escritório
-   trata dado de cliente; o diagnóstico não depende do passo a passo.
+   trata dado de cliente; o diagnóstico não depende do passo a passo. Na tela do Make a opção chama-se "Keep data confidential":
+   o histórico mostra que a execução rodou, sem o conteúdo (https://help.make.com/scenario-settings, conferido em 18/10/2026).
 6. **App nativo primeiro.** `apps_recommend` costuma achar um app nativo onde a primeira ideia
    seria uma chamada HTTP genérica. É a regra [N1] das etapas 1, 3 e 4: o módulo oficial vem antes do HTTP, e o HTTP
    só entra com o motivo escrito.

@@ -1,6 +1,6 @@
 {
   "name": "spec-make-brainstorm",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
@@ -19,7 +19,7 @@
   "caminhos_implementados": [
     "Leitura da conta pelo MCP (plano, conexões, apps nativos)",
     "Rotina em perguntas, uma por mensagem",
-    "Amostra sem dado pessoal real",
+    "Amostra da rotina (arquivo real, lido pelo [F1]) com estrutura e exemplo mascarado",
     "2 ou 3 abordagens com custo em operações",
     "Modo papel sem o conector [M1]"
   ],
@@ -41,7 +41,8 @@
     "Comportamento idêntico em todos os agentes e modelos",
     "Que o conector do Make no ChatGPT expõe as ferramentas de gravação",
     "Funcionamento no plano Free do Make",
-    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar"
+    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar",
+    "1.5.0: só 3 casos do brainstorm (amostra-pessoal, chave-no-chat, extrato-real) foram rodados em agente fresco; os demais negativos não foram rerodados; a validação completa é o teste de ponta a ponta do Roberto depois de publicar"
   ],
   "author": "Roberto Dias Duarte",
   "license": "MIT",

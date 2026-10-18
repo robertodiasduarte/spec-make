@@ -57,7 +57,8 @@ def classificar(texto: str) -> tuple[list[str], list[str]]:
         if WEBHOOK.search(linha):
             erros.append(f"{secao}: URL de webhook na linha {n} — guarde só o id (a próxima conversa relê com hooks_get)")
         if DIGITOS.search(linha):
-            erros.append(f"{secao}: sequência de 11+ dígitos na linha {n} — use grupos de 8 com hífen ou apague")
+            erros.append(f"{secao}: sequência de 11+ dígitos na linha {n} — se for número de pessoa ou de nota, mascare pela tabela do [F1]; "
+                         "se for id do Make, escreva em grupos de 8 com hífen")
         if LINHA_INV.match(linha):
             inventario += 1
             cel = celulas(linha) + [""] * 5

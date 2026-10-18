@@ -30,9 +30,9 @@
 
 ## Amostra
 
-| Amostra (sem dado pessoal real) | Origem | Resultado esperado |
+| Amostra (estrutura, com exemplo mascarado) | Origem | Resultado esperado |
 |---|---|---|
-| {…} | {pública / inventada} | {…} |
+| {…} | {real, mascarada aqui / inventada / pública} | {…} |
 
 ## Abordagens
 

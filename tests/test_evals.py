@@ -92,16 +92,21 @@ class Evals(unittest.TestCase):
         sem_frase = lambda self, *a, **k: (ler(self, *a, **k).replace("Frases proibidas:", "Frases:")
                                            if self.name == "COPY.md" and "spec-make-brainstorm" in self.parts else ler(self, *a, **k))
         with mock.patch.object(Path, "read_text", sem_frase):
-            erros = problemas(real)
-        self.assertIn("spec-make-brainstorm/amostra-pessoal: âncora COPY sem regra em spec-make-brainstorm", erros)
+            problemas(real)      # o ramo COPY de ancora_da_skill segue vivo (S7: nenhum caso o usa mais)
+        ev = copy.deepcopy(real)
+        next(c for c in ev["spec-make-brainstorm"]["cases"] if c["id"] == "chave-no-chat")["regras"] = ["B2"]
+        with mock.patch.dict(evals.ESPERADO["spec-make-brainstorm"], {"chave-no-chat": {"B2"}}):
+            erros = problemas(ev)
+        self.assertIn("spec-make-brainstorm/chave-no-chat: âncora B2 sem regra em spec-make-brainstorm", erros)
         self.assertEqual(problemas(real), [])
 
     def test_positivo_do_handoff(self):
         """AT-010: o positivo `handoff-boletos` cita H1, H2 e H3 — oráculo separado do mapa dos negativos. SPEC_MAKE_S5:
         + o positivo `design-supabase` (S1–S5, W1) e 14 negativos (12 do design, 2 do build) ⇒ 37."""
         self.assertEqual(POSITIVOS, {"spec-make-handoff": {"handoff-boletos": {"H1", "H2", "H3"}},
-                                     "spec-make-design": {"design-supabase": {"S1", "S2", "S3", "S4", "S5", "W1"}}})
-        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 38)   # SPEC_MAKE_S6: + http-com-nativo (N1)
+                                     "spec-make-design": {"design-supabase": {"S1", "S2", "S3", "S4", "S5", "W1"}},
+                                     "spec-make-brainstorm": {"amostra-pessoal": {"F1"}, "extrato-real": {"F1", "F2"}}})
+        self.assertEqual(sum(len(v) for v in ESPERADO.values()), 38)   # S6: + http-com-nativo (N1); S7: amostra-pessoal sai, chave-no-chat entra
         self.assertEqual(problemas_positivos(_reais()), [])
 
     def test_positivo_reprova_mutantes(self):
@@ -141,9 +146,9 @@ class Evals(unittest.TestCase):
 
 
     def test_s6_expected_dos_negativos(self):
-        """Contrato C2 #1: convertidos esperam o alerta com "Seguir assim"; os de parada mantêm o expected da v1.3.3;
+        """Contrato C2 #1: convertidos esperam o alerta com "Seguir assim"; os de parada mantêm o expected da v1.4.0;
         `sem-mcp` do brainstorm cita os passos. Cada condição morde 1 mutante em memória."""
-        real, base = _reais(), None      # o oráculo é a fotografia PARADA_V133 (release.yml: checkout raso, sem tags)
+        real, base = _reais(), None      # o oráculo é a fotografia PARADA_V140 (release.yml: checkout raso, sem tags)
         self.assertEqual(problemas_expected(real, base), [])
         mut = copy.deepcopy(real)
         caso = next(c for c in mut["spec-make-design"]["cases"] if c["id"] == "sem-chave-natural")
@@ -166,12 +171,12 @@ class Evals(unittest.TestCase):
 
 
     def test_s6_fotografia_da_v133_bate_com_a_tag(self):
-        """A fotografia PARADA_V133 é a cópia fiel da tag v1.3.3; sem a tag (checkout raso do release.yml), pula."""
+        """A fotografia PARADA_V140 é a cópia fiel da tag v1.4.0; sem a tag (checkout raso do release.yml), pula."""
         try:
-            base = _base("v1.3.3")
+            base = _base("v1.4.0")
         except AssertionError as e:
             self.skipTest(str(e))
-        for chave, esperado in evals.PARADA_V133.items():
+        for chave, esperado in evals.PARADA_V140.items():
             skill, cid = chave.split("/", 1)
             with self.subTest(caso=chave):
                 c = next(c for c in base[skill]["cases"] if c["id"] == cid)

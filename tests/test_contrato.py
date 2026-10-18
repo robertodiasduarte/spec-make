@@ -7,7 +7,7 @@ import unittest
 import json
 
 import contrato
-from contrato import FRASES, RAIZ, REGRAS, checar, checar_frases, checar_texto, itens_sem_frase, jargao, mutantes
+from contrato import FRASES, RAIZ, REGRAS, bloco, checar, checar_frases, checar_texto, itens_sem_frase, jargao, mutantes
 
 
 def trocar(texto: str, de: str, para: str) -> tuple[int, str]:
@@ -15,6 +15,20 @@ def trocar(texto: str, de: str, para: str) -> tuple[int, str]:
     mutante não depende de onde o Markdown quebrou a linha (SPEC_MAKE_S5)."""
     padrao = re.compile(r"\s+".join(re.escape(x) for x in de.split()))
     return len(padrao.findall(texto)), padrao.sub(lambda _m: para, texto, count=1)
+
+
+def x1_problemas(texto: str) -> list[str]:
+    """SPEC_MAKE_S7: o [X1] tem exatamente 3 itens numerados e nenhuma menção a dado pessoal dentro do bloco."""
+    b = bloco(texto, "X1")
+    if b is None:
+        return ["âncora [X1] ausente"]
+    p = []
+    itens = re.findall(r"^\d\. ", b, re.M)
+    if len(itens) != 3:
+        p.append(f"[X1] com {len(itens)} itens (esperado 3)")
+    if re.search(r"pessoal|CPF|salário|dado de cliente|nome de pessoa", b, re.I):
+        p.append("[X1] menciona dado pessoal")
+    return p
 
 
 class Contrato(unittest.TestCase):
@@ -217,7 +231,8 @@ class Contrato(unittest.TestCase):
                  (pr, "| versão | v1 |\n", ""),
                  (v, '"O blueprint foi validado" como teste: alerta [A1]', '"O blueprint foi validado" como teste: aceite'),
                  (v, "Fluxo que grava sem a segunda execução: alerta [A1]", "Fluxo que grava sem a segunda execução: aceite"),
-                 (v, "sem dado pessoal real; origem", "pode usar dado real de cliente; origem"),
+                 (v, "(origem: real, mascarada aqui | inventada | pública)", "(origem: pública | inventada)"),
+                 (v, "mascare pela tabela do [F1] e confira pelo [F2]", "use como veio no arquivo"),
                  ("spec-make-build/references/PROTOCOLO.md", "a contagem não pode mudar", "a contagem pode mudar"),
                  # R2@opus (1b): a linha "Gatilho real" também aceita a 2ª execução mais barata; R1@codex (1b): o teste da fila é isolado
                  ("spec-make-build/references/PROTOCOLO.md", "(operações maiores que zero; ela pode gastar menos que a 1ª): execução que não processou nada",
@@ -388,24 +403,83 @@ class Contrato(unittest.TestCase):
         um_passo = texto.replace("2. Confira com a mesma pergunta do caso acima.", "")
         self.assertTrue(problemas(um_passo))
 
-    def test_s6_versao_readme_manifest(self):
-        """Observação do contrato C2: 1.4.0 exato nas 5; README com as 3 garantias e o "resto a skill avisa"; manifests
-        com a linha "negativos não foram rerodados"."""
-        linha = "1.4.0: os negativos não foram rerodados em agente fresco"
+    def test_s7_versao_readme_manifest(self):
+        """SPEC_MAKE_S7 AT-008: 1.5.0 exato nas 5; README com as 3 garantias (a primeira agora só de segredo), o arquivo real
+        e o "resto a skill avisa"; manifests com a linha dos 3 casos rodados em agente fresco."""
+        linha = "1.5.0: só 3 casos do brainstorm (amostra-pessoal, chave-no-chat, extrato-real) foram rodados em agente fresco"
         for s in ("spec-make-brainstorm", "spec-make-define", "spec-make-design", "spec-make-build", "spec-make-handoff"):
             with self.subTest(skill=s):
                 sk = (RAIZ / "skills" / s / "SKILL.md").read_text(encoding="utf-8")
-                self.assertIn('  version: "1.4.0"', sk)
+                self.assertIn('  version: "1.5.0"', sk)
                 man = json.loads((RAIZ / "skills" / s / "manifest.json").read_text(encoding="utf-8"))
                 self.assertTrue(any(x.startswith(linha) for x in man["o_que_ainda_nao_prova"]))
         readme = " ".join((RAIZ / "README.md").read_text(encoding="utf-8").split())
         for frase in ("Três coisas a skill nunca faz, nem com a sua confirmação:",
-                      "Usar segredo, chave ou dado pessoal real no fluxo, na amostra ou nos documentos",
+                      "Usar segredo, chave ou endereço de webhook no fluxo, na amostra ou nos documentos",
+                      "O seu arquivo real é bem-vindo: anexe o extrato, a nota, a folha ou o CSV da rotina.",
+                      "os documentos que ela entrega guardam só a estrutura, com exemplo mascarado",
                       'Ligar o gatilho sem você responder "Ligar agora"',
                       "Apagar ou alterar o que esta conversa não criou, ou o que outro fluxo também usa",
                       "O resto a skill avisa e você decide",
                       '"Corrigir agora" e "Seguir assim e registrar o alerta"'):
             self.assertIn(frase, readme)
+
+    def test_s7_x1_tem_3_itens_e_nenhum_dado_pessoal(self):
+        """Contrato C2 #3 (AT-004): dentro de bloco(texto, "X1") há exatamente 3 itens e nenhuma menção a dado pessoal. Os
+        mutantes ADITIVOS (um 4º item de dado pessoal; uma frase de dado pessoal no fim do item 1) deixam a âncora do webhook
+        intacta: só esta asserção os pega, e sem ela os dois sobrevivem."""
+        c = "spec-make-brainstorm/references/CONDUCAO.md"
+        texto = (RAIZ / "skills" / c).read_text(encoding="utf-8")
+        self.assertEqual(x1_problemas(texto), [])
+        aditivos = [
+            ("No lugar: criar um novo, só para este fluxo.",
+             "No lugar: criar um novo, só para este fluxo.\n4. Dado pessoal real (CPF, nome de pessoa, salário, dado de cliente)."),
+            ("conexão autorizada por link, ou só o id.", "conexão autorizada por link, ou só o id. Vale também para CPF e salário."),
+        ]
+        for de, para in aditivos:
+            with self.subTest(de=de[:40]):
+                n, mut = trocar(texto, de, para)
+                self.assertEqual(n, 1)
+                self.assertEqual([e for r in REGRAS if r.arquivo == c and r.ancora == "X1" for e in checar_texto(r, mut)], [],
+                                 "o mutante aditivo mexeu na âncora: não prova a asserção negativa")
+                self.assertTrue(x1_problemas(mut), "mutante aditivo de dado pessoal passou")
+
+    def test_s7_x1_e_f1_polaridade_nos_dois_sentidos(self):
+        """Decision 8 do DESIGN: reinstalar o ⛔ de dado pessoal e afrouxar o ⛔ de segredo reprovam; o [F1] não vira exigência
+        de dado limpo nem alerta [A1]. Cada mutante é achado exatamente 1 vez e a regra do arquivo reprova (LM-361)."""
+        c = "spec-make-brainstorm/references/CONDUCAO.md"
+        casos = [
+            # reinstalar o ⛔ de dado pessoal
+            ("Segredo, credencial ou endereço de webhook",
+             "Segredo, credencial ou dado pessoal real (CPF, nome de pessoa, salário, dado de cliente)"),
+            # afrouxar o ⛔ de segredo (some "credencial")
+            ("Segredo, credencial ou endereço de webhook", "Dado pessoal ou endereço de webhook"),
+            ("nenhuma confirmação os libera", "uma confirmação os libera"),
+            ("Nunca peça dado inventado ou público no lugar dele.", "Peça dado inventado ou público no lugar dele."),
+            ("Nunca copie linha do arquivo.", "Copie a linha do arquivo."),
+            ("Isto é aviso, não alerta [A1].", "Isto é alerta [A1]."),
+            ("CNPJ de companhia aberta é público", "CNPJ de cliente é público"),
+            ("Dado real só na origem de teste", "Dado real em qualquer fluxo"),
+            ("Se o documento anterior diz `origem: real`", "Mesmo sem `origem: real`"),
+            ("Saiu 1 (ERRO): não entregue.", "Saiu 1 (ERRO): entregue."),
+            ("Saiu 0: entregue.", "Saiu 0: não entregue."),
+        ]
+        texto = (RAIZ / "skills" / c).read_text(encoding="utf-8")
+        for de, para in casos:
+            with self.subTest(de=de[:40], para=para[:30]):
+                n, mut = trocar(texto, de, para)
+                self.assertEqual(n, 1, "trecho do mutante não achado (ou achado mais de uma vez) no texto real")
+                self.assertTrue([e for r in REGRAS if r.arquivo == c for e in checar_texto(r, mut)], "regra invertida passou")
+        # o [F1] não tem ícone de alerta nem as opções do [A1] (UX MUST-3); a tabela de máscara tem a linha do CPF (UX MUST-6)
+        f1 = bloco(texto, "F1")
+        self.assertIsNotNone(f1)
+        self.assertEqual((f1.count("⚠️"), f1.count("Seguir assim")), (0, 0))
+        n, mut = trocar(texto, "Isto é aviso, não alerta [A1].", "⚠️ Isto é aviso, não alerta [A1].")
+        self.assertEqual(n, 1)
+        self.assertTrue(bloco(mut, "F1").count("⚠️"), "o mutante com o ícone de alerta não foi visto")
+        mut = texto.replace("  | CPF | `***.123.456-**` |\n", "", 1)
+        self.assertNotEqual(mut, texto)
+        self.assertTrue([e for r in REGRAS if r.arquivo == c and r.ancora == "F1" for e in checar_texto(r, mut)])
 
     def test_ancora_ausente_reprova(self):
         r = REGRAS[0]

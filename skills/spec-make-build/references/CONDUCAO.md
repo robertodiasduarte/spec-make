@@ -85,9 +85,8 @@ antes de seguir.
 
 **[X1] Bloqueios.** Estes três não viram alerta e nenhuma confirmação os libera; diga o que fazer no lugar, na mesma
 mensagem, sem culpar a pessoa:
-1. Segredo, credencial ou dado pessoal real (CPF, nome de pessoa, salário, dado de cliente) no blueprint, na amostra, na
-   ficha ou em qualquer documento — inclusive o endereço de webhook, que carrega o código de acesso. No lugar: conexão
-   autorizada por link, dado inventado ou público, ou só o id.
+1. Segredo, credencial ou endereço de webhook (que carrega o código de acesso) no blueprint, na amostra, na ficha ou em
+   qualquer documento. No lugar: conexão autorizada por link, ou só o id.
 2. Ligar o gatilho sem a resposta "Ligar agora" à pergunta do gatilho da etapa 4 ([B2]).
 3. Apagar, mudar a estrutura ou alterar recurso que esta conversa não criou e que a ficha não marca como `desta família`,
    ou marcado `compartilhado` ([B4] e [B6] da etapa 4, [H2] do handoff). No lugar: criar um novo, só para este fluxo.
@@ -96,3 +95,41 @@ mensagem, sem culpar a pessoa:
 administração do Supabase ([S1]) e, num fluxo com Supabase, gatilho que não seja a agenda do Make nem a execução sob
 demanda ([S3]) não viram alerta nem pergunta: diga que o spec-make não desenha esse caminho, porque usa o Supabase só como
 banco, e proponha o caminho só com o banco.
+
+**[F1] Arquivo real da rotina.** A pessoa pode anexar ou colar o arquivo real da rotina (extrato, nota fiscal, folha,
+CSV com CNPJ ou CPF) em qualquer etapa. Leia-o inteiro e use-o para registrar layout, colunas, tipos, formato de data e de
+valor, chave natural e casos de borda. Nunca peça dado inventado ou público no lugar dele.
+- **Devolutiva.** Depois de ler, diga em até 6 linhas o que entendeu do arquivo: colunas, formatos, chave natural e um caso
+  de borda. Se leu só parte, diga quanto leu ("li 200 de 1.350 linhas").
+- **Nos documentos.** O BRAINSTORM, o DEFINE, o DESIGN, o recibo e a ficha guardam só a estrutura e a regra, com exemplo
+  mascarado, e uma linha dizendo o que foi mascarado. Nunca copie linha do arquivo. A máscara é esta:
+
+  | O que é | Como escrever |
+  |---|---|
+  | CPF | `***.123.456-**` |
+  | CNPJ de cliente | `12.345.***/****-90` |
+  | Nome de pessoa | o papel: "o funcionário", "o cliente A" |
+  | Salário ou valor de pessoa | faixa ou valor redondo: "entre 3 e 5 mil" |
+  | E-mail pessoal | `m***@dominio.com.br` |
+  | Chave de acesso da nota | 4 primeiros dígitos, "…", 4 últimos |
+
+  CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` na mesma linha.
+- **Etapa seguinte.** Se o documento anterior diz `origem: real`, abra com uma linha: "O documento guarda só o layout;
+  anexe o arquivo de novo se quiser que eu confira algum caso."
+- **Teste do build.** Dado real só na origem de teste, com 1 item por execução e o fluxo confidencial ([B1]). O resultado
+  esperado usa valores agregados ou mascarados, e o recibo e a ficha dizem "teste com dado real da rotina · confidencial ·
+  origem de teste: <nome>".
+- **Aviso.** Na 1ª resposta do brainstorm, depois do parágrafo do método, escreva em até 3 linhas, sem ícone de alerta e sem
+  pergunta: "Sobre o seu arquivo: pode anexar o real. Ele fica só nesta conversa; nos documentos eu guardo o layout com
+  exemplo mascarado. O teste roda na sua conta do Make (zona <zona>), em modo confidencial: o Make guarda que o fluxo
+  rodou, não o conteúdo de cada passo. Se houver algo que não deva passar, diga e eu pulo essa parte." Sem o conector do
+  Make ([M1]), tire o trecho "(zona <zona>)" e não invente uma zona. Isto é aviso, não alerta [A1].
+
+**[F2] Conferência do documento.** Antes de entregar o BRAINSTORM, o DEFINE, o DESIGN, o recibo ou a ficha, rode
+`python3 scripts/checar_documento.py <arquivo>`. Sem Python, confira à mão os mesmos itens: endereço de webhook, sequência de
+11 ou mais dígitos, CPF e CNPJ inteiros, chave ou senha escrita no texto.
+- Saiu 1 (ERRO): não entregue. Troque o trecho pela máscara do [F1] (segredo: pelo id do recurso), confira de novo e diga em
+  3 partes o que achou, o que já fez e que a pessoa não precisa fazer nada.
+- Saiu 2 (arquivo ilegível): grave o documento de novo e confira outra vez.
+- Saiu 3 (AVISO: e-mail pessoal inteiro): alerta [A1] — o documento pode carregar o endereço de uma pessoa; recomende mascarar.
+- Saiu 0: entregue.

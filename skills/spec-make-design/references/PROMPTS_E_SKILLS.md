@@ -36,7 +36,7 @@ gerada, com alerta.
 | se faltar dado | o que responder quando a entrada vier incompleta |
 | autônomo ou com aceite | com aceite sempre que grava ([G1]) |
 | verificação | como o próprio prompt confere a resposta antes de devolver |
-| teste mínimo | 1 entrada de exemplo (sem dado pessoal real) e a saída esperada |
+| teste mínimo | 1 entrada de exemplo (mascarada, [F1]) e a saída esperada |
 | material de referência | texto literal de regra, tabela ou lista que o prompt precisa (não só um link) |
 | decisões fechadas | provedor, modelo, formato — o gerador não reabre |
 
@@ -45,7 +45,7 @@ gerada, com alerta.
 | Campo | O que escrever |
 |---|---|
 | ferramenta MCP | o nome que o MCP do Make dá ao cenário (lido depois de criado, na etapa 4) |
-| campos da interface | nome, tipo, obrigatório ou não e um exemplo tirado da amostra (sem dado pessoal real) |
+| campos da interface | nome, tipo, obrigatório ou não e um exemplo tirado da amostra (mascarado, [F1]) |
 | o que a resposta devolve | os campos de saída do cenário e o que a skill diz à pessoa com eles |
 | exemplo de uso | 1 pedido da pessoa e a chamada que a skill faz |
 | limite | a skill só chama o cenário; não grava nada fora dele |

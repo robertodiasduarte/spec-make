@@ -1,6 +1,6 @@
 {
   "name": "spec-make-handoff",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Transversal do spec-make: ficha do fluxo para continuar depois, com o MCP do Make (só leitura)",
@@ -48,7 +48,8 @@
     "Que o conector do Make no ChatGPT expõe as ferramentas de leitura usadas em [H1]",
     "Que um agente, lendo a regra [B6] da etapa 4, para antes de gravar quando a ficha e a conta divergem: o texto da regra é testado; o comportamento depende do recibo de uma retomada real",
     "O verificador da ficha pega placeholder, URL de webhook do Make, sequência de 11 ou mais dígitos, recurso sem id e ficha sem o conector que afirma custódia; não pega segredo com formato desconhecido nem dado pessoal escrito por extenso (nome de pessoa, endereço) — a defesa principal é a regra [H2]",
-    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar"
+    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar",
+    "1.5.0: só 3 casos do brainstorm (amostra-pessoal, chave-no-chat, extrato-real) foram rodados em agente fresco; os demais negativos não foram rerodados; a validação completa é o teste de ponta a ponta do Roberto depois de publicar"
   ],
   "author": "Roberto Dias Duarte",
   "license": "MIT",

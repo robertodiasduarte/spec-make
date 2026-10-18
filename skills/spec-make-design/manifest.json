@@ -1,6 +1,6 @@
 {
   "name": "spec-make-design",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "kind": "skill",
   "perfil": "C",
   "funcao": "Etapa do spec-make: SDD específico para fluxos do Make, com o MCP do Make",
@@ -58,7 +58,8 @@
     "HTTP para domínio próprio do Supabase (fora do domínio padrão do projeto) e endereço montado por pedaços entre módulos não são reconhecidos pelo verificador de blueprint",
     "O verificador recusa os caminhos da API do Supabase (rest, auth, storage, functions e graphql, com v1) em qualquer endereço, inclusive o de outra empresa que use o mesmo caminho (falso positivo conhecido: o domínio próprio do Supabase só se distingue pelo caminho); nesse caso o fluxo não passa pela etapa 3 e a pessoa decide com o desenho em mãos",
     "Vazar a chave secreta que o fluxo usa atinge tudo que a usa no projeto (ela ignora o RLS); o kit declara o alcance, não isola a chave",
-    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar"
+    "1.4.0: os negativos não foram rerodados em agente fresco; a validação desta versão é o teste de ponta a ponta do Roberto depois de publicar",
+    "1.5.0: só 3 casos do brainstorm (amostra-pessoal, chave-no-chat, extrato-real) foram rodados em agente fresco; os demais negativos não foram rerodados; a validação completa é o teste de ponta a ponta do Roberto depois de publicar"
   ],
   "author": "Roberto Dias Duarte",
   "license": "MIT",

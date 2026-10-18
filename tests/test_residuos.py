@@ -116,6 +116,58 @@ def recusas_fora_de_bloco(raiz=RAIZ) -> list[str]:
 
 PROMPT_BUILDER_ANTIGO = "sdd-" + "prompt-builder"   # montado em pedaços: este arquivo não pode ser o resíduo que procura
 
+# SPEC_MAKE_S7 AT-001/AT-006 (DESIGN Decision 8): a 1.5.0 aceita o arquivo real da rotina. O texto que EXIGIA amostra limpa
+# ("sem dado pessoal real", "dado inventado ou público", "origem: pública | inventada") não volta. A regra nova escreve a
+# negação e a alternativa ("Nunca peça dado inventado ou público", "real | inventada | pública"): por isso as exceções são
+# NOMEADAS por trecho exato, com a caixa — nunca por arquivo inteiro (R2@codex, R2@fable).
+EXIGENCIA = re.compile(r"dado pessoal real|sem dado pessoal|inventad[oa]s? ou públic[oa]|inventada\s*\|?\s*pública"
+                       r"|públic[oa]\s*\|\s*inventad", re.I)
+EXCECOES_EXIGENCIA: list[tuple[str, str, str]] = [
+    ("CONDUCAO.md", "Nunca peça dado inventado ou público no lugar dele.", "negação do [F1] (fonte e as 5 cópias)"),
+    ("skills/spec-make-define/assets/DEFINE_TEMPLATE.md", "(origem: {real, mascarada aqui | inventada | pública})",
+     "o campo novo lista `real` primeiro"),
+    ("skills/spec-make-define/references/VERIFY_GATE_EXECUCAO.md", "(origem: real, mascarada aqui | inventada | pública)",
+     "o campo novo lista `real` primeiro"),
+    ("skills/spec-make-brainstorm/evals/cases.json", "Não pede amostra inventada ou pública",
+     "expected do positivo amostra-pessoal: diz o que a skill NÃO faz"),
+    ("CHANGELOG.md", "dado pessoal real, ligar o gatilho", "histórico da v1.4.0 (a v1.5.0 tirou o dado pessoal do bloqueio)"),
+]
+ALERTA_DADO_REAL = re.compile(r"alerta \[A1\][^.]{0,200}?(arquivo real|dado real|dado pessoal|anexo)", re.I)
+
+
+def arquivos_da_exigencia(raiz=RAIZ) -> list[Path]:
+    """Texto publicado inteiro: .md das skills e do compartilhado, README, CHANGELOG, manifests e TODOS os casos dos evals."""
+    achados = sorted((raiz / "skills").rglob("*.md")) + sorted((raiz / "compartilhado").glob("*.md"))
+    achados += [raiz / n for n in ("README.md", "CHANGELOG.md") if (raiz / n).is_file()]
+    achados += sorted((raiz / "skills").glob("*/manifest.json")) + sorted((raiz / "skills").glob("*/evals/cases.json"))
+    return achados
+
+
+def exigencias(raiz=RAIZ, textos: dict[str, str] | None = None) -> list[str]:
+    """Linhas do texto publicado que exigem amostra limpa, menos as exceções nomeadas (trecho exato dentro da linha)."""
+    if textos is None:
+        textos = {f.relative_to(raiz).as_posix(): f.read_text(encoding="utf-8") for f in arquivos_da_exigencia(raiz)}
+    saida = []
+    for rel, txt in textos.items():
+        for n, linha in enumerate(txt.splitlines(), 1):
+            if not EXIGENCIA.search(linha):
+                continue
+            if any(rel.endswith(arq) and trecho in linha for arq, trecho, _ in EXCECOES_EXIGENCIA):
+                continue
+            saida.append(f"{rel}:{n}: {linha.strip()[:100]}")
+    return saida
+
+
+def alertas_de_dado_real(textos: dict[str, str]) -> list[str]:
+    """`alerta [A1]` cuja frase cita arquivo real, dado real, dado pessoal ou anexo: dado real não vira alerta (AT-006)."""
+    saida = []
+    for rel, txt in textos.items():
+        for par in re.split(r"\n\s*\n", txt):
+            if ALERTA_DADO_REAL.search(" ".join(par.split())):
+                saida.append(rel)
+                break
+    return saida
+
 
 class Residuos(unittest.TestCase):
     def test_s6_nenhuma_recusa_fora_dos_blocos_que_param(self):
@@ -143,6 +195,60 @@ class Residuos(unittest.TestCase):
                     alvo.write_text(original + extra, encoding="utf-8")
                     self.assertTrue(any(a.startswith(arq) for a in recusas_fora_de_bloco(r)), "recusa inserida passou")
                     alvo.write_text(original, encoding="utf-8")
+
+    def test_s7_nenhuma_exigencia_de_amostra_limpa(self):
+        """AT-001: 0 exigência de dado inventado/público/sem dado pessoal no texto publicado, fora das exceções nomeadas."""
+        self.assertEqual(exigencias(), [])
+
+    def test_s7_exigencia_plantada_em_cada_tipo_de_arquivo_reprova(self):
+        """Mutantes: a frase antiga, e a negação SEM o "Nunca" (que a exceção não cobre), em cada tipo de arquivo."""
+        base = {f.relative_to(RAIZ).as_posix(): f.read_text(encoding="utf-8") for f in arquivos_da_exigencia()}
+        tipos = ["skills/spec-make-brainstorm/SKILL.md", "skills/spec-make-define/assets/DEFINE_TEMPLATE.md",
+                 "compartilhado/CONDUCAO.md", "compartilhado/COPY.md", "README.md", "CHANGELOG.md",
+                 "skills/spec-make-build/manifest.json", "skills/spec-make-brainstorm/evals/cases.json"]
+        for chave in tipos:
+            for planta in ("Peça uma amostra sem dado pessoal real.", "Peça dado inventado ou público no lugar dele.",
+                           "origem: pública | inventada"):
+                with self.subTest(arquivo=chave, planta=planta[:30]):
+                    mut = dict(base)
+                    mut[chave] = mut[chave] + f"\n{planta}\n"
+                    self.assertTrue(exigencias(textos=mut), "exigência plantada passou")
+
+    def test_s7_cada_excecao_e_necessaria(self):
+        """Prova de que a lista não é um passe livre: sem a exceção, o texto real reprova; e a exceção vale só na caixa certa."""
+        base = {f.relative_to(RAIZ).as_posix(): f.read_text(encoding="utf-8") for f in arquivos_da_exigencia()}
+        self.assertEqual(len(EXCECOES_EXIGENCIA), 5)
+        for arq, trecho, motivo in EXCECOES_EXIGENCIA:
+            with self.subTest(arquivo=arq):
+                alvos = [k for k in base if k.endswith(arq) and trecho in base[k]]
+                self.assertTrue(alvos, f"exceção sem uso: {motivo}")
+                for alvo in alvos:
+                    mut = dict(base)
+                    mut[alvo] = mut[alvo].replace(trecho, trecho.lower() if trecho != trecho.lower() else trecho.upper(), 1)
+                    self.assertTrue(any(a.startswith(alvo) for a in exigencias(textos=mut)),
+                                    "a exceção cobriu uma linha mudada: o trecho exato não está mandando")
+
+    def test_s7_dado_real_nao_vira_alerta(self):
+        """AT-006: 0 `alerta [A1]` citando arquivo real/dado real/dado pessoal/anexo; o aviso do [F1] não é alerta."""
+        base = {f.relative_to(RAIZ).as_posix(): f.read_text(encoding="utf-8")
+                for f in sorted((RAIZ / "skills").rglob("*.md")) + sorted((RAIZ / "compartilhado").glob("*.md"))}
+        self.assertEqual(alertas_de_dado_real(base), [])
+        for chave in ("skills/spec-make-brainstorm/SKILL.md", "compartilhado/CONDUCAO.md"):
+            with self.subTest(arquivo=chave):
+                mut = dict(base)
+                mut[chave] = mut[chave] + "\n\nArquivo com dado pessoal: alerta [A1] — o arquivo real tem dado pessoal.\n"
+                self.assertEqual(alertas_de_dado_real(mut), [chave])
+
+    def test_s7_aviso_sem_mcp_nao_inventa_zona(self):
+        """AT-006 (while sem MCP): o ramo [M1] do aviso manda tirar a zona; mutante com "servidores na Europa" reprova."""
+        texto = (RAIZ / "compartilhado/CONDUCAO.md").read_text(encoding="utf-8")
+        self.assertIn("não invente uma zona", " ".join(texto.split()))
+        proto = (RAIZ / "skills/spec-make-brainstorm/references/PROTOCOLO.md").read_text(encoding="utf-8")
+        self.assertIn("sem o conector, tire o trecho da zona", " ".join(proto.split()))
+        for arq in ("compartilhado/CONDUCAO.md", "skills/spec-make-brainstorm/references/PROTOCOLO.md",
+                    "skills/spec-make-brainstorm/SKILL.md", "README.md"):
+            conteudo = (RAIZ / arq).read_text(encoding="utf-8")
+            self.assertNotRegex(conteudo, r"servidores (na|nos) (Europa|EUA)", f"{arq} afirma país de servidor")
 
     def test_s6_texto_publicado_sem_o_builder_antigo(self):
         """AT-009: o nome antigo do builder fora de todo texto publicado (skills, compartilhado, README, CHANGELOG,

@@ -226,5 +226,37 @@ class AlertasNosTemplates(unittest.TestCase):
                 self.assertNotEqual(mut[arq], real[arq], "o mutante não mudou nada")
                 self.assertTrue(problemas_alertas(mut), "mutante passou")
 
+
+# SPEC_MAKE_S7 AT-002/AT-007: o campo `amostra` registra estrutura e exemplo mascarado com a origem real; o recibo e a ficha
+# dizem que houve teste com dado real. Cada exigência morde um mutante em memória.
+CAMPOS_S7 = {
+    "spec-make-brainstorm/assets/BRAINSTORM_TEMPLATE.md": ["Amostra (estrutura, com exemplo mascarado)",
+                                                           "{real, mascarada aqui / inventada / pública}"],
+    "spec-make-define/assets/DEFINE_TEMPLATE.md": ["amostra: {estrutura; exemplo mascarado} "
+                                                   "(origem: {real, mascarada aqui | inventada | pública})"],
+    "spec-make-define/references/VERIFY_GATE_EXECUCAO.md": ["amostra: <estrutura; exemplo mascarado> "
+                                                            "(origem: real, mascarada aqui | inventada | pública)"],
+    "spec-make-build/assets/RECIBO_TEMPLATE.md": ["| Dado real no teste |",
+                                                  "teste com dado real da rotina · confidencial · origem de teste: {nome}"],
+    "spec-make-build/assets/FICHA_DO_FLUXO_TEMPLATE.md": ["Teste com dado real da rotina · confidencial · origem de teste: {nome}"],
+}
+
+
+def problemas_campos_s7(textos: dict[str, str]) -> list[str]:
+    return [f"{arq}: falta {f!r}" for arq, frases in CAMPOS_S7.items() for f in frases if f not in textos.get(arq, "")]
+
+
+class CamposDoDadoReal(unittest.TestCase):
+    def test_s7_campos_do_dado_real(self):
+        real = {a: (RAIZ / "skills" / a).read_text(encoding="utf-8") for a in CAMPOS_S7}
+        self.assertEqual(problemas_campos_s7(real), [])
+        for arq, frases in CAMPOS_S7.items():
+            for f in frases:
+                with self.subTest(arquivo=arq, campo=f[:40]):
+                    mut = dict(real)
+                    mut[arq] = real[arq].replace(f, "", 1)
+                    self.assertNotEqual(mut[arq], real[arq], "o mutante não mudou nada")
+                    self.assertTrue(problemas_campos_s7(mut), "campo removido passou")
+
 if __name__ == "__main__":
     unittest.main()

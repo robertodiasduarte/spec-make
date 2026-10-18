@@ -5,21 +5,21 @@ description: "Conduz a etapa 3 de 4 do spec-make: transforma o DEFINE de um flux
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 3: Design do fluxo
 
 Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
-`spec-make-design v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-design v1.5.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 [references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
 ## Quick start
 
 1. Receba o BRAINSTORM e o DEFINE do fluxo. Sem o DEFINE: [A3] de references/CONDUCAO.md. Liste no começo os alertas
-   aceitos das etapas anteriores ([A2]).
+   aceitos das etapas anteriores ([A2]). Se a amostra diz `origem: real`, diga a linha de continuidade do **[F1]**.
 2. Com o MCP do Make, confirme cada módulo na conta (`app-modules_list`, `app-module_get`), o módulo oficial antes do
    HTTP **[N1]**. Sem o MCP, siga **[M1]**.
    Leia a documentação pública de cada app uma vez **[W1]**.
@@ -31,7 +31,7 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
    ([references/PROMPTS_E_SKILLS.md](references/PROMPTS_E_SKILLS.md)).
 7. Monte o blueprint com **[C1]**, valide pelo MCP e confira com `scripts/checar_blueprint.py`: sai 1 (ERRO), corrija;
    sai 3 (AVISO), corrija ou faça o alerta [A1] de cada aviso, menos o [N1] do módulo que já tem a linha de motivo.
-8. Entregue `DESIGN_<FLUXO>.md` usando [assets/DESIGN_TEMPLATE.md](assets/DESIGN_TEMPLATE.md) e feche com **[E1]**.
+8. Entregue `DESIGN_<FLUXO>.md` usando [assets/DESIGN_TEMPLATE.md](assets/DESIGN_TEMPLATE.md), confira-o pelo **[F2]** e feche com **[E1]**.
 
 ## Quando usar / Quando não usar
 
@@ -67,7 +67,7 @@ Siga [references/PROTOCOLO.md](references/PROTOCOLO.md). Resumo:
    código). Validado não quer dizer testado: o teste é a etapa 4.
 7. **Custo.** Confirme as operações por execução contra o orçamento do DEFINE, somando as operações paradas quando o
    relógio é a agenda do Make ([S4]).
-8. **Documento.** Preencha o template com o blueprint no fim e feche com [E1].
+8. **Documento.** Preencha o template com o blueprint no fim, confira-o pelo **[F2]** e feche com [E1].
 
 **[G1] Aceite humano.** Se a saída de um módulo de IA grava, classifica ou altera lançamento, documento fiscal ou
 cadastro do escritório, o fluxo tem um passo de aceite por pessoa identificada antes da gravação (fila de sugestões
@@ -210,6 +210,7 @@ a sugestão numa planilha, a pessoa marca "aprovado", outro passo lança e regis
 - `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/DESIGN_TEMPLATE.md` · `assets/blueprint-minimo.json`
 - `scripts/checar_blueprint.py` — confere flow, confidencial, interface, credencial escrita, o Supabase só como banco e o HTTP genérico [N1]; sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
+- `scripts/checar_documento.py` — confere webhook, credencial, CPF, CNPJ e 11+ dígitos no documento ([F2]); sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

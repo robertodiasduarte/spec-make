@@ -6,7 +6,12 @@ Comece pela linha de versão e pelo mapa da regra [E1]. Depois, em 4 a 6 linhas:
 escritório até um fluxo funcionando no Make, em 4 etapas — Brainstorm, Define, Design e Build — e uma ficha para
 continuar depois (Handoff). No fim, você tem o fluxo testado na sua conta, o recibo do teste e as fichas. Para isso,
 precisamos de 3 coisas: sua conta no Make, o conector do Make ligado aqui com as ferramentas que gravam e uma amostra da
-rotina sem dado pessoal real. Nesta etapa nada é criado na conta."
+rotina (pode ser o arquivo real). Nesta etapa nada é criado na conta."
+
+Depois do parágrafo, escreva o aviso do [F1] em até 3 linhas ("Sobre o seu arquivo: pode anexar o real. Ele fica só nesta
+conversa; nos documentos eu guardo o layout com exemplo mascarado. O teste roda na sua conta do Make (zona <zona>), em modo
+confidencial: o Make guarda que o fluxo rodou, não o conteúdo de cada passo. Se houver algo que não deva passar, diga e eu
+pulo essa parte."), sem ícone de alerta e sem pergunta; sem o conector, tire o trecho da zona.
 
 Confira pelo MCP o que dá e mostre 1 linha por pré-requisito, com o ícone e o estado em palavras (✅ ok · ⚠️ falta · a
 confirmar). Faltando algum, mostre o como resolver abaixo e siga a conversa. A resposta termina com uma pergunta só:
@@ -39,8 +44,8 @@ A conversa segue; a tabela de viabilidade marca o que falta autorizar.
 
 ### Sem amostra
 
-1. Escolha um caso real da rotina e troque tudo que é pessoal por dado inventado, ou use dado público (o CNPJ de uma
-   companhia aberta, por exemplo).
+1. Escolha um caso real da rotina e anexe o arquivo (extrato, nota, folha, CSV); se preferir, descreva as colunas e eu
+   monto o exemplo.
 2. Anote o resultado que você espera com essa amostra: os valores que devem aparecer e onde.
 
 A conversa segue; a amostra pode chegar até o passo 4 do mapa.
@@ -93,8 +98,20 @@ Conexões faltantes serão pedidas no build por link (`credential-requests_creat
 
 ## 5. Amostra
 
-Peça uma amostra que represente um caso real, **sem dado pessoal real** (ver COPY.md). Anote: a amostra, o
-resultado esperado com ela e de onde veio (pública ou inventada).
+Peça o arquivo real da rotina, ou uma amostra que represente um caso real ([F1]). Devolva o que entendeu dele. Anote: a
+estrutura da amostra (com exemplo mascarado), o resultado esperado com ela e de onde veio (real, mascarada aqui;
+inventada; ou pública).
+
+### Anexo que a skill não consegue ler
+
+1. Arquivo escaneado, imagem ou planilha protegida: diga o que não deu para ler e peça para colar as primeiras linhas
+   como texto, ou a lista de colunas.
+2. Arquivo grande: leia o que couber, diga quanto leu ("li 200 de 1.350 linhas") e que os casos de borda vêm só dessa
+   parte.
+3. Assistente sem acesso ao arquivo: diga isso e peça o trecho colado; nunca invente o conteúdo.
+4. Arquivo com senha: a senha é segredo ([X1]); não peça nem use; peça o arquivo aberto ou o trecho colado.
+
+A conversa segue ([M1]).
 
 ## 6. Abordagens
 

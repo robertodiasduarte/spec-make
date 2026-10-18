@@ -5,14 +5,14 @@ description: "Conduz a etapa 4 de 4 do spec-make: cria na conta do Make, pelo MC
 metadata:
   author: Roberto Dias Duarte
   methodology: Metodologia de Roberto Dias Duarte
-  version: "1.4.0"
+  version: "1.5.0"
   updated: "2026-10"
 ---
 
 # spec-make — Etapa 4: Build do fluxo
 
 Na primeira resposta desta skill, comece com a linha de versão, uma vez só:
-`spec-make-build v1.4.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
+`spec-make-build v1.5.0 · out/2026 · versão atual: https://github.com/robertodiasduarte/spec-make/releases/latest`
 Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 [references/CONDUCAO.md](references/CONDUCAO.md): mapa, glossário, pergunta de decisão, alerta e bloqueios.
 
@@ -26,7 +26,8 @@ Em seguida, e em toda resposta, o mapa de posição ([E1]). A conversa segue
 4. Siga a ordem **[B1]** ([references/PROTOCOLO.md](references/PROTOCOLO.md)), avisando antes de gravar ou rodar **[B5]**.
 5. Rode o teste de aceite do DEFINE e compare com o resultado esperado.
 6. Se falhar, siga **[B3]** ([references/DIAGNOSTICO.md](references/DIAGNOSTICO.md)).
-7. Passou: entregue o recibo ([assets/RECIBO_TEMPLATE.md](assets/RECIBO_TEMPLATE.md)) e faça a pergunta **[B2]**.
+7. Passou: entregue o recibo ([assets/RECIBO_TEMPLATE.md](assets/RECIBO_TEMPLATE.md)), confira-o pelo **[F2]** e faça a
+   pergunta **[B2]**.
 8. Entregue `FICHA_DO_FLUXO_<FLUXO>.md` ([assets/FICHA_DO_FLUXO_TEMPLATE.md](assets/FICHA_DO_FLUXO_TEMPLATE.md)) e `HANDOFF_<FLUXO>.md` (skill `spec-make-handoff`) e feche com **[E1]**.
 
 ## Quando usar / Quando não usar
@@ -41,7 +42,7 @@ pronto. Não mexe em fluxo, data store ou conexão que esta conversa não criou.
 ## Dados necessários
 
 - `BRAINSTORM_<FLUXO>.md`, `DEFINE_<FLUXO>.md`, `DESIGN_<FLUXO>.md` e o blueprint.
-- O teste de aceite do DEFINE (amostra sem dado pessoal real, resultado esperado, segunda execução se grava).
+- O teste de aceite do DEFINE (amostra da rotina, resultado esperado, segunda execução se grava).
 - `organizationId` e `teamId`.
 - O "sim" da pessoa para cada gravação na conta e para ligar o gatilho.
 - `HANDOFF_<FLUXO>.md`, quando a conversa retoma um fluxo que já existe na conta ([B6]).
@@ -60,8 +61,9 @@ pronto. Não mexe em fluxo, data store ou conexão que esta conversa não criou.
 6. **Resultado.** Compare valor a valor com o esperado e mostre em linguagem de escritório ("a razão social apareceu
    na tabela de clientes: …").
 7. **Falha.** [B3].
-8. **Recibo e gatilho.** Recibo com operações gastas e os alertas aceitos que ficaram pendentes ([A2]); depois, a
-   pergunta [B2].
+8. **Recibo e gatilho.** Recibo com operações gastas e os alertas aceitos que ficaram pendentes ([A2]), conferido pelo
+   [F2]; com `origem: real` no DEFINE, o teste só na origem de teste, com 1 item e o fluxo confidencial, e a linha "teste
+   com dado real da rotina" ([F1]); depois, a pergunta [B2].
 9. **Fichas.** Preencha a ficha do fluxo e o handoff — `HANDOFF_<FLUXO>.md` pela skill `spec-make-handoff`, com os ids
    lidos agora e esta sessão no histórico — e feche com [E1]. Sem a skill de handoff instalada, diga isso em uma frase e
    indique o download; a ficha do fluxo sai do mesmo jeito. Antes das fichas, gere as skills do inventário ([P1]); a
@@ -190,6 +192,7 @@ criar um fluxo novo a partir do DESIGN.
 - `references/MCP_MAKE.md` · `references/COPY.md` · `references/RUNTIME_COMPATIBILITY.md` · `references/SUPABASE.md`
 - `assets/RECIBO_TEMPLATE.md` · `assets/FICHA_DO_FLUXO_TEMPLATE.md`
 - `scripts/checar_blueprint.py` — confere confidencial, interface, credencial escrita, o Supabase só como banco e o HTTP genérico [N1]; sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
+- `scripts/checar_documento.py` — confere webhook, credencial, CPF, CNPJ e 11+ dígitos no documento ([F2]); sai 1 com ERRO, 3 só com AVISO (Python 3.9+, sem dependências)
 - `manifest.json` · `evals/cases.json`
 
 ## Metodologia e autoria

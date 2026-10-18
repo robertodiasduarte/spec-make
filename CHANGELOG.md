@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.5.0 — 2026-10
+
+- Você pode anexar o arquivo real da rotina (extrato, nota fiscal, folha, CSV com CNPJ ou CPF) no Brainstorm, no Define, no
+  Design e no Build. A skill lê o arquivo, diz o que entendeu dele (colunas, formatos, chave, um caso de borda) e o usa para
+  desenhar o fluxo com os casos reais.
+- Os documentos que a skill entrega (BRAINSTORM, DEFINE, DESIGN, recibo e ficha) guardam só o layout, com exemplo
+  mascarado, e dizem o que foi mascarado. Antes de entregar, um verificador novo (`checar_documento.py`) confere se não ficou
+  CPF, CNPJ, número longo, credencial ou endereço de webhook inteiros no texto; se achar, a skill mascara sozinha.
+- Continuam travando só segredo, chave e endereço de webhook, ligar o gatilho sem o seu "Ligar agora" e mexer no que a
+  conversa não criou. Dado pessoal deixou de travar.
+- A primeira resposta do Brainstorm avisa, em duas linhas, onde o seu arquivo passa: fica na conversa, o teste roda na sua
+  conta do Make em modo confidencial e o Make guarda que o fluxo rodou, não o conteúdo de cada passo.
+
 ## v1.4.0 — 2026-10
 
 - As 5 skills conduzem desde a primeira mensagem: toda resposta abre com um mapa de posição ("Etapa 2 de 4 · Define —

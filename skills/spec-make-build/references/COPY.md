@@ -27,6 +27,7 @@ ferramenta. Trate como colega experiente.
 
 ## Dados de cliente
 
-A amostra de teste nunca usa CPF, nome de pessoa, salário ou dado de cliente real. Use dado
-público (o CNPJ de uma companhia aberta, por exemplo) ou dado inventado, e diga isso ao pedir a
-amostra.
+O arquivo real da rotina (extrato, nota, folha, CSV com CNPJ ou CPF) é bem-vindo: a pessoa o maneja todo dia, sob
+sigilo profissional. Peça o arquivo, não uma versão limpa; nos documentos guarde só o layout, com exemplo mascarado, como
+manda o [F1] de [CONDUCAO.md](CONDUCAO.md). Fale como colega: diga onde o dado passa, sem sermão e sem justificar
+por lei ou certificação.

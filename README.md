@@ -39,11 +39,15 @@ comando pronto para colar.
 
 Três coisas a skill nunca faz, nem com a sua confirmação:
 
-- Usar segredo, chave ou dado pessoal real no fluxo, na amostra ou nos documentos: conexões são autorizadas por link,
-  dentro do Make, e a amostra é inventada ou pública.
+- Usar segredo, chave ou endereço de webhook no fluxo, na amostra ou nos documentos: conexões são autorizadas por link,
+  dentro do Make.
 - Ligar o gatilho sem você responder "Ligar agora" — antes de gravar ou rodar, ela diz o que vai acontecer e quantas
   operações gasta.
 - Apagar ou alterar o que esta conversa não criou, ou o que outro fluxo também usa: ela oferece criar um novo.
+
+O seu arquivo real é bem-vindo: anexe o extrato, a nota, a folha ou o CSV da rotina. A skill lê o arquivo e o usa para
+entender o layout e os casos de borda; os documentos que ela entrega guardam só a estrutura, com exemplo mascarado
+(`***.123.456-**`); o teste roda na origem de teste, com o fluxo confidencial.
 
 O resto a skill avisa e você decide: quando algo está fora do padrão (falta a chave que evita registro duplicado, o
 teste não prova o que devia, o custo passa do plano), ela mostra o risco, recomenda e espera você escolher entre
