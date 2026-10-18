@@ -409,6 +409,10 @@ REGRAS += [
                   "Se leu só parte, diga quanto leu",
                   "guardam só a estrutura e a regra, com exemplo mascarado, e uma linha dizendo o que foi mascarado. "
                   "Nunca copie linha do arquivo.",
+                  # SPEC_MAKE_S7 (eval final): o exemplo vinha dos dígitos de uma linha real do extrato
+                  "O exemplo mascarado é sempre o da tabela, com números inventados: nunca derive o exemplo dos dígitos nem da "
+                  "linha de um arquivo real, e descreva o formato campo a campo (`data;texto;***.123.456-**;valor`), não por "
+                  "uma linha.",
                   "| CPF | `***.123.456-**` |", "| CNPJ de cliente | `12.345.***/****-90` |",
                   "| Nome de pessoa | o papel:", "| Salário ou valor de pessoa |", "| E-mail pessoal | `m***@dominio.com.br` |",
                   "CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` logo depois do número.",

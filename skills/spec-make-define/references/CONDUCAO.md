@@ -102,7 +102,9 @@ valor, chave natural e casos de borda. Nunca peça dado inventado ou público no
 - **Devolutiva.** Depois de ler, diga em até 6 linhas o que entendeu do arquivo: colunas, formatos, chave natural e um caso
   de borda. Se leu só parte, diga quanto leu ("li 200 de 1.350 linhas").
 - **Nos documentos.** O BRAINSTORM, o DEFINE, o DESIGN, o recibo e a ficha guardam só a estrutura e a regra, com exemplo
-  mascarado, e uma linha dizendo o que foi mascarado. Nunca copie linha do arquivo. A máscara é esta:
+  mascarado, e uma linha dizendo o que foi mascarado. Nunca copie linha do arquivo. O exemplo mascarado é sempre o da tabela,
+  com números inventados: nunca derive o exemplo dos dígitos nem da linha de um arquivo real, e descreva o formato campo a
+  campo (`data;texto;***.123.456-**;valor`), não por uma linha. A máscara é esta:
 
   | O que é | Como escrever |
   |---|---|

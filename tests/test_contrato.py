@@ -457,6 +457,8 @@ class Contrato(unittest.TestCase):
             ("nenhuma confirmação os libera", "uma confirmação os libera"),
             ("Nunca peça dado inventado ou público no lugar dele.", "Peça dado inventado ou público no lugar dele."),
             ("Nunca copie linha do arquivo.", "Copie a linha do arquivo."),
+            ("nunca derive o exemplo dos dígitos nem da linha de um arquivo real", "derive o exemplo dos dígitos de um arquivo real"),
+            ("é sempre o da tabela, com números inventados", "pode vir da linha do arquivo, com os números dela"),
             ("Isto é aviso, não alerta [A1].", "Isto é alerta [A1]."),
             ("CNPJ de companhia aberta é público", "CNPJ de cliente é público"),
             ("Dado real só na origem de teste", "Dado real em qualquer fluxo"),
