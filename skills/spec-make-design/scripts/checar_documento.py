@@ -18,8 +18,9 @@ O que confere:
   4. sequência de 11 ou mais dígitos (pode ser CPF, CNPJ ou chave de nota; o id de execução e o sha256 vão em grupos de 8
      com hífen);
   5. AVISO: e-mail pessoal inteiro (gmail, hotmail, outlook, yahoo, live, icloud, uol, bol, terra).
-Exceção: a linha com `(CNPJ público)` não conta CNPJ nem os 14 dígitos dela (companhia aberta); CPF, e-mail e credencial da
-mesma linha continuam sendo achados.
+Exceção: o CNPJ (formatado, semi-formatado ou os 14 dígitos) que vem logo antes de `(CNPJ público)` é de companhia aberta e
+não conta; qualquer outro CNPJ, CPF, número longo, e-mail ou credencial da mesma linha continua sendo achado. O título da
+seção nunca é repetido na mensagem quando ele mesmo carrega um dado (a saída do verificador volta à conversa).
 
 Biblioteca padrão; Python 3.9+.
 """
@@ -33,7 +34,8 @@ WEBHOOK = re.compile(r"hook\.[a-z0-9]+\.make\.com/")
 CPF = re.compile(r"(?<![0-9])(?:[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}|[0-9]{9}-[0-9]{2})(?![0-9])")
 CNPJ = re.compile(r"(?<![0-9])(?:[0-9]{2}\.[0-9]{3}\.[0-9]{3}/[0-9]{4}-[0-9]{2}|[0-9]{8}/[0-9]{4}-[0-9]{2})(?![0-9])")
 DIGITOS = re.compile(r"(?<![0-9])[0-9]{11,}(?![0-9])")
-CNPJ_PUBLICO = "(CNPJ público)"
+PUBLICO = re.compile(r"(?<![0-9])(?:[0-9]{2}\.[0-9]{3}\.[0-9]{3}/[0-9]{4}-[0-9]{2}|[0-9]{8}/[0-9]{4}-[0-9]{2}|[0-9]{14})"
+                     r"(?![0-9])\s*\(CNPJ público\)")
 CREDENCIAL = re.compile(      # token no corpo do texto
     r"(?i:\bBearer)\s+[A-Za-z0-9._~+/=-]{20,}|eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.|\bsk-[A-Za-z0-9_-]{20,}"
     r"|\bsb_secret_[A-Za-z0-9_-]{10,}")
@@ -41,7 +43,14 @@ CAMPO_SEGREDO = re.compile(   # campo de segredo: entre aspas (JSON) ou valor so
     r"""(?i)(?<![A-Za-z0-9_])(?:api[_ -]?key|secret|senha|password|token)["']?\s*[:=]\s*"""
     r"""(?:["'][^"'\s{}]{8,}["']|(?=[A-Za-z0-9_+/=.-]*[0-9])[A-Za-z0-9_+/=.-]{8,})""")
 EMAIL_PESSOAL = re.compile(
-    r"(?i)\b[a-z0-9._%+-]{2,}@(?:gmail|hotmail|outlook|yahoo|live|icloud|uol|bol|terra)\.[a-z.]{2,}\b")
+    r"(?i)\b[a-z0-9._%+-]+@(?:gmail|hotmail|outlook|yahoo|live|icloud|uol|bol|terra)\.[a-z.]{2,}\b")
+
+
+def titulo_seguro(titulo: str) -> str:
+    """O título entra em toda mensagem; se ele mesmo carrega um dado, a mensagem não o repete."""
+    base = PUBLICO.sub("", titulo)
+    achou = (WEBHOOK, CREDENCIAL, CAMPO_SEGREDO, CPF, CNPJ, DIGITOS, EMAIL_PESSOAL)
+    return "(título da seção)" if any(r.search(base) for r in achou) else titulo
 
 
 def classificar(texto: str) -> tuple[list[str], list[str]]:
@@ -51,18 +60,17 @@ def classificar(texto: str) -> tuple[list[str], list[str]]:
     secao = "(topo)"
     for n, linha in enumerate(texto.splitlines(), 1):
         if linha.startswith("## "):
-            secao = linha[3:].strip()
-        publico = CNPJ_PUBLICO in linha
-        base = CNPJ.sub("", linha) if publico else linha
+            secao = titulo_seguro(linha[3:].strip())
+        base = PUBLICO.sub("", linha)
         if WEBHOOK.search(linha):
             erros.append(f"{secao}: URL de webhook na linha {n} — guarde só o id (a próxima conversa relê com hooks_get)")
         if CREDENCIAL.search(linha) or CAMPO_SEGREDO.search(linha):
             erros.append(f"{secao}: credencial escrita na linha {n} — guarde só o id da conexão (ela se autoriza por link)")
         if CPF.search(base):
             erros.append(f"{secao}: CPF inteiro na linha {n} — mascare como ***.123.456-**")
-        elif not publico and CNPJ.search(linha):
+        elif CNPJ.search(base):
             erros.append(f"{secao}: CNPJ inteiro na linha {n} — mascare como 12.345.***/****-90")
-        elif any(not (publico and len(m.group()) == 14) for m in DIGITOS.finditer(base)):
+        elif DIGITOS.search(base):
             erros.append(f"{secao}: sequência de 11+ dígitos na linha {n} — se for número de pessoa ou de nota, mascare pela "
                          "tabela do [F1]; se for id do Make, escreva em grupos de 8 com hífen")
         if EMAIL_PESSOAL.search(linha):

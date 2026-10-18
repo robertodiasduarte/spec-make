@@ -91,8 +91,9 @@ class Evals(unittest.TestCase):
         ler = Path.read_text
         sem_frase = lambda self, *a, **k: (ler(self, *a, **k).replace("Frases proibidas:", "Frases:")
                                            if self.name == "COPY.md" and "spec-make-brainstorm" in self.parts else ler(self, *a, **k))
-        with mock.patch.object(Path, "read_text", sem_frase):
-            problemas(real)      # o ramo COPY de ancora_da_skill segue vivo (S7: nenhum caso o usa mais)
+        self.assertTrue(evals.ancora_da_skill("spec-make-brainstorm", "COPY"))
+        with mock.patch.object(Path, "read_text", sem_frase):       # A2@fable (lote b2): o ramo COPY é observado, não só chamado
+            self.assertFalse(evals.ancora_da_skill("spec-make-brainstorm", "COPY"), "ramo COPY sem dentes")
         ev = copy.deepcopy(real)
         next(c for c in ev["spec-make-brainstorm"]["cases"] if c["id"] == "chave-no-chat")["regras"] = ["B2"]
         with mock.patch.dict(evals.ESPERADO["spec-make-brainstorm"], {"chave-no-chat": {"B2"}}):

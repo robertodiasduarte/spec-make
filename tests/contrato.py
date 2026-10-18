@@ -411,7 +411,7 @@ REGRAS += [
                   "Nunca copie linha do arquivo.",
                   "| CPF | `***.123.456-**` |", "| CNPJ de cliente | `12.345.***/****-90` |",
                   "| Nome de pessoa | o papel:", "| Salário ou valor de pessoa |", "| E-mail pessoal | `m***@dominio.com.br` |",
-                  "CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` na mesma linha.",
+                  "CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` logo depois do número.",
                   "Se o documento anterior diz `origem: real`, abra com uma linha:",
                   "Dado real só na origem de teste, com 1 item por execução e o fluxo confidencial ([B1]).",
                   "teste com dado real da rotina · confidencial · origem de teste: <nome>",

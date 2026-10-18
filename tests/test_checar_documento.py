@@ -34,6 +34,10 @@ def cnpj() -> str:
     return "12." + "345." + "678/" + "0001-" + "90"
 
 
+def cnpj2() -> str:
+    return "98." + "765." + "432/" + "0001-" + "10"
+
+
 def cnpj_sem_pontos() -> str:
     return "12345678" + "/0001-90"
 
@@ -92,6 +96,13 @@ CASOS = [
     ("publico-com-cpf", lambda t: t + f"\n{cnpj()} (CNPJ público) e CPF {cpf()}\n", 1, "CPF inteiro"),
     ("publico-so-cnpj", lambda t: t + f"\n{cnpj()} (CNPJ público)\n", 0, ""),
     ("publico-14-digitos", lambda t: t + "\n" + "9" * 14 + " (CNPJ público)\n", 0, ""),
+    # A1@fable (lote b1): o marcador isenta o número que vem logo antes dele, não a linha inteira
+    ("publico-e-cliente-formatado", lambda t: t + f"\n{cnpj()} (CNPJ público) e cliente {cnpj2()}\n", 1, "CNPJ inteiro"),
+    ("cliente-antes-do-publico", lambda t: t + f"\ncliente {cnpj2()} paga para {cnpj()} (CNPJ público)\n", 1, "CNPJ inteiro"),
+    ("publico-e-cliente-14-digitos", lambda t: t + "\n" + "9" * 14 + " (CNPJ público) e " + "8" * 14 + "\n", 1, "11+ dígitos"),
+    ("marcador-antes-do-numero", lambda t: t + f"\n(CNPJ público) {cnpj()}\n", 1, "CNPJ inteiro"),
+    # R2@codex (lote b1): e-mail pessoal de 1 caractere antes do arroba
+    ("email-um-caractere", lambda t: t + "\na@" + "outlook.com\n", 3, "e-mail pessoal"),
     ("publico-com-corrido", lambda t: t + f"\n{cnpj()} (CNPJ público) e conta {corrido()}\n", 1, "11+ dígitos"),
     ("email-pessoal", lambda t: t + "\nmaria@" + "gmail.com\n", 3, "e-mail pessoal"),
     ("email-corporativo", lambda t: t + "\nfinanceiro@escritorio.example\n", 0, ""),
@@ -142,16 +153,34 @@ class ChecarDocumento(unittest.TestCase):
                 self.assertEqual(cd.classificar(linha), ([], []))
 
     def test_credencial_rebaixada_a_aviso_reprova(self):
-        """LM-360: a conferência é uma função que recebe a implementação; o mutante move o ERRO de credencial para AVISO."""
+        """LM-360 + A1@fable (lote b2): a conferência "credencial é ERRO" é uma função que recebe a implementação — vazia contra
+        a real, NÃO vazia contra o mutante que move o ERRO de credencial para AVISO."""
         texto = LIMPO + f"\n{bearer()}\n{json_password()}\n"
-        self.assertTrue(sem_erro(cd.classificar, texto))
+
+        def credencial_e_erro(classificar) -> list[str]:
+            erros, _ = classificar(texto)
+            faltando = [t for t in ("Bearer", "password") if not any("credencial" in e for e in erros)]
+            return ["credencial fora dos ERROS"] if faltando else []
 
         def rebaixada(t: str):
             erros, avisos = cd.classificar(t)
             mover = [e for e in erros if "credencial" in e]
             return [e for e in erros if e not in mover], avisos + mover
 
-        self.assertEqual(sem_erro(rebaixada, texto), [], "o mutante não rebaixou nada: o teste não tem dentes")
+        self.assertEqual(credencial_e_erro(cd.classificar), [])
+        self.assertEqual(credencial_e_erro(rebaixada), ["credencial fora dos ERROS"], "o mutante passou: o teste não tem dentes")
+
+    def test_titulo_da_secao_nao_repete_o_segredo(self):
+        """R1@codex (lote b1): a saída do verificador volta à conversa; o título com dado não entra na mensagem."""
+        segredo = "Abc" + "12345"
+        for titulo in (f'## password: "{segredo}"', f"## CPF {cpf()}", f"## {bearer()}"):
+            with self.subTest(titulo=titulo[:20]):
+                erros, _ = cd.classificar(f"{titulo}\n{senha_solta()}\n")
+                self.assertTrue(erros)
+                self.assertTrue(all(segredo not in e and cpf() not in e and bearer() not in e for e in erros), erros)
+                self.assertTrue(all(e.startswith("ERRO") is False and "(título da seção)" in e for e in erros), erros)
+        erros, _ = cd.classificar(f"## Amostra\n{senha_solta()}\n")
+        self.assertTrue(erros[0].startswith("Amostra:"))
 
     def test_marcador_de_cnpj_publico_nao_isenta_o_resto_da_linha(self):
         erros, _ = cd.classificar(f"{cnpj()} (CNPJ público) CPF {cpf()} {bearer()}\n")

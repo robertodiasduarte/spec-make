@@ -132,7 +132,8 @@ EXCECOES_EXIGENCIA: list[tuple[str, str, str]] = [
      "expected do positivo amostra-pessoal: diz o que a skill NÃO faz"),
     ("CHANGELOG.md", "dado pessoal real, ligar o gatilho", "histórico da v1.4.0 (a v1.5.0 tirou o dado pessoal do bloqueio)"),
 ]
-ALERTA_DADO_REAL = re.compile(r"alerta \[A1\][^.]{0,200}?(arquivo real|dado real|dado pessoal|anexo)", re.I)
+ALERTA = re.compile(r"alerta \[A1\]", re.I)
+DADO_REAL = re.compile(r"arquivo real|dado real|dado pessoal|anexo", re.I)
 
 
 def arquivos_da_exigencia(raiz=RAIZ) -> list[Path]:
@@ -150,22 +151,29 @@ def exigencias(raiz=RAIZ, textos: dict[str, str] | None = None) -> list[str]:
     saida = []
     for rel, txt in textos.items():
         for n, linha in enumerate(txt.splitlines(), 1):
-            if not EXIGENCIA.search(linha):
-                continue
-            if any(rel.endswith(arq) and trecho in linha for arq, trecho, _ in EXCECOES_EXIGENCIA):
-                continue
-            saida.append(f"{rel}:{n}: {linha.strip()[:100]}")
+            # R1@codex: a exceção tira SÓ o trecho permitido da linha; o resto dela ainda é varrido (uma 2ª frase de exigência
+            # na mesma linha reprova)
+            resto = linha
+            for arq, trecho, _ in EXCECOES_EXIGENCIA:
+                if rel.endswith(arq):
+                    resto = resto.replace(trecho, "")
+            if EXIGENCIA.search(resto):
+                saida.append(f"{rel}:{n}: {linha.strip()[:100]}")
     return saida
 
 
 def alertas_de_dado_real(textos: dict[str, str]) -> list[str]:
-    """`alerta [A1]` cuja frase cita arquivo real, dado real, dado pessoal ou anexo: dado real não vira alerta (AT-006)."""
+    """`alerta [A1]` e arquivo real/dado real/dado pessoal/anexo na MESMA frase, em qualquer ordem: dado real não vira alerta
+    (AT-006; R2@codex: o termo antes da âncora também reprova)."""
     saida = []
     for rel, txt in textos.items():
+        achou = False
         for par in re.split(r"\n\s*\n", txt):
-            if ALERTA_DADO_REAL.search(" ".join(par.split())):
-                saida.append(rel)
-                break
+            for frase in re.split(r"(?<=[.!?])\s+", " ".join(par.split())):
+                if ALERTA.search(frase) and DADO_REAL.search(frase):
+                    achou = True
+        if achou:
+            saida.append(rel)
     return saida
 
 
@@ -214,6 +222,19 @@ class Residuos(unittest.TestCase):
                     mut[chave] = mut[chave] + f"\n{planta}\n"
                     self.assertTrue(exigencias(textos=mut), "exigência plantada passou")
 
+    def test_s7_excecao_nao_isenta_a_segunda_frase_da_linha(self):
+        """R1@codex: o trecho permitido e uma exigência na MESMA linha — a exceção cobre só o trecho."""
+        base = {f.relative_to(RAIZ).as_posix(): f.read_text(encoding="utf-8") for f in arquivos_da_exigencia()}
+        chave = "compartilhado/CONDUCAO.md"
+        for planta in ("Peça uma amostra sem dado pessoal real.", "Use dado inventado ou público.",
+                       "origem: pública | inventada"):
+            with self.subTest(planta=planta):
+                mut = dict(base)
+                mut[chave] = mut[chave].replace("Nunca peça dado inventado ou público no lugar dele.",
+                                                f"Nunca peça dado inventado ou público no lugar dele. {planta}", 1)
+                self.assertNotEqual(mut[chave], base[chave])
+                self.assertTrue(any(a.startswith(chave) for a in exigencias(textos=mut)), "2ª frase na linha passou")
+
     def test_s7_cada_excecao_e_necessaria(self):
         """Prova de que a lista não é um passe livre: sem a exceção, o texto real reprova; e a exceção vale só na caixa certa."""
         base = {f.relative_to(RAIZ).as_posix(): f.read_text(encoding="utf-8") for f in arquivos_da_exigencia()}
@@ -238,6 +259,10 @@ class Residuos(unittest.TestCase):
                 mut = dict(base)
                 mut[chave] = mut[chave] + "\n\nArquivo com dado pessoal: alerta [A1] — o arquivo real tem dado pessoal.\n"
                 self.assertEqual(alertas_de_dado_real(mut), [chave])
+                for planta in ("Arquivo real: alerta [A1].", "O anexo vira alerta [A1] se tiver CPF.", "alerta [A1] pelo dado real"):
+                    mut = dict(base)
+                    mut[chave] = mut[chave] + f"\n\n{planta}\n"
+                    self.assertEqual(alertas_de_dado_real(mut), [chave], f"ordem inversa passou: {planta}")
 
     def test_s7_aviso_sem_mcp_nao_inventa_zona(self):
         """AT-006 (while sem MCP): o ramo [M1] do aviso manda tirar a zona; mutante com "servidores na Europa" reprova."""

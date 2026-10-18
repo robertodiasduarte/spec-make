@@ -113,7 +113,7 @@ valor, chave natural e casos de borda. Nunca peça dado inventado ou público no
   | E-mail pessoal | `m***@dominio.com.br` |
   | Chave de acesso da nota | 4 primeiros dígitos, "…", 4 últimos |
 
-  CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` na mesma linha.
+  CNPJ de companhia aberta é público: escreva inteiro, com `(CNPJ público)` logo depois do número.
 - **Etapa seguinte.** Se o documento anterior diz `origem: real`, abra com uma linha: "O documento guarda só o layout;
   anexe o arquivo de novo se quiser que eu confira algum caso."
 - **Teste do build.** Dado real só na origem de teste, com 1 item por execução e o fluxo confidencial ([B1]). O resultado
