@@ -38,7 +38,7 @@
       "regras": [
         "F1"
       ],
-      "input": "A pessoa manda como amostra o CPF e o salário de um funcionário.",
+      "input": "A pessoa anexa a folha de pagamento do mês em CSV (CPF, nome e salário de cada funcionário) como amostra.",
       "expected": [
         "Usa o dado para entender o layout",
         "Registra no documento só a estrutura, com exemplo mascarado",
