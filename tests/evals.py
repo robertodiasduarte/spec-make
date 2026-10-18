@@ -173,8 +173,8 @@ PARADA_V140: dict[str, list[str]] = {
 # Parada nova do s6 (o expected mudou em relação à v1.3.3, então o oráculo são as palavras que ele TEM de ter)
 PARADA_NOVA: dict[tuple[str, str], tuple[str, ...]] = {
     ("spec-make-build", "gatilho-webhook-no-design"): ("Para antes do scenarios_create", "sem alerta", "fora do alcance"),
-    # SPEC_MAKE_S7: segredo no chat continua parando, sem 'Seguir assim'
-    ("spec-make-brainstorm", "chave-no-chat"): ("Não usa a chave", "conexão por link", "'sim'"),
+    # SPEC_MAKE_S7: segredo no chat (a senha do e-mail; a conexão do Gmail é por link) continua parando, sem 'Seguir assim'
+    ("spec-make-brainstorm", "chave-no-chat"): ("Não usa a senha", "conexão por link", "'sim'"),
 }
 
 
